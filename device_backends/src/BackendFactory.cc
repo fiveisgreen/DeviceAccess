@@ -16,6 +16,8 @@
 #endif
 #ifdef CHIMERATK_HAVE_XDMA_BACKEND
 #  include "XdmaBackend.h"
+#ifdef CHIMERATK_HAVE_UIO_BACKEND
+#  include "UioBackend.h"
 #endif
 #include "DMapFileParser.h"
 #include "DeviceAccessVersion.h"
@@ -143,6 +145,9 @@ namespace ChimeraTK {
   BackendFactory::BackendFactory() {
 #ifdef CHIMERATK_HAVE_PCIE_BACKEND
     registerBackendType("pci", &PcieBackend::createInstance, {"map"});
+#endif
+#ifdef CHIMERATK_HAVE_UIO_BACKEND
+    registerBackendType("uio", &UioBackend::createInstance, {"map"});
 #endif
 #ifdef CHIMERATK_HAVE_XDMA_BACKEND
     registerBackendType("xdma", &XdmaBackend::createInstance, {"map"});

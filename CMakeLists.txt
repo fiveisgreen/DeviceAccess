@@ -9,7 +9,7 @@ include(cmake/set_version_numbers.cmake)
 # C++ compiler flags needed to compile this project and against this project
 # The -D_LIBCPP_ENABLE_CXX17_REMOVED_AUTO_PTR flag is only needed for
 # libxml++ 2.6.
-set(${PROJECT_NAME}_CXX_FLAGS "${${PROJECT_NAME}_CXX_FLAGS} -DFUSION_MAX_MAP_SIZE=30 -DFUSION_MAX_VECTOR_SIZE=30 -D_LIBCPP_ENABLE_CXX17_REMOVED_AUTO_PTR")
+set(${PROJECT_NAME}_CXX_FLAGS "${${PROJECT_NAME}_CXX_FLAGS} -DFUSION_MAX_MAP_SIZE=30 -DFUSION_MAX_VECTOR_SIZE=30 -D_LIBCPP_ENABLE_CXX17_REMOVED_AUTO_PTR -D_GLIBCXX_USE_CXX11_ABI=0")
 
 include(cmake/set_default_build_to_release.cmake)
 include(cmake/set_default_flags.cmake)
@@ -62,6 +62,10 @@ if(HAVE_PCIE_BACKEND)
 endif()
 if(HAVE_XDMA_BACKEND)
   set(subdirs ${subdirs} device_backends/xdma)
+endif()
+if(HAVE_UIO_BACKEND)
+  add_definitions(-DCHIMERATK_HAVE_UIO_BACKEND)
+  set(subdirs ${subdirs} device_backends/uio)
 endif()
 foreach(subdir ${subdirs})
   aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/${subdir}/src sources)

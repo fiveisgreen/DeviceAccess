@@ -147,7 +147,7 @@ namespace ChimeraTK {
     registerBackendType("pci", &PcieBackend::createInstance, {"map"});
 #endif
 #ifdef CHIMERATK_HAVE_UIO_BACKEND
-    registerBackendType("uio", &UioBackend::createInstance, {"map"});
+    registerBackendType("uio", &UioBackend::createInstance, {"memSize","map"});
 #endif
 #ifdef CHIMERATK_HAVE_XDMA_BACKEND
     registerBackendType("xdma", &XdmaBackend::createInstance, {"map"});

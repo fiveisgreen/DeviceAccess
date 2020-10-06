@@ -54,15 +54,20 @@ namespace ChimeraTK {
   }
 
   void DummyBackend::read(uint8_t bar, uint32_t address, int32_t* data, size_t sizeInBytes) {
-    std::lock_guard<std::mutex> lock(mutex);
-    assert(_opened);
-    if(_hasActiveException) {
-      throw ChimeraTK::runtime_error("previous, unrecovered fault");
+    {
+      std::lock_guard<std::mutex> lock(mutex);
+      assert(_opened);
+      if(_hasActiveException) {
+        throw ChimeraTK::runtime_error("previous, unrecovered fault");
+      }
+      checkSizeIsMultipleOfWordSize(sizeInBytes);
+      unsigned int wordBaseIndex = address / sizeof(int32_t);
+      TRY_REGISTER_ACCESS(for(unsigned int wordIndex = 0; wordIndex < sizeInBytes / sizeof(int32_t);
+                              ++wordIndex) { data[wordIndex] = _barContents[bar].at(wordBaseIndex + wordIndex); });
     }
-    checkSizeIsMultipleOfWordSize(sizeInBytes);
-    unsigned int wordBaseIndex = address / sizeof(int32_t);
-    TRY_REGISTER_ACCESS(for(unsigned int wordIndex = 0; wordIndex < sizeInBytes / sizeof(int32_t);
-                            ++wordIndex) { data[wordIndex] = _barContents[bar].at(wordBaseIndex + wordIndex); });
+    // we call the callback functions after releasing the mutex in order to
+    // avoid the risk of deadlocks.
+    runReadCallbackFunctionsForAddressRange(AddressRange(bar, address, sizeInBytes));
   }
 
   void DummyBackend::write(uint8_t bar, uint32_t address, int32_t const* data, size_t sizeInBytes) {
@@ -113,10 +118,25 @@ namespace ChimeraTK {
     return (_readOnlyAddresses.find(virtualAddress) != _readOnlyAddresses.end());
   }
 
+  void DummyBackend::setReadCallbackFunction(
+      AddressRange addressRange, boost::function<void(void)> const& readCallbackFunction) {
+    _readCallbackFunctions.insert(
+        std::pair<AddressRange, boost::function<void(void)>>(addressRange, readCallbackFunction));
+  }
+
+  void DummyBackend::runReadCallbackFunctionsForAddressRange(AddressRange addressRange) {
+    std::list<boost::function<void(void)>> callbackFunctionsForThisRange =
+        findReadCallbackFunctionsForAddressRange(addressRange);
+    for(std::list<boost::function<void(void)>>::iterator functionIter = callbackFunctionsForThisRange.begin();
+        functionIter != callbackFunctionsForThisRange.end(); ++functionIter) {
+      (*functionIter)();
+    }
+  }
+
   void DummyBackend::setWriteCallbackFunction(
       AddressRange addressRange, boost::function<void(void)> const& writeCallbackFunction) {
     _writeCallbackFunctions.insert(
-        std::pair<AddressRange, boost::function<void(void)>>(addressRange, writeCallbackFunction));
+          std::pair<AddressRange, boost::function<void(void)>>(addressRange, writeCallbackFunction));
   }
 
   void DummyBackend::runWriteCallbackFunctionsForAddressRange(AddressRange addressRange) {
@@ -143,6 +163,33 @@ namespace ChimeraTK {
 
     std::multimap<AddressRange, boost::function<void(void)>>::iterator endIterator =
         _writeCallbackFunctions.lower_bound(endAddress);
+
+    std::list<boost::function<void(void)>> returnList;
+    for(std::multimap<AddressRange, boost::function<void(void)>>::iterator callbackIter = startIterator;
+        callbackIter != endIterator; ++callbackIter) {
+      if(isWriteRangeOverlap(callbackIter->first, addressRange)) {
+        returnList.push_back(callbackIter->second);
+      }
+    }
+
+    return returnList;
+  }
+
+  std::list<boost::function<void(void)>> DummyBackend::findReadCallbackFunctionsForAddressRange(AddressRange addressRange) {
+    // as callback functions are not sortable, we want to loop the multimap only
+    // once.
+    // FIXME: If the same function is registered more than one, it may be executed
+    // multiple times
+
+    // we only want the start address of the range, so we set size to 0
+    AddressRange firstAddressInBar(addressRange.bar, 0, 0);
+    AddressRange endAddress(addressRange.bar, addressRange.offset + addressRange.sizeInBytes, 0);
+
+    std::multimap<AddressRange, boost::function<void(void)>>::iterator startIterator =
+        _readCallbackFunctions.lower_bound(firstAddressInBar);
+
+    std::multimap<AddressRange, boost::function<void(void)>>::iterator endIterator =
+        _readCallbackFunctions.lower_bound(endAddress);
 
     std::list<boost::function<void(void)>> returnList;
     for(std::multimap<AddressRange, boost::function<void(void)>>::iterator callbackIter = startIterator;

@@ -203,7 +203,11 @@ namespace ChimeraTK {
       _prePostActionsImplementor(
           NDRegisterAccessor<UserType>::buffer_2D, _rawAccessor, _startAddress, _dataConverter, _isNotWriteable) {
       // check for unknown flags
-      flags.checkForUnknownFlags({AccessMode::raw});
+      flags.checkForUnknownFlags({AccessMode::raw, AccessMode::wait_for_new_data});
+      // cache the wait_for_new_data flas
+      if(flags.has(AccessMode::wait_for_new_data)) {
+        _hasWaitForNewData = true;
+      }
 
       // check device backend
       _dev = boost::dynamic_pointer_cast<NumericAddressedBackend>(dev);
@@ -283,7 +287,14 @@ namespace ChimeraTK {
       // we don't put the setting of the version number into the PrePostActionImplementor
       // because it does not need template specialisation, and the implementor does not
       // know about _versionNumber. It's just easier here.
-      this->_versionNumber = _rawAccessor->getVersionNumber();
+      if(_hasWaitForNewData) {
+        // put the version number which is coming from the trigger
+        this->_versionNumber = _asynchronousVersionNumber;
+      }
+      else {
+        // put the version number for the hardware accessing element
+        this->_versionNumber = _rawAccessor->getVersionNumber();
+      }
       this->_dataValidity = _rawAccessor->dataValidity();
     }
 
@@ -369,6 +380,15 @@ namespace ChimeraTK {
     /** cache for negated writeable status to avoid repeated evaluation */
     bool _isNotWriteable;
 
+    /** cache for wait_for_new_data flag to avoid repeated evaluation */
+    bool _hasWaitForNewData;
+
+    /** In case of push type data version number is coming from the trigger call, not
+     *  from the lowLevelTransferElement. We have to cache it and must only assign it to _versionNumber
+     *  once the read actually was successful.
+     */
+    VersionNumber _asynchronousVersionNumber;
+
     detail::NumericAddressedPrePostActionsImplementor<UserType, DataConverterType, isRaw> _prePostActionsImplementor;
 
     /** raw accessor */
@@ -397,6 +417,23 @@ namespace ChimeraTK {
       }
       _rawAccessor->setExceptionBackend(this->_exceptionBackend);
     }
+
+    virtual void trigger(VersionNumber const& v) {
+      _asynchronousVersionNumber = v;
+      try {
+        doReadTransferSynchronously();
+      }
+      catch(ChimeraTK::runtime_error&) {
+        TransferElement::_readQueue.push_overwrite_exception(std::current_exception());
+      }
+      catch(boost::thread_interrupted&) {
+        TransferElement::_readQueue.push_overwrite_exception(std::current_exception());
+      }
+      TransferElement::_readQueue.push();
+    }
+
+    // has to be overridden like this by all accessors which support AccessMode::wait_for_new_data
+    void interrupt() override { this->interrupt_impl(this->_readQueue); }
 
     /** A helper class to implement template specialisation on certain functions.
      *  We can do a partial specialisation on this class which we cannot/don't

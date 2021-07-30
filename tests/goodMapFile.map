@@ -1,7 +1,7 @@
 @HW_VERSION 1.6
 @ FW_VERSION 2.5
 
-# name                    number of elements       address          size           bar    width   fracbits  signed
+# name                    number of elements       address          size           bar    width   fracbits  signed mode
 BOARD.WORD_FIRMWARE               0x00000001    0x00000000    0x00000004    
 BOARD.WORD_COMPILATION            0x00000001    0x00000004    0x00000004    0x00000000       
 APP0.WORD_STATUS                  0x00000001    0x00000008    0x00000004    0x00000001

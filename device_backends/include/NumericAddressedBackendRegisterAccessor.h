@@ -202,7 +202,8 @@ namespace ChimeraTK {
       _registerPathName(registerPathName), _numberOfWords(numberOfWords),
       _prePostActionsImplementor(
           NDRegisterAccessor<UserType>::buffer_2D, _rawAccessor, _startAddress, _dataConverter, _isNotWriteable) {
-      // check for unknown flags
+      // check for unknown flags. In principle this accessor type knows about wait_for_new_data. Whether it is valid for this particular
+      // accessor is tested later.
       flags.checkForUnknownFlags({AccessMode::raw, AccessMode::wait_for_new_data});
       // cache the wait_for_new_data flas
       if(flags.has(AccessMode::wait_for_new_data)) {
@@ -221,6 +222,12 @@ namespace ChimeraTK {
       boost::shared_ptr<RegisterInfo> info = _dev->getRegisterInfo(registerPathName);
       _prePostActionsImplementor._registerInfo = info;
       _registerInfo = boost::static_pointer_cast<RegisterInfoMap::RegisterInfo>(info);
+      if(flags.has(AccessMode::wait_for_new_data) &&
+          !_registerInfo->getSupportedAccessModes().has(AccessMode::wait_for_new_data)) {
+        throw ChimeraTK::logic_error(
+            "Register " + registerPathName + " does not support AccessMode::wait_for_new_data");
+      }
+
       _bar = _registerInfo->bar;
       _startAddress = _registerInfo->address + wordOffsetInRegister * _registerInfo->nBytesPerElement();
 
@@ -381,7 +388,7 @@ namespace ChimeraTK {
     bool _isNotWriteable;
 
     /** cache for wait_for_new_data flag to avoid repeated evaluation */
-    bool _hasWaitForNewData;
+    bool _hasWaitForNewData{false};
 
     /** In case of push type data version number is coming from the trigger call, not
      *  from the lowLevelTransferElement. We have to cache it and must only assign it to _versionNumber

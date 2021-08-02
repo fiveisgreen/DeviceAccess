@@ -2488,7 +2488,8 @@ namespace ChimeraTK {
         reg.read();
 
         // Check application buffer
-        BOOST_CHECK(reg.getVersionNumber() > someVersion);
+        std::string message = "Error: Version " + reg.getVersionNumber() + " not larger than " + someVersion;
+        BOOST_CHECK_MESSAGE(reg.getVersionNumber() > someVersion, message);
         someVersion = reg.getVersionNumber();
       }
     });

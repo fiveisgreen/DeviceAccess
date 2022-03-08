@@ -24,7 +24,7 @@ using namespace ChimeraTK;
 class OneDRegisterTest {
  public:
   OneDRegisterTest() {
-    device = boost::shared_ptr<Device>(new Device());
+    device = boost::shared_ptr<DeviceRenamedToFailDownstream>(new DeviceRenamedToFailDownstream());
     device->open("DUMMYD1");
   }
 
@@ -32,7 +32,7 @@ class OneDRegisterTest {
   void testRegisterAccessor();
 
  private:
-  boost::shared_ptr<Device> device;
+  boost::shared_ptr<DeviceRenamedToFailDownstream> device;
   friend class OneDRegisterTestSuite;
 };
 

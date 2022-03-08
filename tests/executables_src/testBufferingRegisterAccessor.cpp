@@ -26,7 +26,7 @@ using namespace ChimeraTK;
 class BufferingRegisterTest {
  public:
   BufferingRegisterTest() {
-    device = boost::shared_ptr<Device>(new Device());
+    device = boost::shared_ptr<DeviceRenamedToFailDownstream>(new DeviceRenamedToFailDownstream());
     device->open("DUMMYD1");
   }
 
@@ -34,7 +34,7 @@ class BufferingRegisterTest {
   void testRegisterAccessor();
 
  private:
-  boost::shared_ptr<Device> device;
+  boost::shared_ptr<DeviceRenamedToFailDownstream> device;
   friend class BufferingRegisterTestSuite;
 };
 

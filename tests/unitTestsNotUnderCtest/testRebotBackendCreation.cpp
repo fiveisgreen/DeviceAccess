@@ -15,7 +15,7 @@ namespace ChimeraTK {
   using namespace ChimeraTK;
 }
 
-void checkWriteReadFromRegister(ChimeraTK::Device& rebotDevice);
+void checkWriteReadFromRegister(ChimeraTK::DeviceRenamedToFailDownstream& rebotDevice);
 
 BOOST_AUTO_TEST_SUITE(RebotDeviceTestSuite)
 
@@ -41,11 +41,11 @@ BOOST_AUTO_TEST_CASE(testFactoryForRebotDeviceCreation) {
   // takes the one from the dmap file)
 
   // 1. The original way with map file as third column in the dmap file
-  ChimeraTK::Device rebotDevice;
+  ChimeraTK::DeviceRenamedToFailDownstream rebotDevice;
   rebotDevice.open("mskrebot");
   checkWriteReadFromRegister(rebotDevice);
 
-  ChimeraTK::Device rebotDevice2;
+  ChimeraTK::DeviceRenamedToFailDownstream rebotDevice2;
   // create another mskrebot
   rebotDevice2.open("mskrebot");
   checkWriteReadFromRegister(rebotDevice2);
@@ -56,13 +56,13 @@ BOOST_AUTO_TEST_CASE(testFactoryForRebotDeviceCreation) {
   // 2. Creating without map file in the dmap only works by putting an sdm on
   // creation because we have to bypass the dmap file parser which at the time
   // of writing this requires a map file as third column
-  ChimeraTK::Device secondDevice;
+  ChimeraTK::DeviceRenamedToFailDownstream secondDevice;
   secondDevice.open("sdm://./rebot=localhost," + port + ",mtcadummy_rebot.map");
   BOOST_CHECK(secondDevice.read<double>("BOARD/WORD_USER") == 48);
   secondDevice.close();
 
   // 3. We don't have a map file, so we have to use numerical addressing
-  ChimeraTK::Device thirdDevice;
+  ChimeraTK::DeviceRenamedToFailDownstream thirdDevice;
   thirdDevice.open("sdm://./rebot=localhost," + port);
   BOOST_CHECK(thirdDevice.read<int32_t>(ChimeraTK::numeric_address::BAR / 0 / 0xC) == 48 << 3); // The user register
                                                                                                 // is on bar 0,
@@ -74,7 +74,7 @@ BOOST_AUTO_TEST_CASE(testFactoryForRebotDeviceCreation) {
 
   // 4. This should print a warning. We can't check that, so we just check that
   // it does work like the other two options.
-  ChimeraTK::Device fourthDevice;
+  ChimeraTK::DeviceRenamedToFailDownstream fourthDevice;
   fourthDevice.open("REBOT_DOUBLEMAP");
   BOOST_CHECK(fourthDevice.read<double>("BOARD/WORD_USER") == 48);
 
@@ -84,7 +84,7 @@ BOOST_AUTO_TEST_CASE(testFactoryForRebotDeviceCreation) {
 
 BOOST_AUTO_TEST_SUITE_END()
 
-void checkWriteReadFromRegister(ChimeraTK::Device& rebotDevice) {
+void checkWriteReadFromRegister(ChimeraTK::DeviceRenamedToFailDownstream& rebotDevice) {
   std::vector<int32_t> dataToWrite({2, 3, 100, 20});
 
   // 0xDEADBEEF is a word preset by the dummy firmware in the WORD_COMPILATION

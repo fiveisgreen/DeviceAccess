@@ -168,7 +168,7 @@ BOOST_AUTO_TEST_CASE(testVersionNumberChange) {
 }
 
 BOOST_AUTO_TEST_CASE(testException) {
-  Device dev;
+  DeviceRenamedToFailDownstream dev;
   dev.open("(dummy?map=registerAccess.map)");
   auto acc = dev.getScalarRegisterAccessor<int>("BOARD.WORD_FIRMWARE");
   DataConsistencyGroup dcgroup;

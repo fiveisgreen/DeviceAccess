@@ -12,7 +12,7 @@ using namespace ChimeraTK;
 
 void testAsyncRO(RegisterPath name, unsigned int interruptController, unsigned int interruptNumber) {
   // The typical use case: The underlying register is a read-only interrput
-  Device d("(dummy?map=goodMapFile.map)");
+  DeviceRenamedToFailDownstream d("(dummy?map=goodMapFile.map)");
   d.open();
   d.activateAsyncRead();
 
@@ -54,7 +54,7 @@ BOOST_AUTO_TEST_CASE(TestAsyncRO) {
 }
 
 BOOST_AUTO_TEST_CASE(TestAsyncRW) {
-  Device d("(ExceptionDummy?map=goodMapFile.map)");
+  DeviceRenamedToFailDownstream d("(ExceptionDummy?map=goodMapFile.map)");
   d.open();
   d.activateAsyncRead();
 
@@ -84,7 +84,7 @@ BOOST_AUTO_TEST_CASE(TestAsyncRW) {
 
 BOOST_AUTO_TEST_CASE(TestSyncRO) {
   // Void registers without wait_for_new_data don't make sense if they are not writeable
-  Device d("(dummy?map=goodMapFile.map)");
+  DeviceRenamedToFailDownstream d("(dummy?map=goodMapFile.map)");
   d.open();
 
   BOOST_CHECK_THROW(d.getVoidRegisterAccessor("MODULE0/INTERRUPT_VOID1"), ChimeraTK::logic_error);
@@ -92,7 +92,7 @@ BOOST_AUTO_TEST_CASE(TestSyncRO) {
 
 BOOST_AUTO_TEST_CASE(TestSyncW) {
   // Just take a normal RW register, get a void register and write to it
-  Device d("(dummy?map=goodMapFile.map)");
+  DeviceRenamedToFailDownstream d("(dummy?map=goodMapFile.map)");
   d.open();
 
   auto voidAccessor = d.getVoidRegisterAccessor("MODULE1/TEST_AREA");

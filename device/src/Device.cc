@@ -15,28 +15,28 @@ namespace ChimeraTK {
 
   /********************************************************************************************************************/
 
-  Device::Device(const std::string& aliasName) {
+  DeviceRenamedToFailDownstream::DeviceRenamedToFailDownstream(const std::string& aliasName) {
     BackendFactory& factoryInstance = BackendFactory::getInstance();
     _deviceBackendPointer = factoryInstance.createBackend(aliasName);
   }
 
   /********************************************************************************************************************/
 
-  Device::~Device() {
+  DeviceRenamedToFailDownstream::~DeviceRenamedToFailDownstream() {
     // Do NOT close the Backend here. Another device might be using the same
     // backend.
   }
 
   /********************************************************************************************************************/
 
-  RegisterCatalogue Device::getRegisterCatalogue() const {
+  RegisterCatalogue DeviceRenamedToFailDownstream::getRegisterCatalogue() const {
     checkPointersAreNotNull();
     return _deviceBackendPointer->getRegisterCatalogue();
   }
 
   /********************************************************************************************************************/
 
-  MetadataCatalogue Device::getMetadataCatalogue() const {
+  MetadataCatalogue DeviceRenamedToFailDownstream::getMetadataCatalogue() const {
     checkPointersAreNotNull();
     return _deviceBackendPointer->getMetadataCatalogue();
   }
@@ -56,14 +56,15 @@ namespace ChimeraTK {
 
   /********************************************************************************************************************/
 
-  void Device::readReg(const std::string& regName, int32_t* data, size_t dataSize, uint32_t addRegOffset) const {
+  void DeviceRenamedToFailDownstream::readReg(
+      const std::string& regName, int32_t* data, size_t dataSize, uint32_t addRegOffset) const {
     readReg(regName, std::string(), data, dataSize, addRegOffset);
   }
 
   /********************************************************************************************************************/
 
-  void Device::readReg(const std::string& regName, const std::string& regModule, int32_t* data, size_t dataSize,
-      uint32_t addRegOffset) const {
+  void DeviceRenamedToFailDownstream::readReg(const std::string& regName, const std::string& regModule, int32_t* data,
+      size_t dataSize, uint32_t addRegOffset) const {
     if(dataSize % sizeof(int32_t) != 0) {
       throw ChimeraTK::logic_error("Wrong data size - must be dividable by 4");
     }
@@ -77,14 +78,15 @@ namespace ChimeraTK {
 
   /********************************************************************************************************************/
 
-  void Device::writeReg(const std::string& regName, int32_t const* data, size_t dataSize, uint32_t addRegOffset) {
+  void DeviceRenamedToFailDownstream::writeReg(
+      const std::string& regName, int32_t const* data, size_t dataSize, uint32_t addRegOffset) {
     writeReg(regName, std::string(), data, dataSize, addRegOffset);
   }
 
   /********************************************************************************************************************/
 
-  void Device::writeReg(const std::string& regName, const std::string& regModule, int32_t const* data, size_t dataSize,
-      uint32_t addRegOffset) {
+  void DeviceRenamedToFailDownstream::writeReg(const std::string& regName, const std::string& regModule,
+      int32_t const* data, size_t dataSize, uint32_t addRegOffset) {
     if(dataSize == 0) dataSize = sizeof(int32_t);
     if(dataSize % sizeof(int32_t) != 0) {
       throw ChimeraTK::logic_error("Wrong data size: - must be dividable by 4");
@@ -99,14 +101,15 @@ namespace ChimeraTK {
 
   /********************************************************************************************************************/
 
-  void Device::readDMA(const std::string& regName, int32_t* data, size_t dataSize, uint32_t addRegOffset) const {
+  void DeviceRenamedToFailDownstream::readDMA(
+      const std::string& regName, int32_t* data, size_t dataSize, uint32_t addRegOffset) const {
     readDMA(regName, std::string(), data, dataSize, addRegOffset);
   }
 
   /********************************************************************************************************************/
 
-  void Device::readDMA(const std::string& regName, const std::string& regModule, int32_t* data, size_t dataSize,
-      uint32_t addRegOffset) const {
+  void DeviceRenamedToFailDownstream::readDMA(const std::string& regName, const std::string& regModule, int32_t* data,
+      size_t dataSize, uint32_t addRegOffset) const {
     std::cerr << "***************************************************************"
                  "**********************************"
               << std::endl; // LCOV_EXCL_LINE
@@ -124,14 +127,15 @@ namespace ChimeraTK {
 
   /********************************************************************************************************************/
 
-  void Device::writeDMA(const std::string& regName, int32_t const* data, size_t dataSize, uint32_t addRegOffset) {
+  void DeviceRenamedToFailDownstream::writeDMA(
+      const std::string& regName, int32_t const* data, size_t dataSize, uint32_t addRegOffset) {
     writeDMA(regName, std::string(), data, dataSize, addRegOffset);
   } // LCOV_EXCL_LINE
 
   /********************************************************************************************************************/
 
-  void Device::writeDMA(const std::string& regName, const std::string& regModule, int32_t const* data, size_t dataSize,
-      uint32_t addRegOffset) {
+  void DeviceRenamedToFailDownstream::writeDMA(const std::string& regName, const std::string& regModule,
+      int32_t const* data, size_t dataSize, uint32_t addRegOffset) {
     std::cerr << "***************************************************************"
                  "**********************************"
               << std::endl; // LCOV_EXCL_LINE
@@ -149,38 +153,38 @@ namespace ChimeraTK {
 
   /********************************************************************************************************************/
 
-  void Device::close() {
+  void DeviceRenamedToFailDownstream::close() {
     checkPointersAreNotNull();
     _deviceBackendPointer->close();
   }
 
   /********************************************************************************************************************/
 
-  void Device::readReg(uint32_t regOffset, int32_t* data, uint8_t bar) const {
+  void DeviceRenamedToFailDownstream::readReg(uint32_t regOffset, int32_t* data, uint8_t bar) const {
     readReg(BAR / bar / regOffset * sizeof(int32_t), data, sizeof(int32_t), 0);
   }
 
   /********************************************************************************************************************/
 
-  void Device::writeReg(uint32_t regOffset, int32_t data, uint8_t bar) {
+  void DeviceRenamedToFailDownstream::writeReg(uint32_t regOffset, int32_t data, uint8_t bar) {
     writeReg(BAR / bar / regOffset * sizeof(int32_t), &data, sizeof(int32_t), 0);
   }
 
   /********************************************************************************************************************/
 
-  void Device::readArea(uint32_t regOffset, int32_t* data, size_t size, uint8_t bar) const {
+  void DeviceRenamedToFailDownstream::readArea(uint32_t regOffset, int32_t* data, size_t size, uint8_t bar) const {
     readReg(BAR / bar / regOffset * size, data, size, 0);
   }
 
   /********************************************************************************************************************/
 
-  void Device::writeArea(uint32_t regOffset, int32_t const* data, size_t size, uint8_t bar) {
+  void DeviceRenamedToFailDownstream::writeArea(uint32_t regOffset, int32_t const* data, size_t size, uint8_t bar) {
     writeReg(BAR / bar / regOffset * size, data, size, 0);
   }
 
   /********************************************************************************************************************/
 
-  void Device::readDMA(uint32_t regOffset, int32_t* data, size_t size, uint8_t bar) const {
+  void DeviceRenamedToFailDownstream::readDMA(uint32_t regOffset, int32_t* data, size_t size, uint8_t bar) const {
     std::cerr << "***************************************************************"
                  "**********************************"
               << std::endl; // LCOV_EXCL_LINE
@@ -198,7 +202,7 @@ namespace ChimeraTK {
 
   /********************************************************************************************************************/
 
-  void Device::writeDMA(uint32_t regOffset, int32_t const* data, size_t size, uint8_t bar) {
+  void DeviceRenamedToFailDownstream::writeDMA(uint32_t regOffset, int32_t const* data, size_t size, uint8_t bar) {
     std::cerr << "***************************************************************"
                  "**********************************"
               << std::endl; // LCOV_EXCL_LINE
@@ -217,14 +221,14 @@ namespace ChimeraTK {
 
   /********************************************************************************************************************/
 
-  std::string Device::readDeviceInfo() const {
+  std::string DeviceRenamedToFailDownstream::readDeviceInfo() const {
     checkPointersAreNotNull();
     return _deviceBackendPointer->readDeviceInfo();
   }
 
   /********************************************************************************************************************/
 
-  void Device::checkPointersAreNotNull() const {
+  void DeviceRenamedToFailDownstream::checkPointersAreNotNull() const {
     if(static_cast<bool>(_deviceBackendPointer) == false) {
       throw ChimeraTK::logic_error("Device has not been opened correctly");
     }
@@ -232,7 +236,7 @@ namespace ChimeraTK {
 
   /********************************************************************************************************************/
 
-  void Device::open(boost::shared_ptr<DeviceBackend> deviceBackend) {
+  void DeviceRenamedToFailDownstream::open(boost::shared_ptr<DeviceBackend> deviceBackend) {
     std::cerr << "***************************************************************"
                  "**********************************"
               << std::endl; // LCOV_EXCL_LINE
@@ -262,14 +266,14 @@ namespace ChimeraTK {
 
   /********************************************************************************************************************/
 
-  void Device::open() {
+  void DeviceRenamedToFailDownstream::open() {
     checkPointersAreNotNull();
     _deviceBackendPointer->open();
   }
 
   /********************************************************************************************************************/
 
-  void Device::open(std::string const& aliasName) {
+  void DeviceRenamedToFailDownstream::open(std::string const& aliasName) {
     BackendFactory& factoryInstance = BackendFactory::getInstance();
     _deviceBackendPointer = factoryInstance.createBackend(aliasName);
     _deviceBackendPointer->open();
@@ -277,7 +281,7 @@ namespace ChimeraTK {
 
   /********************************************************************************************************************/
 
-  bool Device::isOpened() const {
+  bool DeviceRenamedToFailDownstream::isOpened() const {
     if(static_cast<bool>(_deviceBackendPointer) != false) {
       return _deviceBackendPointer->isOpen();
     }
@@ -286,7 +290,7 @@ namespace ChimeraTK {
 
   /********************************************************************************************************************/
 
-  bool Device::isFunctional() const {
+  bool DeviceRenamedToFailDownstream::isFunctional() const {
     if(static_cast<bool>(_deviceBackendPointer) != false) {
       return _deviceBackendPointer->isFunctional();
     }
@@ -295,15 +299,15 @@ namespace ChimeraTK {
 
   /********************************************************************************************************************/
 
-  void Device::activateAsyncRead() noexcept { _deviceBackendPointer->activateAsyncRead(); }
+  void DeviceRenamedToFailDownstream::activateAsyncRead() noexcept { _deviceBackendPointer->activateAsyncRead(); }
 
   /********************************************************************************************************************/
 
-  void Device::setException() { _deviceBackendPointer->setException(); }
+  void DeviceRenamedToFailDownstream::setException() { _deviceBackendPointer->setException(); }
 
   /********************************************************************************************************************/
 
-  VoidRegisterAccessor Device::getVoidRegisterAccessor(
+  VoidRegisterAccessor DeviceRenamedToFailDownstream::getVoidRegisterAccessor(
       const RegisterPath& registerPathName, const AccessModeFlags& flags) const {
     checkPointersAreNotNull();
     return VoidRegisterAccessor(_deviceBackendPointer->getRegisterAccessor<Void>(registerPathName, 0, 0, flags));

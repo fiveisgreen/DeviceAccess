@@ -10,7 +10,7 @@ using namespace ChimeraTK;
 BOOST_AUTO_TEST_SUITE(RegisterAccessSpecifierTestSuite)
 
 BOOST_AUTO_TEST_CASE(testRegisterAccess) {
-  Device dev;
+  DeviceRenamedToFailDownstream dev;
   dev.open("sdm://./pci:pcieunidummys6=registerAccess.map");
   BOOST_CHECK(dev.isOpened());
 

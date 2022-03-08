@@ -392,7 +392,7 @@ BOOST_AUTO_TEST_CASE(testWriteRegisterWithoutCallback) {
 /**********************************************************************************************************************/
 
 BOOST_AUTO_TEST_CASE(testWriteToReadOnlyRegister) {
-  ChimeraTK::Device dummyDevice;
+  ChimeraTK::DeviceRenamedToFailDownstream dummyDevice;
   dummyDevice.open("DUMMYD0");
 
   // Also get pointer to the backend in order to check the catalogue
@@ -432,7 +432,7 @@ BOOST_AUTO_TEST_CASE(testWriteToReadOnlyRegister) {
 }
 
 BOOST_AUTO_TEST_CASE(testDummyInterrupt) {
-  ChimeraTK::Device dummyDevice;
+  ChimeraTK::DeviceRenamedToFailDownstream dummyDevice;
   dummyDevice.open("DUMMYD0");
 
   // Also get pointer to the backend in order to check the catalogue

@@ -24,7 +24,7 @@ int main(int argc, char** argv) {
 
   setDMapFilePath("dummies.dmap");
 
-  Device device;
+  DeviceRenamedToFailDownstream device;
   device.open("PERFTEST");
 
   int niterBlock;

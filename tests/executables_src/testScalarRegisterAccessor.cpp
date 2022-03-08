@@ -27,7 +27,7 @@ BOOST_AUTO_TEST_CASE(testCreation) {
   setDMapFilePath("dummies.dmap");
   std::cout << "testCreation" << std::endl;
 
-  Device device;
+  DeviceRenamedToFailDownstream device;
   device.open("DUMMYD2");
   boost::shared_ptr<DummyBackend> backend =
       boost::dynamic_pointer_cast<DummyBackend>(BackendFactory::getInstance().createBackend("DUMMYD2"));
@@ -51,7 +51,7 @@ BOOST_AUTO_TEST_CASE(testIntRegisterAccessor) {
   setDMapFilePath("dummies.dmap");
   std::cout << "testRegisterAccessor" << std::endl;
 
-  Device device;
+  DeviceRenamedToFailDownstream device;
   device.open("DUMMYD2");
   boost::shared_ptr<DummyBackend> backend =
       boost::dynamic_pointer_cast<DummyBackend>(BackendFactory::getInstance().createBackend("DUMMYD2"));
@@ -141,7 +141,7 @@ BOOST_AUTO_TEST_CASE(testFloatRegisterAccessor) {
   setDMapFilePath("dummies.dmap");
   std::cout << "testFloatRegisterAccessor" << std::endl;
 
-  Device device;
+  DeviceRenamedToFailDownstream device;
   device.open("DUMMYD2");
   boost::shared_ptr<DummyBackend> backend =
       boost::dynamic_pointer_cast<DummyBackend>(BackendFactory::getInstance().createBackend("DUMMYD2"));
@@ -187,7 +187,7 @@ BOOST_AUTO_TEST_CASE(testWordOffset) {
   setDMapFilePath("dummies.dmap");
   std::cout << "testWordOffset" << std::endl;
 
-  Device device;
+  DeviceRenamedToFailDownstream device;
   device.open("DUMMYD2");
   boost::shared_ptr<DummyBackend> backend =
       boost::dynamic_pointer_cast<DummyBackend>(BackendFactory::getInstance().createBackend("DUMMYD2"));
@@ -217,7 +217,7 @@ BOOST_AUTO_TEST_CASE(testUniqueID) {
   setDMapFilePath("dummies.dmap");
   std::cout << "testUniqueID" << std::endl;
 
-  Device device;
+  DeviceRenamedToFailDownstream device;
   device.open("DUMMYD2");
 
   // get register accessors

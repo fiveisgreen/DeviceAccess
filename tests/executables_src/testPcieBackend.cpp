@@ -487,7 +487,7 @@ void PcieBackendTest::testCreateBackend() {
   // takes the one from the dmap file)
 
   // 1. The original way with map file as third column in the dmap file
-  Device firstDevice;
+  DeviceRenamedToFailDownstream firstDevice;
   firstDevice.open("PCIE0");
   // this backend is without module in the register name
   firstDevice.write<double>("WORD_USER", 48);
@@ -496,17 +496,17 @@ void PcieBackendTest::testCreateBackend() {
   // 2. Creating without map file in the dmap only works by putting an sdm on
   // creation because we have to bypass the dmap file parser which at the time
   // of writing this requires a map file as third column
-  Device secondDevice;
+  DeviceRenamedToFailDownstream secondDevice;
   secondDevice.open("sdm://./pci:pcieunidummys6=mtcadummy.map");
   BOOST_CHECK(secondDevice.read<double>("BOARD/WORD_USER") == 48);
 
-  Device secondDevice2;
+  DeviceRenamedToFailDownstream secondDevice2;
   // try opening same device again.
   secondDevice2.open("sdm://./pci:pcieunidummys6=mtcadummy.map");
   BOOST_CHECK(secondDevice2.read<double>("BOARD/WORD_USER") == 48);
 
   // 3. We don't have a map file, so we have to use numerical addressing
-  Device thirdDevice;
+  DeviceRenamedToFailDownstream thirdDevice;
   thirdDevice.open("sdm://./pci:pcieunidummys6");
   BOOST_CHECK(thirdDevice.read<int32_t>(BAR / 0 / 0xC) == 48 << 3); // The user register is on bar 0, address 0xC.
                                                                     // We have no fixed point data conversion but 3
@@ -514,7 +514,7 @@ void PcieBackendTest::testCreateBackend() {
 
   // 4. This should print a warning. We can't check that, so we just check that
   // it does work like the other two options.
-  Device fourthDevice;
+  DeviceRenamedToFailDownstream fourthDevice;
   fourthDevice.open("PCIE_DOUBLEMAP");
   BOOST_CHECK(fourthDevice.read<double>("BOARD/WORD_USER") == 48);
 

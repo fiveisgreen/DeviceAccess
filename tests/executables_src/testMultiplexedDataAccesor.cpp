@@ -31,7 +31,7 @@ BOOST_AUTO_TEST_SUITE(MultiplexedDataAccessorTestSuite)
 
 BOOST_AUTO_TEST_CASE(testConstructor) {
   BackendFactory::getInstance().setDMapFilePath(DMAP_FILE_NAME);
-  Device device;
+  DeviceRenamedToFailDownstream device;
   device.open(DEVICE_ALIAS);
   TwoDRegisterAccessor<double> deMultiplexer = device.getTwoDRegisterAccessor<double>(TEST_MODULE_PATH / "FRAC_INT");
   BOOST_TEST(deMultiplexer[0].size() == 5);
@@ -48,7 +48,7 @@ void testDeMultiplexing(std::string areaName) {
 
   // open a dummy device with the sequence map file
   BackendFactory::getInstance().setDMapFilePath(DMAP_FILE_NAME);
-  Device device;
+  DeviceRenamedToFailDownstream device;
   device.open(DEVICE_ALIAS);
 
   std::vector<SequenceWordType> ioBuffer(15);
@@ -140,7 +140,7 @@ template<class SequenceWordType>
 void testWithConversion(std::string multiplexedSequenceName) {
   // open a dummy device with the sequence map file
   BackendFactory::getInstance().setDMapFilePath(DMAP_FILE_NAME);
-  Device device;
+  DeviceRenamedToFailDownstream device;
   device.open(DEVICE_ALIAS);
 
   std::vector<SequenceWordType> ioBuffer(15);
@@ -207,7 +207,7 @@ BOOST_AUTO_TEST_CASE(testWithConversion8) {
 BOOST_AUTO_TEST_CASE(testMixed) {
   // open a dummy device with the sequence map file
   BackendFactory::getInstance().setDMapFilePath(DMAP_FILE_NAME);
-  Device device;
+  DeviceRenamedToFailDownstream device;
   device.open(DEVICE_MIXED_ALIAS);
 
   TwoDRegisterAccessor<double> myMixedData = device.getTwoDRegisterAccessor<double>("APP0/DAQ0_BAM");
@@ -257,7 +257,7 @@ BOOST_AUTO_TEST_CASE(testNumberOfSequencesDetected) {
   auto registerMap = MapFileParser().parse(MAP_FILE_NAME).first;
   // open a dummy device with the sequence map file
   BackendFactory::getInstance().setDMapFilePath(DMAP_FILE_NAME);
-  Device device;
+  DeviceRenamedToFailDownstream device;
   device.open(DEVICE_ALIAS);
 
   TwoDRegisterAccessor<double> deMuxedData = device.getTwoDRegisterAccessor<double>(TEST_MODULE_PATH / "FRAC_INT");
@@ -268,7 +268,7 @@ BOOST_AUTO_TEST_CASE(testNumberOfSequencesDetected) {
 BOOST_AUTO_TEST_CASE(testAreaOfInterestOffset) {
   // open a dummy device with the sequence map file
   BackendFactory::getInstance().setDMapFilePath(DMAP_FILE_NAME);
-  Device device;
+  DeviceRenamedToFailDownstream device;
   device.open(DEVICE_MIXED_ALIAS);
 
   // There are 44 bytes per block. In total the area is 4096 bytes long
@@ -360,7 +360,7 @@ BOOST_AUTO_TEST_CASE(testAreaOfInterestOffset) {
 BOOST_AUTO_TEST_CASE(testAreaOfInterestLength) {
   // open a dummy device with the sequence map file
   BackendFactory::getInstance().setDMapFilePath(DMAP_FILE_NAME);
-  Device device;
+  DeviceRenamedToFailDownstream device;
   device.open(DEVICE_MIXED_ALIAS);
 
   const size_t nWordsPerBlock = 44 / sizeof(int32_t);

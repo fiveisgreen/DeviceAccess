@@ -35,7 +35,7 @@ BOOST_FIXTURE_TEST_CASE(testOpenConnection, F) {
 
   uint32_t timeout_sec = 1;
   auto accetable_completion_time = std::chrono::seconds(timeout_sec * 5);
-  Device d("sdm://./rebot=localhost," + std::to_string(rebotServer.port()) + ",mtcadummy_rebot.map," +
+  DeviceRenamedToFailDownstream d("sdm://./rebot=localhost," + std::to_string(rebotServer.port()) + ",mtcadummy_rebot.map," +
       std::to_string(timeout_sec));
 
   BOOST_CHECK(d.isFunctional() == false);
@@ -53,7 +53,7 @@ BOOST_FIXTURE_TEST_CASE(testOpenConnection, F) {
 BOOST_FIXTURE_TEST_CASE(testReadTimeout, F) {
   uint32_t timeout_sec = 1;
   auto accetable_completion_time = std::chrono::seconds(timeout_sec * 5);
-  Device d("sdm://./rebot=localhost," + std::to_string(rebotServer.port()) + ",mtcadummy_rebot.map," +
+  DeviceRenamedToFailDownstream d("sdm://./rebot=localhost," + std::to_string(rebotServer.port()) + ",mtcadummy_rebot.map," +
       std::to_string(timeout_sec));
 
   BOOST_CHECK(d.isFunctional() == false);
@@ -76,7 +76,7 @@ BOOST_FIXTURE_TEST_CASE(testReadTimeout, F) {
 BOOST_FIXTURE_TEST_CASE(testWriteTimeout, F) {
   uint32_t timeout_sec = 1;
   auto accetable_completion_time = std::chrono::seconds(timeout_sec * 5);
-  Device d("sdm://./rebot=localhost," + std::to_string(rebotServer.port()) + ",mtcadummy_rebot.map," +
+  DeviceRenamedToFailDownstream d("sdm://./rebot=localhost," + std::to_string(rebotServer.port()) + ",mtcadummy_rebot.map," +
       std::to_string(timeout_sec));
 
   BOOST_CHECK(d.isFunctional() == false);

@@ -42,7 +42,7 @@ BOOST_AUTO_TEST_SUITE(NumericAddressedBackendRegisterAccessorTestSuite)
 BOOST_AUTO_TEST_CASE(testCreation) {
   // it is always a 1D-type register (for scalar it's just 1x1)
   BackendFactory::getInstance().setDMapFilePath(TEST_DMAP_FILE_PATH);
-  Device device;
+  DeviceRenamedToFailDownstream device;
   device.open("DUMMYD1");
 
   // we only check the size. That writing/reading from the offsets is ok is
@@ -82,7 +82,7 @@ BOOST_AUTO_TEST_CASE(testCreation) {
 /**********************************************************************************************************************/
 
 BOOST_AUTO_TEST_CASE(testReadWrite) {
-  Device device;
+  DeviceRenamedToFailDownstream device;
   device.open("sdm://./dummy=goodMapFile.map");
 
   auto accessor = device.getScalarRegisterAccessor<int>("MODULE0/WORD_USER1");
@@ -94,7 +94,7 @@ BOOST_AUTO_TEST_CASE(testReadWrite) {
 /**********************************************************************************************************************/
 
 BOOST_AUTO_TEST_CASE(testReadOnly) {
-  Device device;
+  DeviceRenamedToFailDownstream device;
   device.open("sdm://./dummy=goodMapFile.map");
 
   auto accToReadOnly = device.getScalarRegisterAccessor<int>("MODULE1/WORD_USER3");
@@ -108,7 +108,7 @@ BOOST_AUTO_TEST_CASE(testReadOnly) {
 /**********************************************************************************************************************/
 
 BOOST_AUTO_TEST_CASE(testRawWrite) {
-  Device device;
+  DeviceRenamedToFailDownstream device;
   device.open("sdm://./dummy=goodMapFile.map");
 
   auto accessor1 = device.getOneDRegisterAccessor<int>("MODULE1/TEST_AREA", 0, 0, {AccessMode::raw});
@@ -148,7 +148,7 @@ BOOST_AUTO_TEST_CASE(testRawWrite) {
 /**********************************************************************************************************************/
 
 BOOST_AUTO_TEST_CASE(testRawWithTransferGroup) {
-  Device device;
+  DeviceRenamedToFailDownstream device;
   device.open("sdm://./dummy=goodMapFile.map");
 
   // the whole register
@@ -283,7 +283,7 @@ BOOST_AUTO_TEST_CASE(testConverterTypes) {
   auto dummyBackend =
       boost::dynamic_pointer_cast<DummyBackend>(BackendFactory::getInstance().createBackend(deviceDescriptor));
 
-  Device device;
+  DeviceRenamedToFailDownstream device;
   device.open(deviceDescriptor);
 
   // FixedPointConverter, raw and coocked accessors
@@ -412,7 +412,7 @@ BOOST_AUTO_TEST_CASE(testConverterTypes) {
 /**********************************************************************************************************************/
 
 BOOST_AUTO_TEST_CASE(registerCatalogueCreation) {
-  Device d("sdm://./dummy=goodMapFile.map");
+  DeviceRenamedToFailDownstream d("sdm://./dummy=goodMapFile.map");
   auto catalogue = d.getRegisterCatalogue();
   BOOST_CHECK_NO_THROW(catalogue.getRegister("MODULE0/WORD_USER1"));
 
@@ -425,7 +425,7 @@ BOOST_AUTO_TEST_CASE(registerCatalogueCreation) {
 
 BOOST_AUTO_TEST_CASE(testMergeNumericRegisters) {
   BackendFactory::getInstance().setDMapFilePath("dummies.dmap");
-  ChimeraTK::Device device;
+  ChimeraTK::DeviceRenamedToFailDownstream device;
 
   device.open("DUMMYD3");
 
@@ -547,7 +547,7 @@ BOOST_AUTO_TEST_CASE(testMergeNumericRegisters) {
 
 BOOST_AUTO_TEST_CASE(testMergeNumericRegistersDifferentTypes) {
   BackendFactory::getInstance().setDMapFilePath("dummies.dmap");
-  ChimeraTK::Device device;
+  ChimeraTK::DeviceRenamedToFailDownstream device;
 
   device.open("DUMMYD3");
 

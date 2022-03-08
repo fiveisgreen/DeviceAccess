@@ -65,7 +65,7 @@ namespace {
     unsigned iterations = 0;
     unsigned incorrectIterations = 0;
 
-    Device dev;
+    DeviceRenamedToFailDownstream dev;
     BOOST_CHECK(!dev.isOpened());
     dev.open("SHDMEMDEV");
     BOOST_CHECK(dev.isOpened());
@@ -145,7 +145,7 @@ namespace {
     std::string shmName{createExpectedShmName(instanceId, absPathToMapFile.string(), getUserName())};
 
     {
-      Device dev;
+      DeviceRenamedToFailDownstream dev;
       BOOST_CHECK(!dev.isOpened());
       dev.open("SHDMEMDEV");
       BOOST_CHECK(dev.isOpened());
@@ -177,7 +177,7 @@ namespace {
   BOOST_AUTO_TEST_CASE(testWriteToReadOnly) {
 
     setDMapFilePath("shareddummyTest.dmap");
-    Device dev;
+    DeviceRenamedToFailDownstream dev;
     dev.open("SHDMEMDEV");
 
     ScalarRegisterAccessor<int> roRegisterOne_dw{dev.getScalarRegisterAccessor<int>("WORD_READ_ONLY_1.DUMMY_WRITEABLE")};
@@ -211,7 +211,7 @@ namespace {
   BOOST_AUTO_TEST_CASE(testMakeMess) {
     setDMapFilePath("shareddummyTest.dmap");
 
-    Device dev;
+    DeviceRenamedToFailDownstream dev;
     dev.open("SHDMEMDEV");
 
     ChimeraTK::OneDRegisterAccessor<int> processVars = dev.getOneDRegisterAccessor<int>("FEATURE2/AREA1");
@@ -234,7 +234,7 @@ namespace {
   BOOST_AUTO_TEST_CASE(testVerifyCleanup) {
     setDMapFilePath("shareddummyTest.dmap");
 
-    Device dev;
+    DeviceRenamedToFailDownstream dev;
     dev.open("SHDMEMDEV");
 
     ChimeraTK::OneDRegisterAccessor<int> processVars = dev.getOneDRegisterAccessor<int>("FEATURE2/AREA1");

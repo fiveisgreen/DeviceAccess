@@ -29,7 +29,7 @@ int main() {
     std::cout << "Power down tmcb and press enter" << std::endl;
     std::cin.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
     std::cout << "Trying to connect to TMCB..." << std::endl;
-    ChimeraTK::Device d{sdm};
+    ChimeraTK::DeviceRenamedToFailDownstream d{sdm};
     begin = std::chrono::system_clock::now();
     try{
       d.open();
@@ -50,7 +50,7 @@ int main() {
     std::cout << "Starting Test: Read Timeout" << std::endl;
     std::cout << "Please enter register name on the tmcb to read from:" << std::endl;
     std::getline(std::cin, read_register);
-    ChimeraTK::Device d{sdm};
+    ChimeraTK::DeviceRenamedToFailDownstream d{sdm};
     d.open();
     std::cout << "Please pull ethernet cable and press enter..." << std::endl;
     std::cin.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
@@ -86,7 +86,7 @@ int main() {
     std::cout << write_register << " will be used for testing" << std::endl;
   
   
-    ChimeraTK::Device d{sdm};
+    ChimeraTK::DeviceRenamedToFailDownstream d{sdm};
     d.open();
     std::cout << "Please pull ethernet cable and press enter..." << std::endl;
     std::getline(std::cin, read_register);

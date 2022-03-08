@@ -9,7 +9,7 @@ using namespace ChimeraTK;
 BOOST_AUTO_TEST_CASE(testRawAccessor) {
   setDMapFilePath("dummies.dmap");
 
-  Device d;
+  DeviceRenamedToFailDownstream d;
   d.open("DUMMYD3");
 
   auto registerCatalogue = d.getRegisterCatalogue();
@@ -30,7 +30,7 @@ BOOST_AUTO_TEST_CASE(testRawAccessor) {
   BOOST_CHECK(registerInfo.getDataDescriptor().rawDataType().isIntegral());
   BOOST_CHECK(registerInfo.getDataDescriptor().rawDataType().isSigned());
 
-  Device d2;
+  DeviceRenamedToFailDownstream d2;
   d2.open("SEQUENCES");
 
   auto registerCatalogue2 = d2.getRegisterCatalogue();

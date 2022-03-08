@@ -11,7 +11,7 @@ using namespace boost::unit_test_framework;
 using namespace ChimeraTK;
 
 BOOST_AUTO_TEST_CASE(testCatalogueEntries) {
-  Device d;
+  DeviceRenamedToFailDownstream d;
   d.open("(dummy?map=floatRawTest.map)");
 
   auto registerCatalogue = d.getRegisterCatalogue();
@@ -38,7 +38,7 @@ BOOST_AUTO_TEST_CASE(testCatalogueEntries) {
 }
 
 BOOST_AUTO_TEST_CASE(testReading) {
-  Device d;
+  DeviceRenamedToFailDownstream d;
   d.open("(dummy?map=floatRawTest.map)");
 
   // There are two ways to check what is going on in the dummy (we want to go back there and check that is ends up correctly)
@@ -79,7 +79,7 @@ void checkAsRaw(int32_t rawValue, float expectedValue) {
 }
 
 BOOST_AUTO_TEST_CASE(testWriting) {
-  Device d;
+  DeviceRenamedToFailDownstream d;
   d.open("(dummy?map=floatRawTest.map)");
 
   auto floatAccessor = d.getOneDRegisterAccessor<float>("FLOAT_TEST/ARRAY");

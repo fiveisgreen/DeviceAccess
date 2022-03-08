@@ -12,7 +12,7 @@ using namespace ChimeraTK;
 // Note: Most functionality of the AsyncNDRegisterAccessor is tested in testNumericAddressedBackendUnified
 
 BOOST_AUTO_TEST_CASE(Test_setWriteAccessor) {
-  Device d("(dummy?map=goodMapFile.map)");
+  DeviceRenamedToFailDownstream d("(dummy?map=goodMapFile.map)");
   d.open();
   d.activateAsyncRead();
 

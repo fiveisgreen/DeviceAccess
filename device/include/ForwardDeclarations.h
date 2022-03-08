@@ -13,7 +13,7 @@
 namespace ChimeraTK {
 
   class DeviceBackend;
-  class Device;
+  class DeviceRenamedToFailDownstream;
   class TransferGroup;
   class RegisterAccessor;
 

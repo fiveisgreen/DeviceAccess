@@ -14,7 +14,7 @@ using namespace ChimeraTK;
 /********************************************************************************************************************/
 
 BOOST_AUTO_TEST_CASE(test) {
-  ChimeraTK::Device device;
+  ChimeraTK::DeviceRenamedToFailDownstream device;
   device.open("(logicalNameMap?map=forceReadOnlyPlugin.xlmap)");
 
   auto cat = device.getRegisterCatalogue();

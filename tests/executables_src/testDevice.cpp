@@ -17,7 +17,7 @@ namespace ChimeraTK {
   using namespace ChimeraTK;
 }
 
-class TestableDevice : public ChimeraTK::Device {
+class TestableDevice : public ChimeraTK::DeviceRenamedToFailDownstream {
  public:
   boost::shared_ptr<ChimeraTK::DeviceBackend> getBackend() { return _deviceBackendPointer; }
 };
@@ -26,7 +26,7 @@ BOOST_AUTO_TEST_SUITE(DeviceTestSuite)
 
 BOOST_AUTO_TEST_CASE(testConvenienceReadWrite) {
   ChimeraTK::setDMapFilePath("dummies.dmap");
-  ChimeraTK::Device device;
+  ChimeraTK::DeviceRenamedToFailDownstream device;
   device.open("DUMMYD2");
   boost::shared_ptr<ChimeraTK::DummyBackend> backend = boost::dynamic_pointer_cast<ChimeraTK::DummyBackend>(
       ChimeraTK::BackendFactory::getInstance().createBackend("DUMMYD2"));
@@ -75,13 +75,13 @@ BOOST_AUTO_TEST_CASE(testDeviceCreation) {
   std::string initialDmapFilePath = ChimeraTK::BackendFactory::getInstance().getDMapFilePath();
   ChimeraTK::BackendFactory::getInstance().setDMapFilePath("dMapDir/testRelativePaths.dmap");
 
-  ChimeraTK::Device device1;
+  ChimeraTK::DeviceRenamedToFailDownstream device1;
   BOOST_CHECK(device1.isOpened() == false);
   device1.open("DUMMYD0");
   BOOST_CHECK(device1.isOpened() == true);
   BOOST_CHECK_NO_THROW(device1.open("DUMMYD0"));
   { // scope to have a device which goes out of scope
-    ChimeraTK::Device device1a;
+    ChimeraTK::DeviceRenamedToFailDownstream device1a;
     // open the same backend than device1
     device1a.open("DUMMYD0");
     BOOST_CHECK(device1a.isOpened() == true);
@@ -89,7 +89,7 @@ BOOST_AUTO_TEST_CASE(testDeviceCreation) {
   // check that device1 has not been closed by device 1a going out of scope
   BOOST_CHECK(device1.isOpened() == true);
 
-  ChimeraTK::Device device1b;
+  ChimeraTK::DeviceRenamedToFailDownstream device1b;
   // open the same backend than device1
   device1b.open("DUMMYD0");
   // open another backend with the same device //ugly, might be deprecated soon
@@ -97,18 +97,18 @@ BOOST_AUTO_TEST_CASE(testDeviceCreation) {
   // check that device1 has not been closed by device 1b being reassigned
   BOOST_CHECK(device1.isOpened() == true);
 
-  ChimeraTK::Device device2;
+  ChimeraTK::DeviceRenamedToFailDownstream device2;
   BOOST_CHECK(device2.isOpened() == false);
   device2.open("DUMMYD1");
   BOOST_CHECK(device2.isOpened() == true);
   BOOST_CHECK_NO_THROW(device2.open("DUMMYD1"));
   BOOST_CHECK(device2.isOpened() == true);
 
-  ChimeraTK::Device device3;
+  ChimeraTK::DeviceRenamedToFailDownstream device3;
   BOOST_CHECK(device3.isOpened() == false);
   BOOST_CHECK_NO_THROW(device3.open("DUMMYD0"));
   BOOST_CHECK(device3.isOpened() == true);
-  ChimeraTK::Device device4;
+  ChimeraTK::DeviceRenamedToFailDownstream device4;
   BOOST_CHECK(device4.isOpened() == false);
   BOOST_CHECK_NO_THROW(device4.open("DUMMYD1"));
   BOOST_CHECK(device4.isOpened() == true);
@@ -159,7 +159,7 @@ BOOST_AUTO_TEST_CASE(testDeviceInfo) {
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 
 BOOST_AUTO_TEST_CASE(testCompatibilityLayer1) {
-  boost::shared_ptr<ChimeraTK::Device> device(new ChimeraTK::Device());
+  boost::shared_ptr<ChimeraTK::DeviceRenamedToFailDownstream> device(new ChimeraTK::DeviceRenamedToFailDownstream());
   std::string validMappingFile = "mtcadummy_withoutModules.map";
   boost::shared_ptr<ChimeraTK::DeviceBackend> testBackend(
       new ChimeraTK::PcieBackend("/dev/mtcadummys0", validMappingFile));
@@ -182,7 +182,7 @@ BOOST_AUTO_TEST_CASE(testCompatibilityLayer1) {
   BOOST_CHECK(adcData[3] == 16);
 
   // same with modules
-  device = boost::shared_ptr<ChimeraTK::Device>(new ChimeraTK::Device());
+  device = boost::shared_ptr<ChimeraTK::DeviceRenamedToFailDownstream>(new ChimeraTK::DeviceRenamedToFailDownstream());
   std::string validMappingFileWithModules = "mtcadummy.map";
   boost::shared_ptr<ChimeraTK::DeviceBackend> testBackendWithModules(
       new ChimeraTK::PcieBackend("/dev/mtcadummys0", validMappingFileWithModules));
@@ -212,7 +212,7 @@ BOOST_AUTO_TEST_CASE(testCompatibilityLayer1) {
 
 BOOST_AUTO_TEST_CASE(testCompatibilityLayer2) {
   std::string validMappingFile = "mtcadummy_withoutModules.map";
-  boost::shared_ptr<ChimeraTK::Device> device(new ChimeraTK::Device());
+  boost::shared_ptr<ChimeraTK::DeviceRenamedToFailDownstream> device(new ChimeraTK::DeviceRenamedToFailDownstream());
   boost::shared_ptr<ChimeraTK::DeviceBackend> testBackend(
       new ChimeraTK::PcieBackend("/dev/mtcadummys0", validMappingFile));
   device->open(testBackend);
@@ -233,7 +233,7 @@ BOOST_AUTO_TEST_CASE(testCompatibilityLayer2) {
 
 BOOST_AUTO_TEST_CASE(testCompatibilityLayer3) {
   std::string validMappingFile = "mtcadummy_withoutModules.map";
-  boost::shared_ptr<ChimeraTK::Device> device(new ChimeraTK::Device());
+  boost::shared_ptr<ChimeraTK::DeviceRenamedToFailDownstream> device(new ChimeraTK::DeviceRenamedToFailDownstream());
   boost::shared_ptr<ChimeraTK::DeviceBackend> testBackend(
       new ChimeraTK::PcieBackend("/dev/mtcadummys0", validMappingFile));
   device->open(testBackend);
@@ -253,7 +253,7 @@ BOOST_AUTO_TEST_CASE(testCompatibilityLayer3) {
 
 BOOST_AUTO_TEST_CASE(testCompatibilityLayer4) {
   std::string validMappingFile = "mtcadummy_withoutModules.map";
-  boost::shared_ptr<ChimeraTK::Device> device(new ChimeraTK::Device());
+  boost::shared_ptr<ChimeraTK::DeviceRenamedToFailDownstream> device(new ChimeraTK::DeviceRenamedToFailDownstream());
   boost::shared_ptr<ChimeraTK::DeviceBackend> testBackend(
       new ChimeraTK::PcieBackend("/dev/mtcadummys0", validMappingFile));
   device->open(testBackend);
@@ -277,7 +277,7 @@ BOOST_AUTO_TEST_CASE(testCompatibilityLayer4) {
 
 BOOST_AUTO_TEST_CASE(testCompatibilityLayer5) {
   std::string validMappingFile = "mtcadummy_withoutModules.map";
-  boost::shared_ptr<ChimeraTK::Device> device(new ChimeraTK::Device());
+  boost::shared_ptr<ChimeraTK::DeviceRenamedToFailDownstream> device(new ChimeraTK::DeviceRenamedToFailDownstream());
   boost::shared_ptr<ChimeraTK::DeviceBackend> testBackend(
       new ChimeraTK::PcieBackend("/dev/mtcadummys0", validMappingFile));
   device->open(testBackend);
@@ -372,7 +372,7 @@ BOOST_AUTO_TEST_CASE(testCompatibilityLayer9) {
 
 BOOST_AUTO_TEST_CASE(testCompatibilityLayer10) {
   std::string validMappingFile = "mtcadummy_withoutModules.map";
-  boost::shared_ptr<ChimeraTK::Device> device(new ChimeraTK::Device());
+  boost::shared_ptr<ChimeraTK::DeviceRenamedToFailDownstream> device(new ChimeraTK::DeviceRenamedToFailDownstream());
   boost::shared_ptr<ChimeraTK::DeviceBackend> testBackend(
       new ChimeraTK::PcieBackend("/dev/mtcadummys0", validMappingFile));
   device->open(testBackend);
@@ -385,7 +385,7 @@ BOOST_AUTO_TEST_CASE(testCompatibilityLayer10) {
 
 BOOST_AUTO_TEST_CASE(testCompatibilityLayer11) {
   std::string validMappingFile = "mtcadummy_withoutModules.map";
-  boost::shared_ptr<ChimeraTK::Device> device(new ChimeraTK::Device());
+  boost::shared_ptr<ChimeraTK::DeviceRenamedToFailDownstream> device(new ChimeraTK::DeviceRenamedToFailDownstream());
   boost::shared_ptr<ChimeraTK::DeviceBackend> testBackend(
       new ChimeraTK::PcieBackend("/dev/mtcadummys0", validMappingFile));
   device->open(testBackend);
@@ -400,7 +400,7 @@ BOOST_AUTO_TEST_CASE(testCompatibilityLayer11) {
 
 BOOST_AUTO_TEST_CASE(testCompatibilityLayer12) {
   std::string validMappingFile = "mtcadummy_withoutModules.map";
-  boost::shared_ptr<ChimeraTK::Device> device(new ChimeraTK::Device());
+  boost::shared_ptr<ChimeraTK::DeviceRenamedToFailDownstream> device(new ChimeraTK::DeviceRenamedToFailDownstream());
   boost::shared_ptr<ChimeraTK::DeviceBackend> testBackend(
       new ChimeraTK::PcieBackend("/dev/mtcadummys0", validMappingFile));
   device->open(testBackend);
@@ -411,7 +411,7 @@ BOOST_AUTO_TEST_CASE(testCompatibilityLayer12) {
 
 BOOST_AUTO_TEST_CASE(testCompatibilityLayer13) {
   std::string validMappingFile = "mtcadummy_withoutModules.map";
-  boost::shared_ptr<ChimeraTK::Device> device(new ChimeraTK::Device());
+  boost::shared_ptr<ChimeraTK::DeviceRenamedToFailDownstream> device(new ChimeraTK::DeviceRenamedToFailDownstream());
   boost::shared_ptr<ChimeraTK::DeviceBackend> testBackend(
       new ChimeraTK::PcieBackend("/dev/mtcadummys0", validMappingFile));
   device->open(testBackend);
@@ -421,7 +421,7 @@ BOOST_AUTO_TEST_CASE(testCompatibilityLayer13) {
 
 BOOST_AUTO_TEST_CASE(testCompatibilityLayer14) {
   std::string validMappingFile = "mtcadummy_withoutModules.map";
-  boost::shared_ptr<ChimeraTK::Device> device(new ChimeraTK::Device());
+  boost::shared_ptr<ChimeraTK::DeviceRenamedToFailDownstream> device(new ChimeraTK::DeviceRenamedToFailDownstream());
   boost::shared_ptr<ChimeraTK::DeviceBackend> testBackend(
       new ChimeraTK::PcieBackend("/dev/mtcadummys0", validMappingFile));
   device->open(testBackend);
@@ -435,7 +435,7 @@ BOOST_AUTO_TEST_CASE(testCompatibilityLayer14) {
 
 BOOST_AUTO_TEST_CASE(testCompatibilityLayer15) {
   std::string validMappingFile = "mtcadummy_withoutModules.map";
-  boost::shared_ptr<ChimeraTK::Device> device(new ChimeraTK::Device());
+  boost::shared_ptr<ChimeraTK::DeviceRenamedToFailDownstream> device(new ChimeraTK::DeviceRenamedToFailDownstream());
   boost::shared_ptr<ChimeraTK::DeviceBackend> testBackend(
       new ChimeraTK::PcieBackend("/dev/llrfdummys4", validMappingFile));
   device->open(testBackend);
@@ -458,7 +458,7 @@ struct DysfunctDummy : public ChimeraTK::DummyBackend {
 };
 
 BOOST_AUTO_TEST_CASE(testIsFunctional) {
-  ChimeraTK::Device d;
+  ChimeraTK::DeviceRenamedToFailDownstream d;
   // a disconnected device is not functional
   BOOST_CHECK(d.isFunctional() == false);
 
@@ -469,7 +469,7 @@ BOOST_AUTO_TEST_CASE(testIsFunctional) {
   BOOST_CHECK(d.isFunctional() == false);
 
   ChimeraTK::BackendFactory::getInstance().registerBackendType("DysfunctDummy", &DysfunctDummy::createInstance);
-  ChimeraTK::Device d2("(DysfunctDummy?map=goodMapFile.map)");
+  ChimeraTK::DeviceRenamedToFailDownstream d2("(DysfunctDummy?map=goodMapFile.map)");
   d2.open();
   // A device can be opened but dysfyunctional if there are errors
   BOOST_CHECK(d2.isOpened() == true);

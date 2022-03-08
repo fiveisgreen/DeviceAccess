@@ -9,7 +9,7 @@ using namespace boost::unit_test_framework;
 namespace ctk = ChimeraTK;
 
 auto exceptionDummy = boost::dynamic_pointer_cast<ctk::ExceptionDummy>(ctk::BackendFactory::getInstance().createBackend("(ExceptionDummy:1?map=test3.map)"));
-ctk::Device device;
+ctk::DeviceRenamedToFailDownstream device;
 
 BOOST_AUTO_TEST_CASE(testExceptionsDummyDevice) {
 

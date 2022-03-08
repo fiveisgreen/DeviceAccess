@@ -29,7 +29,7 @@ BOOST_AUTO_TEST_SUITE(SubdeviceBackendTestSuite)
 BOOST_AUTO_TEST_CASE(testOpenClose) {
   setDMapFilePath("subdeviceTest.dmap");
 
-  Device dev;
+  DeviceRenamedToFailDownstream dev;
   BOOST_CHECK(!dev.isOpened());
   dev.open("SUBDEV1");
   BOOST_CHECK(dev.isOpened());
@@ -55,9 +55,9 @@ BOOST_AUTO_TEST_CASE(testOpenClose) {
 BOOST_AUTO_TEST_CASE(testMayReplaceOther) {
   setDMapFilePath("subdeviceTest.dmap");
 
-  Device dev;
+  DeviceRenamedToFailDownstream dev;
   dev.open("SUBDEV1");
-  Device target;
+  DeviceRenamedToFailDownstream target;
   target.open("TARGET1");
 
   {
@@ -101,9 +101,9 @@ BOOST_AUTO_TEST_CASE(testMayReplaceOther) {
 BOOST_AUTO_TEST_CASE(testWriteScalarRaw) {
   setDMapFilePath("subdeviceTest.dmap");
 
-  Device dev;
+  DeviceRenamedToFailDownstream dev;
   dev.open("SUBDEV1");
-  Device target;
+  DeviceRenamedToFailDownstream target;
   target.open("TARGET1");
 
   auto acc1 = dev.getScalarRegisterAccessor<int32_t>("APP.0.MY_REGISTER1", 0, {AccessMode::raw});
@@ -145,9 +145,9 @@ BOOST_AUTO_TEST_CASE(testWriteScalarRaw) {
 BOOST_AUTO_TEST_CASE(testWriteScalarInAreaRaw) {
   setDMapFilePath("subdeviceTest.dmap");
 
-  Device dev;
+  DeviceRenamedToFailDownstream dev;
   dev.open("SUBDEV1");
-  Device target;
+  DeviceRenamedToFailDownstream target;
   target.open("TARGET1");
 
   auto acc1 = dev.getScalarRegisterAccessor<int32_t>("APP.0.MY_AREA1", 0, {AccessMode::raw});
@@ -184,9 +184,9 @@ BOOST_AUTO_TEST_CASE(testWriteScalarInAreaRaw) {
 BOOST_AUTO_TEST_CASE(testWriteArrayRaw) {
   setDMapFilePath("subdeviceTest.dmap");
 
-  Device dev;
+  DeviceRenamedToFailDownstream dev;
   dev.open("SUBDEV1");
-  Device target;
+  DeviceRenamedToFailDownstream target;
   target.open("TARGET1");
 
   auto acc1 = dev.getOneDRegisterAccessor<int32_t>("APP.0.MY_AREA1", 0, 0, {AccessMode::raw});
@@ -210,9 +210,9 @@ BOOST_AUTO_TEST_CASE(testWriteArrayRaw) {
 BOOST_AUTO_TEST_CASE(testWriteScalarCooked) {
   setDMapFilePath("subdeviceTest.dmap");
 
-  Device dev;
+  DeviceRenamedToFailDownstream dev;
   dev.open("SUBDEV1");
-  Device target;
+  DeviceRenamedToFailDownstream target;
   target.open("TARGET1");
 
   auto acc1 = dev.getScalarRegisterAccessor<double>("APP.0.MY_REGISTER1"); // 0 fractional bits
@@ -256,9 +256,9 @@ BOOST_AUTO_TEST_CASE(testWriteScalarCooked) {
 BOOST_AUTO_TEST_CASE(testWriteArrayCooked) {
   setDMapFilePath("subdeviceTest.dmap");
 
-  Device dev;
+  DeviceRenamedToFailDownstream dev;
   dev.open("SUBDEV1");
-  Device target;
+  DeviceRenamedToFailDownstream target;
   target.open("TARGET1");
 
   auto acc1 = dev.getOneDRegisterAccessor<int32_t>("APP.0.MY_AREA1");
@@ -285,9 +285,9 @@ BOOST_AUTO_TEST_CASE(testWriteArrayCooked) {
 BOOST_AUTO_TEST_CASE(testReadScalarRaw) {
   setDMapFilePath("subdeviceTest.dmap");
 
-  Device dev;
+  DeviceRenamedToFailDownstream dev;
   dev.open("SUBDEV1");
-  Device target;
+  DeviceRenamedToFailDownstream target;
   target.open("TARGET1");
 
   auto acc1 = dev.getScalarRegisterAccessor<int32_t>("APP.0.MY_REGISTER1", 0, {AccessMode::raw});
@@ -324,9 +324,9 @@ BOOST_AUTO_TEST_CASE(testReadScalarRaw) {
 BOOST_AUTO_TEST_CASE(testReadScalarInAreaRaw) {
   setDMapFilePath("subdeviceTest.dmap");
 
-  Device dev;
+  DeviceRenamedToFailDownstream dev;
   dev.open("SUBDEV1");
-  Device target;
+  DeviceRenamedToFailDownstream target;
   target.open("TARGET1");
 
   auto acc1 = dev.getScalarRegisterAccessor<int32_t>("APP.0.MY_AREA1", 0, {AccessMode::raw});
@@ -363,9 +363,9 @@ BOOST_AUTO_TEST_CASE(testReadScalarInAreaRaw) {
 BOOST_AUTO_TEST_CASE(testReadArrayRaw) {
   setDMapFilePath("subdeviceTest.dmap");
 
-  Device dev;
+  DeviceRenamedToFailDownstream dev;
   dev.open("SUBDEV1");
-  Device target;
+  DeviceRenamedToFailDownstream target;
   target.open("TARGET1");
 
   auto acc1 = dev.getOneDRegisterAccessor<int32_t>("APP.0.MY_AREA1", 0, 0, {AccessMode::raw});
@@ -389,9 +389,9 @@ BOOST_AUTO_TEST_CASE(testReadArrayRaw) {
 BOOST_AUTO_TEST_CASE(testReadScalarCooked) {
   setDMapFilePath("subdeviceTest.dmap");
 
-  Device dev;
+  DeviceRenamedToFailDownstream dev;
   dev.open("SUBDEV1");
-  Device target;
+  DeviceRenamedToFailDownstream target;
   target.open("TARGET1");
 
   auto acc1 = dev.getScalarRegisterAccessor<double>("APP.0.MY_REGISTER1"); // 0 fractional bits
@@ -434,9 +434,9 @@ BOOST_AUTO_TEST_CASE(testReadScalarCooked) {
 BOOST_AUTO_TEST_CASE(testReadArrayCooked) {
   setDMapFilePath("subdeviceTest.dmap");
 
-  Device dev;
+  DeviceRenamedToFailDownstream dev;
   dev.open("SUBDEV1");
-  Device target;
+  DeviceRenamedToFailDownstream target;
   target.open("TARGET1");
 
   auto acc1 = dev.getOneDRegisterAccessor<int32_t>("APP.0.MY_AREA1");
@@ -460,9 +460,9 @@ BOOST_AUTO_TEST_CASE(testReadArrayCooked) {
 BOOST_AUTO_TEST_CASE(test3regsScalar) {
   setDMapFilePath("subdeviceTest.dmap");
 
-  Device dev;
+  DeviceRenamedToFailDownstream dev;
   dev.open("SUBDEV2");
-  Device target;
+  DeviceRenamedToFailDownstream target;
   target.open("TARGET1");
 
   auto acc1 = dev.getScalarRegisterAccessor<double>("APP.0.MY_REGISTER1");
@@ -508,9 +508,9 @@ BOOST_AUTO_TEST_CASE(test3regsScalar) {
 BOOST_AUTO_TEST_CASE(test3regsArray) {
   setDMapFilePath("subdeviceTest.dmap");
 
-  Device dev;
+  DeviceRenamedToFailDownstream dev;
   dev.open("SUBDEV2");
-  Device target;
+  DeviceRenamedToFailDownstream target;
   target.open("TARGET1");
 
   auto accArea = dev.getOneDRegisterAccessor<double>("APP.0.MY_AREA2");
@@ -549,9 +549,9 @@ BOOST_AUTO_TEST_CASE(test3regsArray) {
 BOOST_AUTO_TEST_CASE(test3regsByteOffset1) {
   setDMapFilePath("subdeviceTest.dmap");
 
-  Device dev;
+  DeviceRenamedToFailDownstream dev;
   dev.open("SUBDEV2");
-  Device target;
+  DeviceRenamedToFailDownstream target;
   target.open("TARGET1");
 
   auto acc = dev.getScalarRegisterAccessor<double>("APP.0.MY_REGISTER_AT_BYTE_1");
@@ -589,9 +589,9 @@ BOOST_AUTO_TEST_CASE(test3regsByteOffset1) {
 BOOST_AUTO_TEST_CASE(testAreaHandshake1) {
   setDMapFilePath("subdeviceTestAreaHandshake.dmap");
 
-  Device dev;
+  DeviceRenamedToFailDownstream dev;
   dev.open("SUBDEV4");
-  Device target;
+  DeviceRenamedToFailDownstream target;
   target.open("TARGET1");
 
   auto acc1 = dev.getScalarRegisterAccessor<double>("APP.0.MY_REGISTER1");
@@ -650,9 +650,9 @@ BOOST_AUTO_TEST_CASE(testAreaHandshake1) {
 BOOST_AUTO_TEST_CASE(test2regsScalar) {
   setDMapFilePath("subdeviceTest.dmap");
 
-  Device dev;
+  DeviceRenamedToFailDownstream dev;
   dev.open("SUBDEV3");
-  Device target;
+  DeviceRenamedToFailDownstream target;
   target.open("TARGET1");
 
   auto acc2 = dev.getScalarRegisterAccessor<double>("APP.0.MY_REGISTER2");
@@ -683,9 +683,9 @@ BOOST_AUTO_TEST_CASE(test2regsScalar) {
 BOOST_AUTO_TEST_CASE(testIsFunctional) {
   setDMapFilePath("subdeviceTest.dmap");
 
-  Device dev;
+  DeviceRenamedToFailDownstream dev;
   dev.open("SUBDEV1");
-  Device target;
+  DeviceRenamedToFailDownstream target;
   target.open("TARGET1");
   BOOST_CHECK(dev.isFunctional());
   //Close target device.

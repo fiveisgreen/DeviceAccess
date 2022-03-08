@@ -140,7 +140,7 @@ BOOST_AUTO_TEST_CASE(testAsyncRead) {
   for(auto& sdmToUse : sdmList) {
     std::cout << "testAsyncRead: " << sdmToUse << std::endl;
 
-    Device device;
+    DeviceRenamedToFailDownstream device;
     device.open(sdmToUse);
     auto backend = boost::dynamic_pointer_cast<AsyncTestDummy>(BackendFactory::getInstance().createBackend(sdmToUse));
     BOOST_CHECK(backend != nullptr);
@@ -182,7 +182,7 @@ BOOST_AUTO_TEST_CASE(testReadAny) {
   for(auto& sdmToUse : sdmList) {
     std::cout << "testReadAny: " << sdmToUse << std::endl;
 
-    Device device;
+    DeviceRenamedToFailDownstream device;
     device.open(sdmToUse);
     auto backend = boost::dynamic_pointer_cast<AsyncTestDummy>(BackendFactory::getInstance().createBackend(sdmToUse));
     BOOST_CHECK(backend != nullptr);
@@ -461,7 +461,7 @@ BOOST_AUTO_TEST_CASE(testReadAnyWithPoll) {
   for(auto& sdmToUse : sdmList) {
     std::cout << "testReadAnyWithPoll: " << sdmToUse << std::endl;
 
-    Device device;
+    DeviceRenamedToFailDownstream device;
     device.open(sdmToUse);
     auto backend = boost::dynamic_pointer_cast<AsyncTestDummy>(BackendFactory::getInstance().createBackend(sdmToUse));
     BOOST_CHECK(backend != nullptr);
@@ -553,7 +553,7 @@ BOOST_AUTO_TEST_CASE(testWaitAny) {
   for(auto& sdmToUse : sdmList) {
     std::cout << "testWaitAny: " << sdmToUse << std::endl;
 
-    Device device;
+    DeviceRenamedToFailDownstream device;
     device.open(sdmToUse);
     auto backend = boost::dynamic_pointer_cast<AsyncTestDummy>(BackendFactory::getInstance().createBackend(sdmToUse));
     BOOST_CHECK(backend != nullptr);

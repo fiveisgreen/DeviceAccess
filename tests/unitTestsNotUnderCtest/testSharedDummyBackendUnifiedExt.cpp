@@ -60,7 +60,7 @@ namespace {
     std::string shmName{createExpectedShmName(instanceId, absPathToMapFile.string(), getUserName())};
 
     {
-      Device dev;
+      DeviceRenamedToFailDownstream dev;
       BOOST_CHECK(!dev.isOpened());
       dev.open("SHDMEMDEV");
       BOOST_CHECK(dev.isOpened());

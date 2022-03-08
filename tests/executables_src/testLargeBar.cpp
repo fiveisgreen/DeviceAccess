@@ -11,7 +11,7 @@ using namespace boost::unit_test_framework;
 using namespace ChimeraTK;
 
 BOOST_AUTO_TEST_CASE(testLargeBarNumber) {
-  Device d;
+  DeviceRenamedToFailDownstream d;
   d.open("(dummy?map=goodMapFile.map)");
 
   // Checking the large bar in the RegisterInfo checks the map file parser and the data type in the catalogue

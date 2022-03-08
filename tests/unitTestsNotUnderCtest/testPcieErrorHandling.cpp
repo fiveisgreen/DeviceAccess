@@ -21,7 +21,7 @@ BOOST_AUTO_TEST_CASE(testPcieErrorHandling) {
   std::string line;
 
   ChimeraTK::setDMapFilePath("pcie_device.dmap");
-  ChimeraTK::Device device("PCIE0");
+  ChimeraTK::DeviceRenamedToFailDownstream device("PCIE0");
   auto reg = device.getScalarRegisterAccessor<uint32_t>("APP.0.WORD_FIRMWARE");
 
   BOOST_CHECK(!device.isFunctional());

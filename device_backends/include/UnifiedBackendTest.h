@@ -391,7 +391,7 @@ namespace ChimeraTK {
     void test_NOSPEC_catalogueRaw();
 
     /// Utility functions for recurring tasks
-    void recoverDevice(ChimeraTK::Device& d);
+    void recoverDevice(ChimeraTK::DeviceRenamedToFailDownstream& d);
 
     /// Utility functions for register traits
     template<typename REG_T>
@@ -939,7 +939,7 @@ namespace ChimeraTK {
   /********************************************************************************************************************/
 
   template<typename VECTOR_OF_REGISTERS_T>
-  void UnifiedBackendTest<VECTOR_OF_REGISTERS_T>::recoverDevice(ChimeraTK::Device& d) {
+  void UnifiedBackendTest<VECTOR_OF_REGISTERS_T>::recoverDevice(ChimeraTK::DeviceRenamedToFailDownstream& d) {
     for(size_t i = 0;; ++i) {
       try {
         d.open();
@@ -964,7 +964,7 @@ namespace ChimeraTK {
   template<typename VECTOR_OF_REGISTERS_T>
   void UnifiedBackendTest<VECTOR_OF_REGISTERS_T>::test_B_3_1_2_1() {
     std::cout << "--- test_B_3_1_2_1 - synchronous read" << std::endl;
-    Device d(cdd);
+    DeviceRenamedToFailDownstream d(cdd);
 
     boost::mpl::for_each<VECTOR_OF_REGISTERS_T>([&](auto x) {
       if(!this->isRead(x)) return;
@@ -1026,7 +1026,7 @@ namespace ChimeraTK {
   template<typename VECTOR_OF_REGISTERS_T>
   void UnifiedBackendTest<VECTOR_OF_REGISTERS_T>::test_NOSPEC_write() {
     std::cout << "--- test_NOSPEC_write - write" << std::endl;
-    Device d(cdd);
+    DeviceRenamedToFailDownstream d(cdd);
 
     // open the device
     d.open();
@@ -1066,7 +1066,7 @@ namespace ChimeraTK {
   template<typename VECTOR_OF_REGISTERS_T>
   void UnifiedBackendTest<VECTOR_OF_REGISTERS_T>::test_B_3_2_1_2() {
     std::cout << "--- test_B_3_2_1_2 - write() does not destroy application buffer" << std::endl;
-    Device d(cdd);
+    DeviceRenamedToFailDownstream d(cdd);
 
     // open the device
     d.open();
@@ -1106,7 +1106,7 @@ namespace ChimeraTK {
   template<typename VECTOR_OF_REGISTERS_T>
   void UnifiedBackendTest<VECTOR_OF_REGISTERS_T>::test_B_3_2_2() {
     std::cout << "--- test_B_3_2_2 - destructive write" << std::endl;
-    Device d(cdd);
+    DeviceRenamedToFailDownstream d(cdd);
 
     // open the device
     d.open();
@@ -1168,7 +1168,7 @@ namespace ChimeraTK {
   template<typename VECTOR_OF_REGISTERS_T>
   void UnifiedBackendTest<VECTOR_OF_REGISTERS_T>::test_B_4_2_4() {
     std::cout << "--- test_B_4_2_4 - transfer implementations do not change the application buffer" << std::endl;
-    Device d(cdd);
+    DeviceRenamedToFailDownstream d(cdd);
 
     // open the device
     d.open();
@@ -1248,7 +1248,7 @@ namespace ChimeraTK {
   void UnifiedBackendTest<VECTOR_OF_REGISTERS_T>::test_B_6_4() {
     if(_testOnlyTransferElement) return;
     std::cout << "--- test_B_6_4 - application buffer unchanged after exception" << std::endl;
-    Device d(cdd);
+    DeviceRenamedToFailDownstream d(cdd);
 
     std::cout << "... synchronous read " << std::endl;
     boost::mpl::for_each<VECTOR_OF_REGISTERS_T>([&](auto x) {
@@ -1446,7 +1446,7 @@ namespace ChimeraTK {
   template<typename VECTOR_OF_REGISTERS_T>
   void UnifiedBackendTest<VECTOR_OF_REGISTERS_T>::test_B_7_2() {
     std::cout << "--- test_B_7_2 - data loss in write" << std::endl;
-    Device d(cdd);
+    DeviceRenamedToFailDownstream d(cdd);
 
     boost::mpl::for_each<VECTOR_OF_REGISTERS_T>([&](auto x) {
       if(!this->isWrite(x)) return;
@@ -1536,7 +1536,7 @@ namespace ChimeraTK {
   template<typename VECTOR_OF_REGISTERS_T>
   void UnifiedBackendTest<VECTOR_OF_REGISTERS_T>::test_B_8_2() {
     std::cout << "--- test_B_8_2 - async read fills _readQueue" << std::endl;
-    Device d(cdd);
+    DeviceRenamedToFailDownstream d(cdd);
 
     // open the device and activate asynchronous reads
     d.open();
@@ -1624,7 +1624,7 @@ namespace ChimeraTK {
   template<typename VECTOR_OF_REGISTERS_T>
   void UnifiedBackendTest<VECTOR_OF_REGISTERS_T>::test_B_8_2_1() {
     std::cout << "--- test_B_8_2_1 - _readQueue overrun" << std::endl;
-    Device d(cdd);
+    DeviceRenamedToFailDownstream d(cdd);
 
     // open the device
     d.open();
@@ -1673,7 +1673,7 @@ namespace ChimeraTK {
   template<typename VECTOR_OF_REGISTERS_T>
   void UnifiedBackendTest<VECTOR_OF_REGISTERS_T>::test_B_8_3() {
     std::cout << "--- test_B_8_3 - new runtime errors are put to _readQueue in async reads" << std::endl;
-    Device d(cdd);
+    DeviceRenamedToFailDownstream d(cdd);
     d.open();
 
     // Activate async read
@@ -1735,7 +1735,7 @@ namespace ChimeraTK {
     if(_testOnlyTransferElement) return;
     std::cout << "--- test_B_8_4 - async read consistency heartbeat" << std::endl;
 
-    Device d(cdd);
+    DeviceRenamedToFailDownstream d(cdd);
 
     boost::mpl::for_each<VECTOR_OF_REGISTERS_T>([&](auto x) {
       if(!this->isAsyncRead(x) || x.capabilities.asyncReadInconsistency != TestCapability::enabled) return;
@@ -1799,7 +1799,7 @@ namespace ChimeraTK {
   void UnifiedBackendTest<VECTOR_OF_REGISTERS_T>::test_B_8_5() {
     if(_testOnlyTransferElement) return;
     std::cout << "--- test_B_8_5 - no async transfers until activateAsyncRead()" << std::endl;
-    Device d(cdd);
+    DeviceRenamedToFailDownstream d(cdd);
 
     boost::mpl::for_each<VECTOR_OF_REGISTERS_T>([&](auto x) {
       if(!this->isAsyncRead(x)) return;
@@ -1867,8 +1867,8 @@ namespace ChimeraTK {
   void UnifiedBackendTest<VECTOR_OF_REGISTERS_T>::test_B_8_5_1() {
     if(_testOnlyTransferElement) return;
     std::cout << "--- test_B_8_5_1 - activateAsynchronousRead" << std::endl;
-    Device d(cdd);
-    Device d2;
+    DeviceRenamedToFailDownstream d(cdd);
+    DeviceRenamedToFailDownstream d2;
     if(cdd2 != "") {
       d2.open(cdd2);
       d2.close();
@@ -1932,7 +1932,7 @@ namespace ChimeraTK {
   void UnifiedBackendTest<VECTOR_OF_REGISTERS_T>::test_B_8_5_2() {
     if(_testOnlyTransferElement) return;
     std::cout << "--- test_B_8_5_2 - initial value" << std::endl;
-    Device d(cdd);
+    DeviceRenamedToFailDownstream d(cdd);
     boost::mpl::for_each<VECTOR_OF_REGISTERS_T>([&](auto x) {
       if(!this->isAsyncRead(x)) return;
       typedef typename decltype(x)::minimumUserType UserType;
@@ -1995,7 +1995,7 @@ namespace ChimeraTK {
   template<typename VECTOR_OF_REGISTERS_T>
   void UnifiedBackendTest<VECTOR_OF_REGISTERS_T>::test_B_8_5_3() {
     std::cout << "--- test_B_8_5_3 - accessors created after activateAsyncRead() are immediately active" << std::endl;
-    Device d(cdd);
+    DeviceRenamedToFailDownstream d(cdd);
 
     // open the device and activate async read
     d.open();
@@ -2027,7 +2027,7 @@ namespace ChimeraTK {
   void UnifiedBackendTest<VECTOR_OF_REGISTERS_T>::test_B_8_6_6() {
     std::cout << "--- test_B_8_6_6 - interrupt()" << std::endl;
 
-    Device d(cdd);
+    DeviceRenamedToFailDownstream d(cdd);
     auto backend = d.getBackend();
     d.open();
 
@@ -2082,7 +2082,7 @@ namespace ChimeraTK {
   void UnifiedBackendTest<VECTOR_OF_REGISTERS_T>::test_B_9_1() {
     if(_testOnlyTransferElement) return;
     std::cout << "--- test_B_9_1 - reporting exceptions to exception backend" << std::endl;
-    Device d(cdd);
+    DeviceRenamedToFailDownstream d(cdd);
 
     // open the device, then let it throw runtime_error exceptions
     d.open();
@@ -2331,7 +2331,7 @@ namespace ChimeraTK {
   void UnifiedBackendTest<VECTOR_OF_REGISTERS_T>::test_B_9_2_2() {
     if(_testOnlyTransferElement) return;
     std::cout << "--- test_B_9_2_2 - repeated setException() has no effect" << std::endl;
-    Device d(cdd);
+    DeviceRenamedToFailDownstream d(cdd);
     d.open();
     d.activateAsyncRead();
 
@@ -2385,7 +2385,7 @@ namespace ChimeraTK {
   void UnifiedBackendTest<VECTOR_OF_REGISTERS_T>::test_B_9_3_1() {
     if(_testOnlyTransferElement) return;
     std::cout << "--- test_B_9_3_1 - setException() disables asynchronous read transfers" << std::endl;
-    Device d(cdd);
+    DeviceRenamedToFailDownstream d(cdd);
     d.open();
     d.activateAsyncRead();
 
@@ -2436,7 +2436,7 @@ namespace ChimeraTK {
   void UnifiedBackendTest<VECTOR_OF_REGISTERS_T>::test_B_9_3_2() {
     if(_testOnlyTransferElement) return;
     std::cout << "--- test_B_9_3_2 - exactly one runtime_error in the _readQueue per async read accessor" << std::endl;
-    Device d(cdd);
+    DeviceRenamedToFailDownstream d(cdd);
     d.open();
     d.activateAsyncRead();
 
@@ -2487,7 +2487,7 @@ namespace ChimeraTK {
     std::cout
         << "--- test_B_9_4_1 - doReadTransferSynchronously throws runtime_error after setException() until recovery"
         << std::endl;
-    Device d(cdd);
+    DeviceRenamedToFailDownstream d(cdd);
     d.open();
 
     boost::mpl::for_each<VECTOR_OF_REGISTERS_T>([&](auto x) {
@@ -2523,7 +2523,7 @@ namespace ChimeraTK {
   void UnifiedBackendTest<VECTOR_OF_REGISTERS_T>::test_B_9_5() {
     if(_testOnlyTransferElement) return;
     std::cout << "--- test_B_9_5 - write operations throw after setException()" << std::endl;
-    Device d(cdd);
+    DeviceRenamedToFailDownstream d(cdd);
     d.open();
 
     boost::mpl::for_each<VECTOR_OF_REGISTERS_T>([&](auto x) {
@@ -2558,7 +2558,7 @@ namespace ChimeraTK {
   template<typename VECTOR_OF_REGISTERS_T>
   void UnifiedBackendTest<VECTOR_OF_REGISTERS_T>::test_B_11_2_1() {
     std::cout << "--- test_B_11_2_1 - version number bigger for newer values" << std::endl;
-    Device d(cdd);
+    DeviceRenamedToFailDownstream d(cdd);
 
     // open the device
     d.open();
@@ -2627,7 +2627,7 @@ namespace ChimeraTK {
   void UnifiedBackendTest<VECTOR_OF_REGISTERS_T>::test_B_11_2_2() {
     if(_testOnlyTransferElement) return;
     std::cout << "--- test_B_11_2_2 - consistent data gets same VersionNumber" << std::endl;
-    Device d(cdd);
+    DeviceRenamedToFailDownstream d(cdd);
 
     // open the device and activate async read
     d.open();
@@ -2678,7 +2678,7 @@ namespace ChimeraTK {
   template<typename VECTOR_OF_REGISTERS_T>
   void UnifiedBackendTest<VECTOR_OF_REGISTERS_T>::test_B_11_6() {
     std::cout << "--- B.11.6 - value after construction for the version number in the application buffer" << std::endl;
-    Device d(cdd);
+    DeviceRenamedToFailDownstream d(cdd);
 
     boost::mpl::for_each<VECTOR_OF_REGISTERS_T>([&](auto x) {
       typedef typename decltype(x)::minimumUserType UserType;
@@ -2704,7 +2704,7 @@ namespace ChimeraTK {
 
     // Constructor must throw when device is closed
     {
-      Device d(cdd);
+      DeviceRenamedToFailDownstream d(cdd);
       BOOST_CHECK_THROW(
           auto reg = d.getTwoDRegisterAccessor<int>("This_register_name_does_not_exist_for_sure/whileClosed"),
           logic_error);
@@ -2712,7 +2712,7 @@ namespace ChimeraTK {
 
     // Constructor must throw when device is open
     {
-      Device d(cdd);
+      DeviceRenamedToFailDownstream d(cdd);
       d.open();
       BOOST_CHECK_THROW(
           auto reg = d.getTwoDRegisterAccessor<int>("This_register_name_does_not_exist_for_sure/whileOpened"),
@@ -2735,7 +2735,7 @@ namespace ChimeraTK {
     // Collect register sizes
     std::map<std::string, size_t> sizeMap;
     {
-      Device d(cdd);
+      DeviceRenamedToFailDownstream d(cdd);
       boost::mpl::for_each<VECTOR_OF_REGISTERS_T>([&](auto x) {
         typedef typename decltype(x)::minimumUserType UserType;
         auto registerName = x.path();
@@ -2751,35 +2751,35 @@ namespace ChimeraTK {
       std::cout << "... registerName = " << registerName << std::endl;
       // number of elements too big
       {
-        Device d(cdd);
+        DeviceRenamedToFailDownstream d(cdd);
         BOOST_CHECK_THROW(
             auto reg = d.getTwoDRegisterAccessor<UserType>(registerName, sizeMap[registerName] + 1, 0), logic_error);
       }
       // one element, but behind the end
       {
-        Device d(cdd);
+        DeviceRenamedToFailDownstream d(cdd);
         BOOST_CHECK_THROW(
             auto reg = d.getTwoDRegisterAccessor<UserType>(registerName, 1, sizeMap[registerName]), logic_error);
       }
       // full length but offset by 1 element (so 1 element too long)
       {
-        Device d(cdd);
+        DeviceRenamedToFailDownstream d(cdd);
         BOOST_CHECK_THROW(
             auto reg = d.getTwoDRegisterAccessor<UserType>(registerName, sizeMap[registerName], 1), logic_error);
       }
       // full length by default(=0) but offset by 1 element (so 1 element too long)
       {
-        Device d(cdd);
+        DeviceRenamedToFailDownstream d(cdd);
         BOOST_CHECK_THROW(auto reg = d.getTwoDRegisterAccessor<UserType>(registerName, 0, 1), logic_error);
       }
       // does not throw when full length and no offset specified
       {
-        Device d(cdd);
+        DeviceRenamedToFailDownstream d(cdd);
         BOOST_CHECK_NO_THROW(auto reg = d.getTwoDRegisterAccessor<UserType>(registerName, sizeMap[registerName], 0));
       }
       // does not throw when one element shorter and offset of 1 specified (only if register is long enough)
       if(sizeMap[registerName] > 1) {
-        Device d(cdd);
+        DeviceRenamedToFailDownstream d(cdd);
         BOOST_CHECK_NO_THROW(
             auto reg = d.getTwoDRegisterAccessor<UserType>(registerName, sizeMap[registerName] - 1, 1));
       }
@@ -2796,7 +2796,7 @@ namespace ChimeraTK {
   void UnifiedBackendTest<VECTOR_OF_REGISTERS_T>::test_C_5_2_3_2() {
     std::cout << "--- test_C_5_2_3_2 - logic_error for wrong access mode flags" << std::endl;
 
-    Device d(cdd);
+    DeviceRenamedToFailDownstream d(cdd);
     boost::mpl::for_each<VECTOR_OF_REGISTERS_T>([&](auto x) {
       if(x.supportedFlags().has(ChimeraTK::AccessMode::wait_for_new_data)) return;
       typedef typename decltype(x)::minimumUserType UserType;
@@ -2824,7 +2824,7 @@ namespace ChimeraTK {
   void UnifiedBackendTest<VECTOR_OF_REGISTERS_T>::test_C_5_2_5_2() {
     if(_testOnlyTransferElement) return;
     std::cout << "--- test_C_5_2_5_2 - logic_error on operation while backend closed" << std::endl;
-    Device d(cdd);
+    DeviceRenamedToFailDownstream d(cdd);
 
     std::cout << "... synchronous read" << std::endl;
     boost::mpl::for_each<VECTOR_OF_REGISTERS_T>([&](auto x) {
@@ -2867,7 +2867,7 @@ namespace ChimeraTK {
   template<typename VECTOR_OF_REGISTERS_T>
   void UnifiedBackendTest<VECTOR_OF_REGISTERS_T>::test_C_5_2_6_2() {
     std::cout << "--- test_C_5_2_6_2 - logic_error on read operation on write-only register" << std::endl;
-    Device d(cdd);
+    DeviceRenamedToFailDownstream d(cdd);
 
     std::cout << "... synchronous read" << std::endl;
     boost::mpl::for_each<VECTOR_OF_REGISTERS_T>([&](auto x) {
@@ -2899,7 +2899,7 @@ namespace ChimeraTK {
   template<typename VECTOR_OF_REGISTERS_T>
   void UnifiedBackendTest<VECTOR_OF_REGISTERS_T>::test_C_5_2_7_2() {
     std::cout << "--- test_C_5_2_7_2 - logic_error on write operation on read-only register" << std::endl;
-    Device d(cdd);
+    DeviceRenamedToFailDownstream d(cdd);
 
     boost::mpl::for_each<VECTOR_OF_REGISTERS_T>([&](auto x) {
       if(!this->isReadOnly(x)) return;
@@ -2921,7 +2921,7 @@ namespace ChimeraTK {
   template<typename VECTOR_OF_REGISTERS_T>
   void UnifiedBackendTest<VECTOR_OF_REGISTERS_T>::test_C_5_3() {
     std::cout << "--- test_C_5_3 - read-only/write-only information changes after runtime_error" << std::endl;
-    Device d(cdd);
+    DeviceRenamedToFailDownstream d(cdd);
     d.open();
 
     // switch to read-only
@@ -2962,7 +2962,7 @@ namespace ChimeraTK {
   template<typename VECTOR_OF_REGISTERS_T>
   void UnifiedBackendTest<VECTOR_OF_REGISTERS_T>::test_C_5_3_2() {
     std::cout << "--- test_C_5_3_2 - read-only/write-only information cached per accessor" << std::endl;
-    Device d(cdd);
+    DeviceRenamedToFailDownstream d(cdd);
     d.open();
 
     // switch to read-only
@@ -3004,7 +3004,7 @@ namespace ChimeraTK {
   void UnifiedBackendTest<VECTOR_OF_REGISTERS_T>::test_C_5_3_3() {
     std::cout << "--- test_C_5_3_3 - read-only/write-only information always returned from cache if available"
               << std::endl;
-    Device d(cdd);
+    DeviceRenamedToFailDownstream d(cdd);
     d.open();
 
     boost::mpl::for_each<VECTOR_OF_REGISTERS_T>([&](auto x) {
@@ -3045,7 +3045,7 @@ namespace ChimeraTK {
   void UnifiedBackendTest<VECTOR_OF_REGISTERS_T>::test_NOSPEC_valueAfterConstruction() {
     std::cout << "--- test_NOSPEC_valueAfterConstruction - content of the application data buffer after construction."
               << std::endl;
-    Device d(cdd);
+    DeviceRenamedToFailDownstream d(cdd);
 
     boost::mpl::for_each<VECTOR_OF_REGISTERS_T>([&](auto x) {
       typedef typename decltype(x)::minimumUserType UserType;
@@ -3069,7 +3069,7 @@ namespace ChimeraTK {
   void UnifiedBackendTest<VECTOR_OF_REGISTERS_T>::test_NOSPEC_backendNotClosedAfterException() {
     if(_testOnlyTransferElement) return;
     std::cout << "--- test_NOSPEC_backendNotClosedAfterException - backend not closed after exception" << std::endl;
-    Device d(cdd);
+    DeviceRenamedToFailDownstream d(cdd);
 
     // open the device, then let it throw runtime_error exceptions
     d.open();
@@ -3319,7 +3319,7 @@ namespace ChimeraTK {
   template<typename VECTOR_OF_REGISTERS_T>
   void UnifiedBackendTest<VECTOR_OF_REGISTERS_T>::test_NOSPEC_rawTransfer() {
     std::cout << "--- test_NOSPEC_rawTransfer - test creation and readig/writing with access mode raw." << std::endl;
-    Device d(cdd);
+    DeviceRenamedToFailDownstream d(cdd);
     d.open();
 
     boost::mpl::for_each<VECTOR_OF_REGISTERS_T>([&](auto x) {
@@ -3413,7 +3413,7 @@ namespace ChimeraTK {
   template<typename VECTOR_OF_REGISTERS_T>
   void UnifiedBackendTest<VECTOR_OF_REGISTERS_T>::test_NOSPEC_catalogueRaw() {
     std::cout << "--- test_NOSPEC_catalogueRaw - test catalogue entries for access mode raw." << std::endl;
-    Device d(cdd);
+    DeviceRenamedToFailDownstream d(cdd);
 
     boost::mpl::for_each<VECTOR_OF_REGISTERS_T>([&](auto x) {
       if(x.capabilities.testCatalogue == TestCapability::disabled) {

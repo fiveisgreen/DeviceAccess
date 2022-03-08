@@ -29,7 +29,7 @@ BOOST_AUTO_TEST_CASE(testHeartbeat1) {
 
   boost::thread serverThread(boost::bind(&RebotDummyServer::start, boost::ref(rebotServer)));
 
-  Device d;
+  DeviceRenamedToFailDownstream d;
   d.open("sdm://./rebot=localhost,5001,mtcadummy_rebot.map");
   auto session = rebotServer.session();
 

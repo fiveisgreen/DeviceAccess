@@ -19,7 +19,7 @@ BOOST_AUTO_TEST_SUITE(LMapBackendTestSuite)
 
 BOOST_AUTO_TEST_CASE(testExceptions) {
   BackendFactory::getInstance().setDMapFilePath("logicalnamemap.dmap");
-  ChimeraTK::Device device;
+  ChimeraTK::DeviceRenamedToFailDownstream device;
   BOOST_CHECK(device.isOpened() == false);
   device.open("LMAP0");
   BOOST_CHECK(device.isOpened() == true);
@@ -47,7 +47,7 @@ BOOST_AUTO_TEST_CASE(testExceptions) {
 
 BOOST_AUTO_TEST_CASE(testCatalogue) {
   BackendFactory::getInstance().setDMapFilePath("logicalnamemap.dmap");
-  ChimeraTK::Device device;
+  ChimeraTK::DeviceRenamedToFailDownstream device;
 
   device.open("LMAP0");
 
@@ -71,7 +71,7 @@ BOOST_AUTO_TEST_CASE(testCatalogue) {
   BOOST_CHECK(info.getNumberOfChannels() == 1);
   BOOST_CHECK(info.getNumberOfDimensions() == 1);
 
-  ChimeraTK::Device target1;
+  ChimeraTK::DeviceRenamedToFailDownstream target1;
   target1.open("PCIE3");
   ChimeraTK::TwoDRegisterAccessor<int32_t> accTarget = target1.getTwoDRegisterAccessor<int32_t>("TEST/NODMA");
   unsigned int nSamples = accTarget[3].size();
@@ -106,7 +106,7 @@ BOOST_AUTO_TEST_CASE(testCatalogue) {
 
 BOOST_AUTO_TEST_CASE(testReadWriteConstant) {
   BackendFactory::getInstance().setDMapFilePath("logicalnamemap.dmap");
-  ChimeraTK::Device device;
+  ChimeraTK::DeviceRenamedToFailDownstream device;
 
   device.open("LMAP0");
   BOOST_CHECK(device.read<int>("Constant") == 42);
@@ -168,7 +168,7 @@ BOOST_AUTO_TEST_CASE(testReadWriteConstant) {
 
 BOOST_AUTO_TEST_CASE(testReadWriteVariable) {
   BackendFactory::getInstance().setDMapFilePath("logicalnamemap.dmap");
-  ChimeraTK::Device device;
+  ChimeraTK::DeviceRenamedToFailDownstream device;
 
   device.open("LMAP0");
 
@@ -266,7 +266,7 @@ BOOST_AUTO_TEST_CASE(testReadWriteRegister) {
   std::vector<int> area(1024);
 
   BackendFactory::getInstance().setDMapFilePath("logicalnamemap.dmap");
-  ChimeraTK::Device device, target1;
+  ChimeraTK::DeviceRenamedToFailDownstream device, target1;
 
   target1.open("PCIE2");
   device.open("LMAP0");
@@ -313,7 +313,7 @@ BOOST_AUTO_TEST_CASE(testReadWriteRange) {
   std::vector<int> area(1024);
 
   BackendFactory::getInstance().setDMapFilePath("logicalnamemap.dmap");
-  ChimeraTK::Device device, target1;
+  ChimeraTK::DeviceRenamedToFailDownstream device, target1;
 
   device.open("LMAP0");
   target1.open("PCIE2");
@@ -342,7 +342,7 @@ BOOST_AUTO_TEST_CASE(testRegisterAccessorForRegister) {
   int index;
 
   BackendFactory::getInstance().setDMapFilePath("logicalnamemap.dmap");
-  ChimeraTK::Device device, target1;
+  ChimeraTK::DeviceRenamedToFailDownstream device, target1;
 
   device.open("LMAP0");
   target1.open("PCIE2");
@@ -438,7 +438,7 @@ BOOST_AUTO_TEST_CASE(testRegisterAccessorForRange) {
   int index;
 
   BackendFactory::getInstance().setDMapFilePath("logicalnamemap.dmap");
-  ChimeraTK::Device device, target1;
+  ChimeraTK::DeviceRenamedToFailDownstream device, target1;
 
   device.open("LMAP0");
   target1.open("PCIE2");
@@ -509,7 +509,7 @@ BOOST_AUTO_TEST_CASE(testRegisterAccessorForChannel) {
   std::vector<int> area(1024);
 
   BackendFactory::getInstance().setDMapFilePath("logicalnamemap.dmap");
-  ChimeraTK::Device device, target1;
+  ChimeraTK::DeviceRenamedToFailDownstream device, target1;
 
   device.open("LMAP0");
   target1.open("PCIE3");
@@ -616,7 +616,7 @@ BOOST_AUTO_TEST_CASE(testRegisterAccessorForChannel) {
 
 BOOST_AUTO_TEST_CASE(testRegisterAccessorForBit) {
   BackendFactory::getInstance().setDMapFilePath("logicalnamemap.dmap");
-  ChimeraTK::Device device;
+  ChimeraTK::DeviceRenamedToFailDownstream device;
 
   device.open("LMAP0");
 
@@ -890,7 +890,7 @@ BOOST_AUTO_TEST_CASE(testRegisterAccessorForBit) {
 
 BOOST_AUTO_TEST_CASE(testOther) {
   BackendFactory::getInstance().setDMapFilePath("logicalnamemap.dmap");
-  ChimeraTK::Device device;
+  ChimeraTK::DeviceRenamedToFailDownstream device;
   device.open("LMAP0");
 
   BOOST_CHECK(device.readDeviceInfo().find("Logical name mapping file:") == 0);
@@ -901,7 +901,7 @@ BOOST_AUTO_TEST_CASE(testOther) {
 
 BOOST_AUTO_TEST_CASE(testParameters) {
   BackendFactory::getInstance().setDMapFilePath("logicalnamemap.dmap");
-  ChimeraTK::Device device;
+  ChimeraTK::DeviceRenamedToFailDownstream device;
 
   device.open("PARAMS0");
 
@@ -912,7 +912,7 @@ BOOST_AUTO_TEST_CASE(testParameters) {
 
 BOOST_AUTO_TEST_CASE(testAccessorPlugins) {
   BackendFactory::getInstance().setDMapFilePath("logicalnamemap.dmap");
-  ChimeraTK::Device device, target;
+  ChimeraTK::DeviceRenamedToFailDownstream device, target;
 
   device.open("LMAP0");
   target.open("PCIE2");
@@ -998,7 +998,7 @@ BOOST_AUTO_TEST_CASE(testIsFunctional) {
   auto exceptionDummyBackend = boost::dynamic_pointer_cast<ExceptionDummy>(
       BackendFactory::getInstance().createBackend("(ExceptionDummy:1?map=test3.map)"));
 
-  Device d{"LMAP1"};
+  DeviceRenamedToFailDownstream d{"LMAP1"};
   d.open();
   BOOST_CHECK(d.isFunctional() == true);
 
@@ -1016,7 +1016,7 @@ BOOST_AUTO_TEST_CASE(testIsFunctional) {
 
 BOOST_AUTO_TEST_CASE(testWithTransferGroup) {
   BackendFactory::getInstance().setDMapFilePath("logicalnamemap.dmap");
-  ChimeraTK::Device device, target1, target2;
+  ChimeraTK::DeviceRenamedToFailDownstream device, target1, target2;
 
   device.open("LMAP0");
   OneDRegisterAccessor<int> a[6];

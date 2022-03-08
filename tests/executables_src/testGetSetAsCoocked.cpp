@@ -9,7 +9,7 @@ using namespace ChimeraTK;
 BOOST_AUTO_TEST_CASE(testRawAccessor) {
   setDMapFilePath("dummies.dmap");
 
-  Device d;
+  DeviceRenamedToFailDownstream d;
   d.open("DUMMYD3");
 
   auto scalarRawAccessor = d.getScalarRegisterAccessor<int32_t>("BOARD/WORD_USER", 0, {AccessMode::raw});

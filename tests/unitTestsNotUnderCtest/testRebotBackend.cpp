@@ -48,7 +48,7 @@ class RebotTestClass {
   DeviceInfo getDeviceDetailsFromDMap(const std::string& cardAlias);
   RebotServerDetails extractServerDetailsFromUri(std::string& uri);
 
-  void checkWriteReadFromRegister(ChimeraTK::Device& rebotDevice);
+  void checkWriteReadFromRegister(ChimeraTK::DeviceRenamedToFailDownstream& rebotDevice);
 };
 
 /******************************************************************************/

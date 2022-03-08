@@ -47,7 +47,7 @@ namespace ChimeraTK {
    *      lose direct access to the previous device, which stays open as long
    *      as there are RegisterAccessors pointing to it.
    */
-  class Device {
+  class DeviceRenamedToFailDownstream {
    public:
     /** Create device instance without associating a backend yet.
      *
@@ -60,7 +60,7 @@ namespace ChimeraTK {
      *   d.open("(pci:pciedevs5?map=mps_v00.07.map)");
      * \endcode
      */
-    Device() = default;
+    DeviceRenamedToFailDownstream() = default;
 
     /**
      * \brief Initialize device and accociate a backend.
@@ -75,10 +75,10 @@ namespace ChimeraTK {
      *
      * \param aliasName The ChimeraTK device descriptor for the device.
      */
-    Device(const std::string& aliasName);
+    DeviceRenamedToFailDownstream(const std::string& aliasName);
 
     /** Destructor */
-    virtual ~Device();
+    virtual ~DeviceRenamedToFailDownstream();
 
     /** Open a device by the given alias name from the DMAP file.
      */
@@ -521,7 +521,7 @@ namespace ChimeraTK {
   /********************************************************************************************************************/
 
   template<typename UserType>
-  ScalarRegisterAccessor<UserType> Device::getScalarRegisterAccessor(
+  ScalarRegisterAccessor<UserType> DeviceRenamedToFailDownstream::getScalarRegisterAccessor(
       const RegisterPath& registerPathName, size_t wordOffsetInRegister, const AccessModeFlags& flags) const {
     checkPointersAreNotNull();
     return ScalarRegisterAccessor<UserType>(
@@ -531,7 +531,7 @@ namespace ChimeraTK {
   /********************************************************************************************************************/
 
   template<typename UserType>
-  ScalarRegisterAccessor<UserType> Device::getScalarRegisterAccessor(
+  ScalarRegisterAccessor<UserType> DeviceRenamedToFailDownstream::getScalarRegisterAccessor(
       const RegisterPath& registerPathName, size_t wordOffsetInRegister, bool enforceRawAccess) const {
     if(!enforceRawAccess) {
       return getScalarRegisterAccessor<UserType>(registerPathName, wordOffsetInRegister);
@@ -545,8 +545,9 @@ namespace ChimeraTK {
   /********************************************************************************************************************/
 
   template<typename UserType>
-  OneDRegisterAccessor<UserType> Device::getOneDRegisterAccessor(const RegisterPath& registerPathName,
-      size_t numberOfWords, size_t wordOffsetInRegister, const AccessModeFlags& flags) const {
+  OneDRegisterAccessor<UserType> DeviceRenamedToFailDownstream::getOneDRegisterAccessor(
+      const RegisterPath& registerPathName, size_t numberOfWords, size_t wordOffsetInRegister,
+      const AccessModeFlags& flags) const {
     checkPointersAreNotNull();
     return OneDRegisterAccessor<UserType>(_deviceBackendPointer->getRegisterAccessor<UserType>(
         registerPathName, numberOfWords, wordOffsetInRegister, flags));
@@ -555,8 +556,9 @@ namespace ChimeraTK {
   /********************************************************************************************************************/
 
   template<typename UserType>
-  OneDRegisterAccessor<UserType> Device::getOneDRegisterAccessor(const RegisterPath& registerPathName,
-      size_t numberOfWords, size_t wordOffsetInRegister, bool enforceRawAccess) const {
+  OneDRegisterAccessor<UserType> DeviceRenamedToFailDownstream::getOneDRegisterAccessor(
+      const RegisterPath& registerPathName, size_t numberOfWords, size_t wordOffsetInRegister,
+      bool enforceRawAccess) const {
     if(!enforceRawAccess) {
       return OneDRegisterAccessor<UserType>(_deviceBackendPointer->getRegisterAccessor<UserType>(
           registerPathName, numberOfWords, wordOffsetInRegister, {}));
@@ -570,8 +572,9 @@ namespace ChimeraTK {
   /********************************************************************************************************************/
 
   template<typename UserType>
-  TwoDRegisterAccessor<UserType> Device::getTwoDRegisterAccessor(const RegisterPath& registerPathName,
-      size_t numberOfElements, size_t elementsOffset, const AccessModeFlags& flags) const {
+  TwoDRegisterAccessor<UserType> DeviceRenamedToFailDownstream::getTwoDRegisterAccessor(
+      const RegisterPath& registerPathName, size_t numberOfElements, size_t elementsOffset,
+      const AccessModeFlags& flags) const {
     checkPointersAreNotNull();
     return TwoDRegisterAccessor<UserType>(_deviceBackendPointer->getRegisterAccessor<UserType>(
         registerPathName, numberOfElements, elementsOffset, flags));
@@ -580,7 +583,8 @@ namespace ChimeraTK {
   /********************************************************************************************************************/
 
   template<typename UserType>
-  UserType Device::read(const RegisterPath& registerPathName, const AccessModeFlags& flags) const {
+  UserType DeviceRenamedToFailDownstream::read(
+      const RegisterPath& registerPathName, const AccessModeFlags& flags) const {
     auto acc = getScalarRegisterAccessor<UserType>(registerPathName, 0, flags);
     acc.read();
     return acc;
@@ -589,7 +593,7 @@ namespace ChimeraTK {
   /********************************************************************************************************************/
 
   template<typename UserType>
-  std::vector<UserType> Device::read(const RegisterPath& registerPathName, size_t numberOfWords,
+  std::vector<UserType> DeviceRenamedToFailDownstream::read(const RegisterPath& registerPathName, size_t numberOfWords,
       size_t wordOffsetInRegister, const AccessModeFlags& flags) const {
     auto acc = getOneDRegisterAccessor<UserType>(registerPathName, numberOfWords, wordOffsetInRegister, flags);
     acc.read();
@@ -601,7 +605,8 @@ namespace ChimeraTK {
   /********************************************************************************************************************/
 
   template<typename UserType>
-  void Device::write(const RegisterPath& registerPathName, UserType value, const AccessModeFlags& flags) {
+  void DeviceRenamedToFailDownstream::write(
+      const RegisterPath& registerPathName, UserType value, const AccessModeFlags& flags) {
     auto acc = getScalarRegisterAccessor<UserType>(registerPathName, 0, flags);
     acc = value;
     acc.write();
@@ -610,7 +615,7 @@ namespace ChimeraTK {
   /********************************************************************************************************************/
 
   template<typename UserType>
-  void Device::write(const RegisterPath& registerPathName, const std::vector<UserType>& vector,
+  void DeviceRenamedToFailDownstream::write(const RegisterPath& registerPathName, const std::vector<UserType>& vector,
       size_t wordOffsetInRegister, const AccessModeFlags& flags) {
     auto acc = getOneDRegisterAccessor<UserType>(registerPathName, vector.size(), wordOffsetInRegister, flags);
     // the vector stays constant, but we have to work around so we can swap it and
@@ -624,7 +629,7 @@ namespace ChimeraTK {
   /********************************************************************************************************************/
 
   template<typename UserType>
-  std::vector<UserType> Device::read(const RegisterPath& registerPathName, size_t numberOfWords,
+  std::vector<UserType> DeviceRenamedToFailDownstream::read(const RegisterPath& registerPathName, size_t numberOfWords,
       size_t wordOffsetInRegister, bool enforceRawAccess) const {
     return read<UserType>(registerPathName, numberOfWords, wordOffsetInRegister,
         (enforceRawAccess ? AccessModeFlags({AccessMode::raw}) : AccessModeFlags({})));
@@ -633,15 +638,16 @@ namespace ChimeraTK {
   /********************************************************************************************************************/
 
   template<typename UserType>
-  void Device::write(const RegisterPath& registerPathName, UserType value, bool enforceRawAccess) {
+  void DeviceRenamedToFailDownstream::write(
+      const RegisterPath& registerPathName, UserType value, bool enforceRawAccess) {
     write(registerPathName, value, (enforceRawAccess ? AccessModeFlags({AccessMode::raw}) : AccessModeFlags({})));
   }
 
   /********************************************************************************************************************/
 
   template<typename UserType>
-  void Device::write(const RegisterPath& registerPathName, std::vector<UserType>& vector, size_t wordOffsetInRegister,
-      bool enforceRawAccess) {
+  void DeviceRenamedToFailDownstream::write(const RegisterPath& registerPathName, std::vector<UserType>& vector,
+      size_t wordOffsetInRegister, bool enforceRawAccess) {
     write(registerPathName, vector, wordOffsetInRegister,
         (enforceRawAccess ? AccessModeFlags({AccessMode::raw}) : AccessModeFlags({})));
   }
@@ -649,8 +655,9 @@ namespace ChimeraTK {
   /********************************************************************************************************************/
 
   template<typename UserType>
-  BufferingRegisterAccessor<UserType> Device::getBufferingRegisterAccessor(const RegisterPath& registerPathName,
-      size_t numberOfWords, size_t wordOffsetInRegister, bool enforceRawAccess) const {
+  BufferingRegisterAccessor<UserType> DeviceRenamedToFailDownstream::getBufferingRegisterAccessor(
+      const RegisterPath& registerPathName, size_t numberOfWords, size_t wordOffsetInRegister,
+      bool enforceRawAccess) const {
     checkPointersAreNotNull();
     return BufferingRegisterAccessor<UserType>(
         _deviceBackendPointer->getRegisterAccessor<UserType>(registerPathName, numberOfWords, wordOffsetInRegister,
@@ -660,7 +667,7 @@ namespace ChimeraTK {
   /********************************************************************************************************************/
 
   template<typename UserType>
-  BufferingRegisterAccessor<UserType> Device::getBufferingRegisterAccessor(
+  BufferingRegisterAccessor<UserType> DeviceRenamedToFailDownstream::getBufferingRegisterAccessor(
       const std::string& module, const std::string& registerName) const {
     return getBufferingRegisterAccessor<UserType>(RegisterPath(module) / registerName);
   }
@@ -668,7 +675,7 @@ namespace ChimeraTK {
   /********************************************************************************************************************/
 
   template<typename UserType>
-  TwoDRegisterAccessor<UserType> Device::getTwoDRegisterAccessor(
+  TwoDRegisterAccessor<UserType> DeviceRenamedToFailDownstream::getTwoDRegisterAccessor(
       const std::string& module, const std::string& registerName) const {
     checkPointersAreNotNull();
     return TwoDRegisterAccessor<UserType>(

@@ -45,7 +45,7 @@ namespace {
   BOOST_AUTO_TEST_CASE(testOpenClose) {
     setDMapFilePath("shareddummyTest.dmap");
 
-    Device dev;
+    DeviceRenamedToFailDownstream dev;
     BOOST_CHECK(!dev.isOpened());
     dev.open("SHDMEMDEV");
     BOOST_CHECK(dev.isOpened());
@@ -69,7 +69,7 @@ namespace {
   BOOST_AUTO_TEST_CASE(testReadWrite) {
     setDMapFilePath("shareddummyTest.dmap");
 
-    Device dev;
+    DeviceRenamedToFailDownstream dev;
     BOOST_CHECK(!dev.isOpened());
     dev.open("SHDMEMDEV");
     BOOST_CHECK(dev.isOpened());
@@ -109,7 +109,7 @@ namespace {
 
   BOOST_FIXTURE_TEST_CASE(testWriteToReadOnly, TestFixture) {
     setDMapFilePath("shareddummyTest.dmap");
-    Device dev;
+    DeviceRenamedToFailDownstream dev;
     dev.open("SHDMEMDEV");
 
     ScalarRegisterAccessor<int> roRegisterOne{dev.getScalarRegisterAccessor<int>("WORD_READ_ONLY_1")};

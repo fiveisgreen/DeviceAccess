@@ -68,7 +68,7 @@ TestDummy::BackendRegisterer::BackendRegisterer() {
 
 BOOST_AUTO_TEST_CASE(testDefaultValues) {
   std::cout << "testDefaultValues" << std::endl;
-  ChimeraTK::Device device;
+  ChimeraTK::DeviceRenamedToFailDownstream device;
   device.open("(logicalNameMap?map=monostableTriggerPlugin.xlmap)");
 
   auto target = boost::dynamic_pointer_cast<TestDummy>(
@@ -96,7 +96,7 @@ BOOST_AUTO_TEST_CASE(testDefaultValues) {
 
 BOOST_AUTO_TEST_CASE(testNonDefaultValues) {
   std::cout << "testNonDefaultValues" << std::endl;
-  ChimeraTK::Device device;
+  ChimeraTK::DeviceRenamedToFailDownstream device;
   device.open("(logicalNameMap?map=monostableTriggerPlugin.xlmap)");
 
   auto target = boost::dynamic_pointer_cast<TestDummy>(
@@ -124,7 +124,7 @@ BOOST_AUTO_TEST_CASE(testNonDefaultValues) {
 
 BOOST_AUTO_TEST_CASE(testDifferentDelay) {
   std::cout << "testDifferentDelay" << std::endl;
-  ChimeraTK::Device device;
+  ChimeraTK::DeviceRenamedToFailDownstream device;
   device.open("(logicalNameMap?map=monostableTriggerPlugin.xlmap)");
 
   auto target = boost::dynamic_pointer_cast<TestDummy>(

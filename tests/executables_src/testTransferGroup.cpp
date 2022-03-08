@@ -569,9 +569,9 @@ BOOST_AUTO_TEST_CASE(test_B_12_11_1) {
 BOOST_AUTO_TEST_CASE(testExceptionHandling) {
   const std::string EXCEPTION_DUMMY_CDD = "(ExceptionDummy:1?map=test3.map)";
   BackendFactory::getInstance().setDMapFilePath("dummies.dmap");
-  ChimeraTK::Device device1;
-  ChimeraTK::Device device2;
-  ChimeraTK::Device device3;
+  ChimeraTK::DeviceRenamedToFailDownstream device1;
+  ChimeraTK::DeviceRenamedToFailDownstream device2;
+  ChimeraTK::DeviceRenamedToFailDownstream device3;
 
   device1.open("DUMMYD1");
   auto exceptionDummy = boost::dynamic_pointer_cast<ChimeraTK::ExceptionDummy>(
@@ -629,7 +629,7 @@ BOOST_AUTO_TEST_CASE(testExceptionHandling) {
 
 BOOST_AUTO_TEST_CASE(testAdding) {
   BackendFactory::getInstance().setDMapFilePath("dummies.dmap");
-  ChimeraTK::Device device;
+  ChimeraTK::DeviceRenamedToFailDownstream device;
 
   device.open("DUMMYD3");
 
@@ -828,7 +828,7 @@ struct CountingDecorator : NDRegisterAccessorDecorator<T> {
 
 BOOST_AUTO_TEST_CASE(testCallsToPrePostFunctionsInDecorator) {
   BackendFactory::getInstance().setDMapFilePath("dummies.dmap");
-  ChimeraTK::Device device;
+  ChimeraTK::DeviceRenamedToFailDownstream device;
 
   device.open("DUMMYD3");
 
@@ -951,7 +951,7 @@ BOOST_AUTO_TEST_CASE(testCallsToPrePostFunctionsInDecorator) {
 
 BOOST_AUTO_TEST_CASE(testCallsToPrePostFunctionsInLowLevel) {
   BackendFactory::getInstance().setDMapFilePath("dummies.dmap");
-  ChimeraTK::Device device;
+  ChimeraTK::DeviceRenamedToFailDownstream device;
 
   device.open("DUMMYD3");
 

@@ -25,6 +25,8 @@ class TestableDevice : public ChimeraTK::Device {
 BOOST_AUTO_TEST_SUITE(DeviceTestSuite)
 
 BOOST_AUTO_TEST_CASE(testConvenienceReadWrite) {
+  BOOST_CHECK(false);
+
   ChimeraTK::setDMapFilePath("dummies.dmap");
   ChimeraTK::Device device;
   device.open("DUMMYD2");

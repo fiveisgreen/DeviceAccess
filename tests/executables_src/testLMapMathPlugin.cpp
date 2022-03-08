@@ -14,7 +14,7 @@ BOOST_AUTO_TEST_SUITE(LMapMathPluginTestSuite)
 
 BOOST_AUTO_TEST_CASE(testSimpleReadWriteScalar) {
   ChimeraTK::Device device;
-  device.open("(logicalNameMap?map=mathPlugin.xlmap)");
+  device.open("(logicalNameMapRENAMEDTOFAIL?map=mathPlugin.xlmap)");
 
   auto accTarget = device.getScalarRegisterAccessor<int>("SimpleScalar");
   auto accMathRead = device.getScalarRegisterAccessor<double>("SimpleScalarRead");
@@ -45,7 +45,7 @@ BOOST_AUTO_TEST_CASE(testSimpleReadWriteScalar) {
 
 BOOST_AUTO_TEST_CASE(testReturnedReadWriteScalar) {
   ChimeraTK::Device device;
-  device.open("(logicalNameMap?map=mathPlugin.xlmap)");
+  device.open("(logicalNameMapRENAMEDTOFAIL?map=mathPlugin.xlmap)");
 
   auto accTarget = device.getScalarRegisterAccessor<int>("SimpleScalar");
   // ReturnedScalarReadWrite uses a return statement, but is otherwise identical to the "simple" version
@@ -77,7 +77,7 @@ BOOST_AUTO_TEST_CASE(testReturnedReadWriteScalar) {
 
 BOOST_AUTO_TEST_CASE(testReadWriteArray) {
   ChimeraTK::Device device;
-  device.open("(logicalNameMap?map=mathPlugin.xlmap)");
+  device.open("(logicalNameMapRENAMEDTOFAIL?map=mathPlugin.xlmap)");
 
   auto accTarget = device.getOneDRegisterAccessor<int>("SimpleArray");
   auto accMathRead = device.getOneDRegisterAccessor<double>("ArrayRead");
@@ -110,7 +110,7 @@ BOOST_AUTO_TEST_CASE(testReadWriteArray) {
 
 BOOST_AUTO_TEST_CASE(testParameters) {
   ChimeraTK::Device device;
-  device.open("(logicalNameMap?map=mathPlugin.xlmap)");
+  device.open("(logicalNameMapRENAMEDTOFAIL?map=mathPlugin.xlmap)");
 
   auto accTarget = device.getScalarRegisterAccessor<int>("SimpleScalar");
   auto scalarPar = device.getScalarRegisterAccessor<int>("ScalarParameter");
@@ -151,10 +151,10 @@ BOOST_AUTO_TEST_CASE(testParameters) {
 BOOST_AUTO_TEST_CASE(testExceptions) {
   // missing parameter "formula"
   ChimeraTK::Device device;
-  BOOST_CHECK_THROW(device.open("(logicalNameMap?map=mathPlugin-broken.xlmap)"), ChimeraTK::logic_error);
+  BOOST_CHECK_THROW(device.open("(logicalNameMapRENAMEDTOFAIL?map=mathPlugin-broken.xlmap)"), ChimeraTK::logic_error);
 
   // open device with map file which parses
-  device.open("(logicalNameMap?map=mathPlugin.xlmap)");
+  device.open("(logicalNameMapRENAMEDTOFAIL?map=mathPlugin.xlmap)");
 
   BOOST_CHECK_THROW(device.getOneDRegisterAccessor<double>("BrokenFormula"), ChimeraTK::logic_error);
 

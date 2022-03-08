@@ -17,7 +17,7 @@ BOOST_AUTO_TEST_SUITE(LMapForceReadOnlyPluginTestSuite)
 
 BOOST_AUTO_TEST_CASE(test) {
   ChimeraTK::Device device;
-  device.open("(logicalNameMap?map=typeHintModifierPlugin.xlmap)");
+  device.open("(logicalNameMapRENAMEDTOFAIL?map=typeHintModifierPlugin.xlmap)");
 
   auto cat = device.getRegisterCatalogue();
   auto info = cat.getRegister("test");

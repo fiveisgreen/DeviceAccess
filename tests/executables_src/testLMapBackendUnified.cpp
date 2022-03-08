@@ -826,7 +826,7 @@ BOOST_AUTO_TEST_CASE(unifiedBackendTest) {
   std::string dummyCdd = "(ExceptionDummy?map=mtcadummy.map)";
   std::string muxedDummyCdd = "(ExceptionDummy?map=muxedDataAcessor.map)";
   std::string pushDummyCdd = "(ExceptionDummy?map=mtcadummyB.map)";
-  std::string lmapCdd = "(logicalNameMap?map=unifiedTest.xlmap&target=" + dummyCdd + "&target2=" + muxedDummyCdd +
+  std::string lmapCdd = "(logicalNameMapRENAMEDTOFAIL?map=unifiedTest.xlmap&target=" + dummyCdd + "&target2=" + muxedDummyCdd +
       "&target3=" + pushDummyCdd + ")";
   exceptionDummyLikeMtcadummy =
       boost::dynamic_pointer_cast<ExceptionDummy>(BackendFactory::getInstance().createBackend(dummyCdd));

@@ -23,14 +23,28 @@ namespace ChimeraTK {
       MapFileParser parser;
       std::tie(_registerMap, _metadataCatalogue) = parser.parse(mapFileName);
 
+      // FIXME: Hacked implementation for registering the interrupt controllers.
+      // The correct implementation get it from the metadata catalogue
+      for(auto interruptID : _registerMap.getListOfInterrupts()) {
+        do {
+          interruptID.pop_back();
+          if(!interruptID.empty()) {
+            _interruptControllerHandlerFactory.addInterruptController(interruptID, "AXI4_INTC", "");
+          }
+        } while(!interruptID.empty());
+      }
+
       // create all the interrupt dispatchers that are described in the map file
       for(const auto& interruptID : _registerMap.getListOfInterrupts()) {
-        // interrupt is a vector of nested interrupts
-        _primaryInterruptDispatchersNonConst.try_emplace(
-            interruptID.front(), boost::make_shared<NumericAddressedInterruptDispatcher>());
-        // FIXME: Put nested interrupt dispatchers
+        /// try_emplace returns an iterator plus an bool whether the element is new
+        auto [dispatcherIter, isNew] = _primaryInterruptDispatchersNonConst.try_emplace(interruptID.front(),
+            boost::make_shared<NumericAddressedInterruptDispatcher>(
+                this, std::vector<uint32_t>({interruptID.front()})));
         if(interruptID.size() > 1) {
-          throw ChimeraTK::logic_error("Nested interrupts are not supported yet!");
+          auto& dispatcher =
+              dispatcherIter->second; // the iterator of a map is a key-value pair. The variable dispatcher now is a
+                                      // shared pointer to a NumericAddressedInterruptDispatcher
+          dispatcher->addNestedInterrupt({++interruptID.begin(), interruptID.end()});
         }
       }
     }
@@ -119,23 +133,17 @@ namespace ChimeraTK {
             "Register " + registerPathName + " does not support AccessMode::wait_for_new_data.");
       }
 
-      auto getNestedInterruptDispatcher =
-          [](std::vector<uint32_t> interruptID,
-              std::map<uint32_t, boost::shared_ptr<NumericAddressedInterruptDispatcher>> dispatchers,
-              [[maybe_unused]] auto&& _getNestedInterruptDispatcher)
-          -> boost::shared_ptr<NumericAddressedInterruptDispatcher> {
-        auto dispatcher = dispatchers[interruptID.front()];
-        if(interruptID.size() == 1) {
-          return dispatcher;
-        }
-        throw ChimeraTK::logic_error("Nested interrupts are not supported yet!");
-        // return _getNestedInterruptDispatcher({++interruptID.begin(), interruptID.end(),
-        // dispatcher->getInterruptControllerHandler()->dispatchers});
-      };
+      boost::shared_ptr<NumericAddressedInterruptDispatcher> interruptDispatcher;
+      const auto& primaryDispatcher = _primaryInterruptDispatchers.at(registerInfo.interruptId.front());
 
-      auto interruptDispatcher = getNestedInterruptDispatcher(
-          registerInfo.interruptId, _primaryInterruptDispatchers, getNestedInterruptDispatcher);
-      assert(interruptDispatcher);
+      if(registerInfo.interruptId.size() == 1) {
+        interruptDispatcher = primaryDispatcher;
+      }
+      else {
+        interruptDispatcher = primaryDispatcher->getNestedDispatcher(
+            {++registerInfo.interruptId.begin(), registerInfo.interruptId.end()});
+      }
+
       auto newSubscriber = interruptDispatcher->template subscribe<UserType>(
           boost::dynamic_pointer_cast<NumericAddressedBackend>(shared_from_this()), registerPathName, numberOfWords,
           wordOffsetInRegister, flags);

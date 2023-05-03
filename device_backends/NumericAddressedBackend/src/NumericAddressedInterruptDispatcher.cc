@@ -3,9 +3,13 @@
 
 #include "NumericAddressedInterruptDispatcher.h"
 
+#include "InterruptControllerHandler.h"
+
 namespace ChimeraTK {
 
-  NumericAddressedInterruptDispatcher::NumericAddressedInterruptDispatcher() {
+  NumericAddressedInterruptDispatcher::NumericAddressedInterruptDispatcher(
+      NumericAddressedBackend* backend, std::vector<uint32_t> const& interruptID)
+  : _id(interruptID), _backend(backend) {
     FILL_VIRTUAL_FUNCTION_TEMPLATE_VTABLE(createAsyncVariable);
   }
 
@@ -54,6 +58,23 @@ namespace ChimeraTK {
     }
 
     return ver;
+  }
+
+  //*********************************************************************************************************************/
+  void NumericAddressedInterruptDispatcher::addNestedInterrupt(std::vector<uint32_t> const& interruptID) {
+    if(!_controllerHandler) {
+      _controllerHandler = _backend->_interruptControllerHandlerFactory.createInterruptControllerHandler(_id);
+    }
+    _controllerHandler->addInterrupt(interruptID);
+  }
+  //*********************************************************************************************************************/
+  boost::shared_ptr<NumericAddressedInterruptDispatcher> const& NumericAddressedInterruptDispatcher::
+      getNestedDispatcher(std::vector<uint32_t> const& interruptID) {
+    const auto& firstLevelNestedDispatcher = _controllerHandler->getInterruptDispatcher(interruptID.front());
+    if(interruptID.size() == 1) {
+      return firstLevelNestedDispatcher;
+    }
+    return firstLevelNestedDispatcher->getNestedDispatcher({++interruptID.begin(), interruptID.end()});
   }
 
 } // namespace ChimeraTK

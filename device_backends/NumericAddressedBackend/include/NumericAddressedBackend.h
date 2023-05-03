@@ -3,6 +3,7 @@
 #pragma once
 
 #include "DeviceBackendImpl.h"
+#include "InterruptControllerHandler.h"
 #include "NumericAddressedRegisterCatalogue.h"
 #include "VersionNumber.h"
 
@@ -180,6 +181,8 @@ namespace ChimeraTK {
      */
     std::map<uint32_t, boost::shared_ptr<NumericAddressedInterruptDispatcher>> const& _primaryInterruptDispatchers{
         _primaryInterruptDispatchersNonConst};
+
+    InterruptControllerHandlerFactory _interruptControllerHandlerFactory{this};
   };
 
 } // namespace ChimeraTK

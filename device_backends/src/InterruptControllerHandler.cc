@@ -3,6 +3,7 @@
 #include "InterruptControllerHandler.h"
 
 #include "Axi4_Intc.h"
+#include "NumericAddressedInterruptDispatcher.h"
 
 #include <tuple>
 
@@ -14,19 +15,43 @@ namespace ChimeraTK {
   }
 
   void InterruptControllerHandlerFactory::addInterruptController(
-      std::vector<uint32_t> controllerID, std::string name, std::string description) {
+      std::vector<uint32_t> const& controllerID, std::string const& name, std::string const& description) {
     _controllerDescriptions[controllerID] = {name, description};
   }
 
   std::unique_ptr<InterruptControllerHandler> InterruptControllerHandlerFactory::createInterruptControllerHandler(
-      std::vector<uint32_t> controllerID) {
+      std::vector<uint32_t> const& controllerID) {
+    assert(!controllerID.empty());
     std::string name, description;
-    std::tie(name, description) = _controllerDescriptions[controllerID];
-    return _creatorFunctions[name](_backend, description);
+    try {
+      std::tie(name, description) = _controllerDescriptions.at(controllerID);
+    }
+    catch(std::out_of_range&) {
+      std::string idAsString;
+      for(auto i : controllerID) {
+        idAsString += std::to_string(i) + ":";
+      }
+      idAsString.pop_back(); // remove last ":"
+      throw ChimeraTK::logic_error("Unknown interrupt controller ID " + idAsString);
+    }
+    return _creatorFunctions[name](_backend, controllerID, description);
   }
 
-  void InterruptControllerHandler::activateInterrupt(uint32_t interrupt) {
-    _dispatchers.try_emplace(interrupt, boost::make_shared<NumericAddressedInterruptDispatcher>());
+  void InterruptControllerHandler::addInterrupt(std::vector<uint32_t> const& interruptID) {
+    assert(!interruptID.empty());
+    auto qualifiedInterruptId = _id;
+    qualifiedInterruptId.push_back(interruptID.front());
+    auto [dispatcherIter, isNew] = _dispatchers.try_emplace(
+        interruptID.front(), boost::make_shared<NumericAddressedInterruptDispatcher>(_backend, qualifiedInterruptId));
+    auto& dispatcher = dispatcherIter->second; // a map iterator is a pair of key/value
+    if(interruptID.size() > 1) {
+      dispatcher->addNestedInterrupt({++interruptID.begin(), interruptID.end()});
+    }
+  }
+
+  boost::shared_ptr<NumericAddressedInterruptDispatcher> const& InterruptControllerHandler::getInterruptDispatcher(
+      uint32_t interruptNumber) const {
+    return _dispatchers.at(interruptNumber);
   }
 
 } // namespace ChimeraTK

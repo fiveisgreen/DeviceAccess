@@ -4,6 +4,7 @@
 
 #include "AsyncAccessorManager.h"
 #include "AsyncNDRegisterAccessor.h"
+#include "InterruptControllerHandler.h"
 #include "NumericAddressedBackendRegisterAccessor.h"
 #include "TransferGroup.h"
 
@@ -11,6 +12,8 @@
 #include <mutex>
 
 namespace ChimeraTK {
+  class NumericAddressedBackend;
+
   /** Typeless base class. The implementations will have a list of all asynchronous
    *  accessors and one synchronous accessor.
    */
@@ -37,14 +40,17 @@ namespace ChimeraTK {
      */
     VersionNumber trigger();
 
-    NumericAddressedInterruptDispatcher();
+    NumericAddressedInterruptDispatcher(NumericAddressedBackend* backend, std::vector<uint32_t> const& interruptID);
 
     template<typename UserType>
     std::unique_ptr<AsyncVariable> createAsyncVariable(
         const boost::shared_ptr<DeviceBackend>& backend, AccessorInstanceDescriptor const& descriptor, bool isActive);
 
-    // bool prepareActivate(VersionNumber const& v) override;
     VersionNumber activate() override;
+
+    void addNestedInterrupt(std::vector<uint32_t> const& interruptID);
+    boost::shared_ptr<NumericAddressedInterruptDispatcher> const& getNestedDispatcher(
+        std::vector<uint32_t> const& interruptID);
 
    protected:
     void asyncVariableMapChanged() override {
@@ -57,6 +63,9 @@ namespace ChimeraTK {
     }
     // unique_ptr because we want to delete it manually
     std::unique_ptr<TransferGroup> _transferGroup{new TransferGroup};
+    std::vector<uint32_t> _id;
+    NumericAddressedBackend* _backend;
+    std::unique_ptr<InterruptControllerHandler> _controllerHandler;
   };
 
   /** Implementation of the NumericAddressedAsyncVariable for the concrete UserType.

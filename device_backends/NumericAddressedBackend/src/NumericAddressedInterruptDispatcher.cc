@@ -28,6 +28,10 @@ namespace ChimeraTK {
         numericAddressAsyncVariable->fillSendBuffer(ver);
         var.second->send(); // send function from  the AsyncVariable base class
       }
+
+      if(_controllerHandler) {
+        _controllerHandler->handle();
+      }
     }
     catch(ChimeraTK::runtime_error&) {
       // Nothing to do. Backend's set exception has already been called by the accessor in the transfer group that
@@ -49,6 +53,9 @@ namespace ChimeraTK {
         assert(numericAddressAsyncVariable);
         numericAddressAsyncVariable->fillSendBuffer(ver);
         var.second->activateAndSend(); // function from  the AsyncVariable base class
+      }
+      if(_controllerHandler) {
+        _controllerHandler->activateInterruptDispatchers();
       }
       _isActive = true;
     }
@@ -75,6 +82,20 @@ namespace ChimeraTK {
       return firstLevelNestedDispatcher;
     }
     return firstLevelNestedDispatcher->getNestedDispatcher({++interruptID.begin(), interruptID.end()});
+  }
+
+  //*********************************************************************************************************************/
+  void NumericAddressedInterruptDispatcher::postDeactivateHook() {
+    if(_controllerHandler) {
+      _controllerHandler->deactivateInterruptDispatchers();
+    }
+  }
+
+  //*********************************************************************************************************************/
+  void NumericAddressedInterruptDispatcher::postSendExceptionHook(const std::exception_ptr& e) {
+    if(_controllerHandler) {
+      _controllerHandler->sendException(e);
+    }
   }
 
 } // namespace ChimeraTK

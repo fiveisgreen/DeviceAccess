@@ -47,6 +47,8 @@ namespace ChimeraTK {
         const boost::shared_ptr<DeviceBackend>& backend, AccessorInstanceDescriptor const& descriptor, bool isActive);
 
     VersionNumber activate() override;
+    void postDeactivateHook() override;
+    void postSendExceptionHook(const std::exception_ptr& e) override;
 
     void addNestedInterrupt(std::vector<uint32_t> const& interruptID);
     boost::shared_ptr<NumericAddressedInterruptDispatcher> const& getNestedDispatcher(

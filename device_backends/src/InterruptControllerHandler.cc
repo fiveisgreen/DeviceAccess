@@ -8,17 +8,20 @@
 #include <tuple>
 
 namespace ChimeraTK {
+  //*********************************************************************************************************************/
   InterruptControllerHandlerFactory::InterruptControllerHandlerFactory(NumericAddressedBackend* backend)
   : _backend(backend) {
     // we already know about the build-in handlers
     _creatorFunctions["AXI4_INTC"] = Axi4_Intc::create;
   }
 
+  //*********************************************************************************************************************/
   void InterruptControllerHandlerFactory::addInterruptController(
       std::vector<uint32_t> const& controllerID, std::string const& name, std::string const& description) {
     _controllerDescriptions[controllerID] = {name, description};
   }
 
+  //*********************************************************************************************************************/
   std::unique_ptr<InterruptControllerHandler> InterruptControllerHandlerFactory::createInterruptControllerHandler(
       std::vector<uint32_t> const& controllerID) {
     assert(!controllerID.empty());
@@ -37,6 +40,7 @@ namespace ChimeraTK {
     return _creatorFunctions[name](_backend, controllerID, description);
   }
 
+  //*********************************************************************************************************************/
   void InterruptControllerHandler::addInterrupt(std::vector<uint32_t> const& interruptID) {
     assert(!interruptID.empty());
     auto qualifiedInterruptId = _id;
@@ -49,9 +53,31 @@ namespace ChimeraTK {
     }
   }
 
+  //*********************************************************************************************************************/
   boost::shared_ptr<NumericAddressedInterruptDispatcher> const& InterruptControllerHandler::getInterruptDispatcher(
       uint32_t interruptNumber) const {
     return _dispatchers.at(interruptNumber);
+  }
+
+  //*********************************************************************************************************************/
+  void InterruptControllerHandler::activateInterruptDispatchers() {
+    for(auto& dispatcher : _dispatchers) {
+      dispatcher.second->activate();
+    }
+  }
+
+  //*********************************************************************************************************************/
+  void InterruptControllerHandler::sendException(const std::exception_ptr& e) {
+    for(auto& dispatcher : _dispatchers) {
+      dispatcher.second->sendException(e);
+    }
+  }
+
+  //*********************************************************************************************************************/
+  void InterruptControllerHandler::deactivateInterruptDispatchers() {
+    for(auto& dispatcher : _dispatchers) {
+      dispatcher.second->deactivate();
+    }
   }
 
 } // namespace ChimeraTK

@@ -20,6 +20,7 @@ namespace ChimeraTK {
     for(auto& var : _asyncVariables) {
       var.second->sendException(e);
     }
+    postSendExceptionHook(e);
   }
 
   //*********************************************************************************************************************/
@@ -44,6 +45,7 @@ namespace ChimeraTK {
       var.second->deactivate();
     }
     _isActive = false;
+    postDeactivateHook();
   }
 
 } // namespace ChimeraTK

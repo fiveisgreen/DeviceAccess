@@ -133,6 +133,14 @@ namespace ChimeraTK {
     /// this virtual function lets derived classes react on subscribe / unsubscribe
     /// _variablesMutex locked during call
     virtual void asyncVariableMapChanged() {}
+
+    /** Called at the end of sendException() to hook implementation-depenent actions into sendException()
+     */
+    virtual void postSendExceptionHook([[maybe_unused]] const std::exception_ptr& e) {}
+
+    /** Called at the end of deactivate() to hook implementation-depenent actions into deactivate()
+     */
+    virtual void postDeactivateHook() {}
   };
 
   /** AsyncVariableImpl contains a weak pointer to an AsyncNDRegisterAccessor<UserType> and a send buffer

@@ -100,7 +100,7 @@ MACRO( COPY_MAPPING_FILES )
     doubleBuffer.map doubleBuffer.xlmap
     uioBackendTest.dmap
     uioBackendTest.mapp
-    doubleBufferHW.xlmap doubleBufferHW.map doubleBufferHW.dmap
+    doubleBufferHW.xlmap doubleBufferHW.map doubleBufferHW.dmap testNestedInterrupts.map
     DESTINATION ${PROJECT_BINARY_DIR}/tests)
   # The valid dmap file has an absolute path which has to be configured by cmake
   # They cannot just be copied.

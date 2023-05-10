@@ -16,9 +16,6 @@ using namespace boost::unit_test_framework;
 //#include "TransferGroup.h"
 #include "UnifiedBackendTest.h"
 
-namespace ChimeraTK {
-  using namespace ChimeraTK;
-}
 using namespace ChimeraTK;
 
 /* ===============================================================================================
@@ -68,7 +65,7 @@ struct TriggeredInt {
 
   template<typename Type>
   std::vector<std::vector<Type>> generateValue([[maybe_unused]] bool raw = false) {
-    return {{acc + INTERRUPT}}; // just re-use the interrupt here. Any number does the job.
+    return {{acc + static_cast<int32_t>(INTERRUPT)}}; // just re-use the interrupt here. Any number does the job.
   }
 
   template<typename UserType>
@@ -78,6 +75,10 @@ struct TriggeredInt {
 
   void setRemoteValue() {
     acc = generateValue<minimumUserType>()[0][0];
+    if(!WITHPATH::activeInterruptsPath().empty()) {
+      DummyRegisterAccessor<uint32_t> activeInterrupts{exceptionDummy.get(), "", WITHPATH::activeInterruptsPath()};
+      activeInterrupts = WITHPATH::activeInterruptsValue();
+    }
     if(exceptionDummy->isOpen()) {
       exceptionDummy->triggerInterrupt(INTERRUPT);
     }
@@ -97,22 +98,39 @@ struct TriggeredInt {
 
 struct datafrom6 : public TriggeredInt<datafrom6, 6> {
   static std::string path() { return "/datafrom6"; }
+  static std::string activeInterruptsPath() { return ""; } // empty
+  static uint32_t activeInterruptsValue() { return 0; }
 };
 
 struct datafrom5_9 : public TriggeredInt<datafrom5_9, 5> {
   static std::string path() { return "/datafrom5_9"; }
+  static std::string activeInterruptsPath() { return "/int_ctrls/controller5/active_ints"; }
+  static uint32_t activeInterruptsValue() { return 1U << 9U; }
 };
 
 struct datafrom4_8_2 : public TriggeredInt<datafrom4_8_2, 4> {
   static std::string path() { return "/datafrom4_8_2"; }
+  static std::string activeInterruptsPath() { return "/int_ctrls/controller4_8/active_ints"; }
+  static uint32_t activeInterruptsValue() { return 1U << 2U; }
+  datafrom4_8_2() {
+    DummyRegisterAccessor<uint32_t> activeParentInterrupts{
+        exceptionDummy.get(), "", "/int_ctrls/controller4/active_ints"};
+    activeParentInterrupts = 1U << 8U;
+  }
 };
 
 struct datafrom4_8_3 : public TriggeredInt<datafrom4_8_3, 4> {
   static std::string path() { return "/datafrom4_8_3"; }
+  static std::string activeInterruptsPath() { return "/int_ctrls/controller4_8/active_ints"; }
+  static uint32_t activeInterruptsValue() { return 1U << 3U; }
+  datafrom4_8_3() {
+    DummyRegisterAccessor<uint32_t> activeParentInterrupts{
+        exceptionDummy.get(), "", "/int_ctrls/controller4/active_ints"};
+    activeParentInterrupts = 1U << 8U;
+  }
 };
 
 /**********************************************************************************************************************/
-
 
 BOOST_AUTO_TEST_CASE(testRegisterAccessor) {
   std::cout << "*** testRegisterAccessor *** " << std::endl;

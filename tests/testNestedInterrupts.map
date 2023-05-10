@@ -15,6 +15,6 @@
 /datafrom4_8_2   1   8 4  0  32  0  1 INTERRUPT4:8:2
 /datafrom4_8_3   1  12 4  0  32  0  1 INTERRUPT4:8:3
 
-/int_ctrls/controllers5/active_ints   1 0 4 2 32 0 0 RO
-/int_ctrls/controllers4/active_ints   1 4 4 2 32 0 0 RO
-/int_ctrls/controllers4_8/active_ints 1 8 4 2 32 0 0 RO
+/int_ctrls/controller5/active_ints   1 0 4 2 32 0 0 RO
+/int_ctrls/controller4/active_ints   1 4 4 2 32 0 0 RO
+/int_ctrls/controller4_8/active_ints 1 8 4 2 32 0 0 RO

@@ -55,7 +55,7 @@ namespace ChimeraTK {
         var.second->activateAndSend(); // function from  the AsyncVariable base class
       }
       if(_controllerHandler) {
-        _controllerHandler->activateInterruptDispatchers();
+        _controllerHandler->activate();
       }
       _isActive = true;
     }
@@ -87,7 +87,7 @@ namespace ChimeraTK {
   //*********************************************************************************************************************/
   void NumericAddressedInterruptDispatcher::postDeactivateHook() {
     if(_controllerHandler) {
-      _controllerHandler->deactivateInterruptDispatchers();
+      _controllerHandler->deactivate();
     }
   }
 

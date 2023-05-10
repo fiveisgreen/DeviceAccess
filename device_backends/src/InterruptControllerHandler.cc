@@ -66,7 +66,7 @@ namespace ChimeraTK {
   }
 
   //*********************************************************************************************************************/
-  void InterruptControllerHandler::activateInterruptDispatchers() {
+  void InterruptControllerHandler::activate() {
     for(auto& dispatcher : _dispatchers) {
       dispatcher.second->activate();
     }
@@ -80,7 +80,7 @@ namespace ChimeraTK {
   }
 
   //*********************************************************************************************************************/
-  void InterruptControllerHandler::deactivateInterruptDispatchers() {
+  void InterruptControllerHandler::deactivate() {
     for(auto& dispatcher : _dispatchers) {
       dispatcher.second->deactivate();
     }

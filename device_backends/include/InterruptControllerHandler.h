@@ -64,14 +64,16 @@ namespace ChimeraTK {
     [[nodiscard]] boost::shared_ptr<NumericAddressedInterruptDispatcher> const& getInterruptDispatcher(
         uint32_t interruptNumber) const;
 
-    void activateInterruptDispatchers();
+    void activate();
     void sendException(const std::exception_ptr& e);
-    void deactivateInterruptDispatchers();
+    void deactivate();
 
     /** The interrupt handling functions implements the handshake with the interrupt controller. It needs to
      * beimplemented individually for each interrupt controller.
      */
     virtual void handle() = 0;
+
+    virtual void activateImpl() {}
 
    protected:
     /** Each known interrupt has its own dispatcher

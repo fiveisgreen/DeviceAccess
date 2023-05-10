@@ -10,6 +10,7 @@
 #include "NumericAddressedBackendMuxedRegisterAccessor.h"
 #include "NumericAddressedBackendRegisterAccessor.h"
 #include "NumericAddressedInterruptDispatcher.h"
+#include <nlohmann/json.hpp>
 
 namespace ChimeraTK {
 
@@ -23,15 +24,17 @@ namespace ChimeraTK {
       MapFileParser parser;
       std::tie(_registerMap, _metadataCatalogue) = parser.parse(mapFileName);
 
-      // FIXME: Hacked implementation for registering the interrupt controllers.
-      // The correct implementation get it from the metadata catalogue
-      for(auto interruptID : _registerMap.getListOfInterrupts()) {
-        do {
-          interruptID.pop_back();
-          if(!interruptID.empty()) {
-            _interruptControllerHandlerFactory.addInterruptController(interruptID, "AXI4_INTC", "");
-          }
-        } while(!interruptID.empty());
+      for(auto const& metaDataEntry : _metadataCatalogue) {
+        auto const& key = metaDataEntry.first;
+        if(key[0] == '!') {
+          auto jkey = nlohmann::json::parse(std::string({++key.begin(), key.end()})); // key without the !
+          auto interruptId = jkey.get<std::vector<uint32_t>>();
+
+          auto jdescriptor = nlohmann::json::parse(metaDataEntry.second);
+          auto controllerType = jdescriptor.begin().key();
+          auto controllerDescription = jdescriptor.front().dump();
+          _interruptControllerHandlerFactory.addInterruptController(interruptId, controllerType, controllerDescription);
+        }
       }
 
       // create all the interrupt dispatchers that are described in the map file

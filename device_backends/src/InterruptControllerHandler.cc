@@ -3,6 +3,7 @@
 #include "InterruptControllerHandler.h"
 
 #include "Axi4_Intc.h"
+#include "DummyIntc.h"
 #include "NumericAddressedInterruptDispatcher.h"
 
 #include <tuple>
@@ -13,6 +14,7 @@ namespace ChimeraTK {
   : _backend(backend) {
     // we already know about the build-in handlers
     _creatorFunctions["AXI4_INTC"] = Axi4_Intc::create;
+    _creatorFunctions["dummy"] = DummyIntc::create;
   }
 
   //*********************************************************************************************************************/
@@ -37,7 +39,11 @@ namespace ChimeraTK {
       idAsString.pop_back(); // remove last ":"
       throw ChimeraTK::logic_error("Unknown interrupt controller ID " + idAsString);
     }
-    return _creatorFunctions[name](_backend, controllerID, description);
+    auto creatorFunctionIter = _creatorFunctions.find(name);
+    if(creatorFunctionIter == _creatorFunctions.end()) {
+      throw ChimeraTK::logic_error("Unknown interrupt controller type \"" + name + "\"");
+    }
+    return creatorFunctionIter->second(_backend, controllerID, description);
   }
 
   //*********************************************************************************************************************/

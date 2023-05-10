@@ -73,8 +73,6 @@ namespace ChimeraTK {
      */
     virtual void handle() = 0;
 
-    virtual void activateImpl() {}
-
    protected:
     /** Each known interrupt has its own dispatcher
      */

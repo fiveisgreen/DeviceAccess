@@ -15,8 +15,6 @@ namespace ChimeraTK {
 
     void handle() override;
 
-    void activateImpl() override;
-
     static std::unique_ptr<DummyIntc> create(
         NumericAddressedBackend*, std::vector<uint32_t> const& controllerID, std::string const& desrciption);
 

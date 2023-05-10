@@ -37,18 +37,15 @@ namespace ChimeraTK {
         }
       }
 
-      // create all the interrupt dispatchers that are described in the map file
+      // Create all primay interrupt dispatchers that are described in the map file. The interrupt dispatcher thread
+      // needs them so have something to access (even though nothing will happen as long as none is subscribed).
+      // They don't have controller handlers (nested interrupts) yet because these can hold accessors, which
+      // in turn have shared pointers to the backend, which cannot be created in the backend constructor.
+      // They will be added when accessors are subscribing.
       for(const auto& interruptID : _registerMap.getListOfInterrupts()) {
-        /// try_emplace returns an iterator plus an bool whether the element is new
-        auto [dispatcherIter, isNew] = _primaryInterruptDispatchersNonConst.try_emplace(interruptID.front(),
+        _primaryInterruptDispatchersNonConst.try_emplace(interruptID.front(),
             boost::make_shared<NumericAddressedInterruptDispatcher>(
                 this, std::vector<uint32_t>({interruptID.front()})));
-        if(interruptID.size() > 1) {
-          auto& dispatcher =
-              dispatcherIter->second; // the iterator of a map is a key-value pair. The variable dispatcher now is a
-                                      // shared pointer to a NumericAddressedInterruptDispatcher
-          dispatcher->addNestedInterrupt({++interruptID.begin(), interruptID.end()});
-        }
       }
     }
   }
@@ -143,6 +140,9 @@ namespace ChimeraTK {
         interruptDispatcher = primaryDispatcher;
       }
       else {
+        // The controller handler and nested dispatcher might not exist yet. Just call add.
+        // It does nothing if they already exist.
+        primaryDispatcher->addNestedInterrupt({++registerInfo.interruptId.begin(), registerInfo.interruptId.end()});
         interruptDispatcher = primaryDispatcher->getNestedDispatcher(
             {++registerInfo.interruptId.begin(), registerInfo.interruptId.end()});
       }

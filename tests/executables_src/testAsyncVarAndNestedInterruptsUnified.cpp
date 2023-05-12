@@ -18,6 +18,29 @@ using namespace boost::unit_test_framework;
 
 using namespace ChimeraTK;
 
+/********************************************************************************************************************/
+struct DummyForCleanupCheck : public ExceptionDummy {
+  using ExceptionDummy::ExceptionDummy;
+
+  static boost::shared_ptr<DeviceBackend> createInstance(std::string, std::map<std::string, std::string> parameters) {
+    return boost::make_shared<DummyForCleanupCheck>(parameters["map"]);
+  }
+  ~DummyForCleanupCheck() override {
+    std::cout << "~DummyForCleanupCheck()" << std::endl;
+    cleanupCalled = true;
+  }
+
+  struct BackendRegisterer {
+    BackendRegisterer() {
+      ChimeraTK::BackendFactory::getInstance().registerBackendType(
+          "DummyForCleanupCheck", &DummyForCleanupCheck::createInstance, {"map"});
+    }
+  };
+  static std::atomic_bool cleanupCalled;
+};
+std::atomic_bool DummyForCleanupCheck::cleanupCalled{false};
+static DummyForCleanupCheck::BackendRegisterer gDFCCRegisterer;
+
 /* ===============================================================================================
  * This test is checking async variables and the map-file related part of interrupts for
  * consistency with the specification (implemented in the unified test).
@@ -36,7 +59,7 @@ BOOST_AUTO_TEST_SUITE(AsyncVarAndNestedInterruptsUnifiedTestSuite)
 
 /**********************************************************************************************************************/
 
-static std::string cdd("(ExceptionDummy:1?map=testNestedInterrupts.map)");
+static std::string cdd("(DummyForCleanupCheck:1?map=testNestedInterrupts.map)");
 static auto exceptionDummy =
     boost::dynamic_pointer_cast<ExceptionDummy>(BackendFactory::getInstance().createBackend(cdd));
 
@@ -134,12 +157,16 @@ struct datafrom4_8_3 : public TriggeredInt<datafrom4_8_3, 4> {
 
 BOOST_AUTO_TEST_CASE(testRegisterAccessor) {
   std::cout << "*** testRegisterAccessor *** " << std::endl;
-  ChimeraTK::UnifiedBackendTest<>()
-      .addRegister<datafrom6>()
-      .addRegister<datafrom5_9>()
-      .addRegister<datafrom4_8_2>()
-      .addRegister<datafrom4_8_3>()
-      .runTests(cdd);
+  {
+    ChimeraTK::UnifiedBackendTest<>()
+        .addRegister<datafrom6>()
+        .addRegister<datafrom5_9>()
+        .addRegister<datafrom4_8_2>()
+        .addRegister<datafrom4_8_3>()
+        .runTests(cdd);
+  }
+  exceptionDummy = nullptr;
+  BOOST_CHECK(DummyForCleanupCheck::cleanupCalled);
 }
 
 /**********************************************************************************************************************/

@@ -11,23 +11,23 @@
 
 namespace ChimeraTK {
   class InterruptControllerHandler;
-  class NumericAddressedInterruptDispatcher;
-  class NumericAddressedBackend;
+  class TriggerPollDistributor;
+  class DeviceBackend;
 
   /** Knows which type of InterruptControllerHandler to create for which interrupt.
    *  It is filled from the meta information from the map file.
    */
   class InterruptControllerHandlerFactory {
    public:
-    explicit InterruptControllerHandlerFactory(NumericAddressedBackend* backend);
+    explicit InterruptControllerHandlerFactory(DeviceBackend* backend);
 
     std::unique_ptr<InterruptControllerHandler> createInterruptControllerHandler(
         std::vector<uint32_t> const& controllerID);
-    void addInterruptController(
+    void addControllerDescription(
         std::vector<uint32_t> const& controllerID, std::string const& name, std::string const& description);
 
    protected:
-    NumericAddressedBackend* _backend;
+    DeviceBackend* _backend;
 
     /** The key of this map is the controllerID.
      *  The value is a string pair of controller name and the description string from the map file.
@@ -38,30 +38,31 @@ namespace ChimeraTK {
      */
     std::map<std::string,
         std::function<std::unique_ptr<InterruptControllerHandler>(
-            NumericAddressedBackend*, std::vector<uint32_t> const&, std::string)>>
+            DeviceBackend*, InterruptControllerHandlerFactory*, std::vector<uint32_t> const&, std::string)>>
         _creatorFunctions;
   };
 
   /** Interface base class for interrupt controller handlers. It implements the interface with the
-   * NumericAddressedBackend and the InterruptDispatchers. Implementations must fill the pure virtual "handle()"
+   * DeviceBackend and the InterruptDispatchers. Implementations must fill the pure virtual "handle()"
    * function with life and register the constructor to the factory.
    */
   class InterruptControllerHandler {
    public:
-    /** InterruptControllerHandler classes must only be constructed inside and held by a NumericAddressedBackend,
+    /** InterruptControllerHandler classes must only be constructed inside and held by a DeviceBackend,
      * which is known to the handler via plain pointer (to avoid shared pointer loops)
      */
-    explicit InterruptControllerHandler(NumericAddressedBackend* backend, std::vector<uint32_t> const& controllerID)
-    : _backend(backend), _id(controllerID) {}
+    explicit InterruptControllerHandler(DeviceBackend* backend,
+        InterruptControllerHandlerFactory* controllerHandlerFactory, std::vector<uint32_t> const& controllerID)
+    : _backend(backend), _controllerHandlerFactory(controllerHandlerFactory), _id(controllerID) {}
     virtual ~InterruptControllerHandler() = default;
 
-    /** Called by the NumericAddressedBackend during instantiation.
+    /** Called by the owning backend during instantiation.
      */
     void addInterrupt(std::vector<uint32_t> const& interruptID);
-    /** The NumericAddressedBackends needs to access the InterruptDispatchers to place nested InterruptController
-     * during initialisation
+
+    /** During initialisation the owning backend needs to access the according triggerPollDistributors.
      */
-    [[nodiscard]] boost::shared_ptr<NumericAddressedInterruptDispatcher> const& getInterruptDispatcher(
+    [[nodiscard]] boost::shared_ptr<TriggerPollDistributor> const& getInterruptDispatcher(
         uint32_t interruptNumber) const;
 
     void activate();
@@ -76,9 +77,10 @@ namespace ChimeraTK {
    protected:
     /** Each known interrupt has its own dispatcher
      */
-    std::map<uint32_t, boost::shared_ptr<NumericAddressedInterruptDispatcher>> _dispatchers;
+    std::map<uint32_t, boost::shared_ptr<TriggerPollDistributor>> _dispatchers;
 
-    NumericAddressedBackend* _backend;
+    DeviceBackend* _backend;
+    InterruptControllerHandlerFactory* _controllerHandlerFactory;
 
     /** The ID of this controller handler.
      */

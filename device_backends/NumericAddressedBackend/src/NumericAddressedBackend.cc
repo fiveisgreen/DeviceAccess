@@ -9,7 +9,7 @@
 #include "NumericAddressedBackendASCIIAccessor.h"
 #include "NumericAddressedBackendMuxedRegisterAccessor.h"
 #include "NumericAddressedBackendRegisterAccessor.h"
-#include "NumericAddressedInterruptDispatcher.h"
+#include "TriggerPollDistributor.h"
 #include <nlohmann/json.hpp>
 
 namespace ChimeraTK {
@@ -33,7 +33,8 @@ namespace ChimeraTK {
           auto jdescriptor = nlohmann::json::parse(metaDataEntry.second);
           auto controllerType = jdescriptor.begin().key();
           auto controllerDescription = jdescriptor.front().dump();
-          _interruptControllerHandlerFactory.addInterruptController(interruptId, controllerType, controllerDescription);
+          _interruptControllerHandlerFactory.addControllerDescription(
+              interruptId, controllerType, controllerDescription);
         }
       }
 
@@ -44,8 +45,8 @@ namespace ChimeraTK {
       // They will be added when accessors are subscribing.
       for(const auto& interruptID : _registerMap.getListOfInterrupts()) {
         _primaryInterruptDispatchersNonConst.try_emplace(interruptID.front(),
-            boost::make_shared<NumericAddressedInterruptDispatcher>(
-                this, std::vector<uint32_t>({interruptID.front()})));
+            boost::make_shared<TriggerPollDistributor>(
+                this, &_interruptControllerHandlerFactory, std::vector<uint32_t>({interruptID.front()})));
       }
     }
   }
@@ -133,7 +134,7 @@ namespace ChimeraTK {
             "Register " + registerPathName + " does not support AccessMode::wait_for_new_data.");
       }
 
-      boost::shared_ptr<NumericAddressedInterruptDispatcher> interruptDispatcher;
+      boost::shared_ptr<TriggerPollDistributor> interruptDispatcher;
       const auto& primaryDispatcher = _primaryInterruptDispatchers.at(registerInfo.interruptId.front());
 
       if(registerInfo.interruptId.size() == 1) {

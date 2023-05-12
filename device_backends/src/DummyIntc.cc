@@ -3,14 +3,14 @@
 
 #include "DummyIntc.h"
 
-#include "NumericAddressedInterruptDispatcher.h"
+#include "TriggerPollDistributor.h"
 #include <nlohmann/json.hpp>
 
 namespace ChimeraTK {
 
-  DummyIntc::DummyIntc(NumericAddressedBackend* backend, std::vector<uint32_t> const& controllerID,
-      ChimeraTK::RegisterPath const& module)
-  : InterruptControllerHandler(backend, controllerID), _module(module) {
+  DummyIntc::DummyIntc(DeviceBackend* backend, InterruptControllerHandlerFactory* controllerHandlerFactory,
+      std::vector<uint32_t> const& controllerID, ChimeraTK::RegisterPath const& module)
+  : InterruptControllerHandler(backend, controllerHandlerFactory, controllerID), _module(module) {
     _activeInterrupts = _backend->getRegisterAccessor<uint32_t>(_module / "active_ints", 1, 0, {});
     if(!_activeInterrupts->isReadable()) {
       throw ChimeraTK::runtime_error("DummyIntc: Handshake register not readable: " + _activeInterrupts->getName());
@@ -31,11 +31,12 @@ namespace ChimeraTK {
     }
   }
 
-  std::unique_ptr<DummyIntc> DummyIntc::create(
-      NumericAddressedBackend* backend, std::vector<uint32_t> const& controllerID, std::string const& desrciption) {
+  std::unique_ptr<DummyIntc> DummyIntc::create(DeviceBackend* backend,
+      InterruptControllerHandlerFactory* controllerHandlerFactory, std::vector<uint32_t> const& controllerID,
+      std::string const& desrciption) {
     auto jdescription = nlohmann::json::parse(desrciption);
     auto module = jdescription["module"].get<std::string>();
-    return std::make_unique<DummyIntc>(backend, controllerID, module);
+    return std::make_unique<DummyIntc>(backend, controllerHandlerFactory, controllerID, module);
   }
 
 } // namespace ChimeraTK

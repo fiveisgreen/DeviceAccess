@@ -4,21 +4,20 @@
 
 #include "Axi4_Intc.h"
 #include "DummyIntc.h"
-#include "NumericAddressedInterruptDispatcher.h"
+#include "TriggerPollDistributor.h"
 
 #include <tuple>
 
 namespace ChimeraTK {
   //*********************************************************************************************************************/
-  InterruptControllerHandlerFactory::InterruptControllerHandlerFactory(NumericAddressedBackend* backend)
-  : _backend(backend) {
+  InterruptControllerHandlerFactory::InterruptControllerHandlerFactory(DeviceBackend* backend) : _backend(backend) {
     // we already know about the build-in handlers
     _creatorFunctions["AXI4_INTC"] = Axi4_Intc::create;
     _creatorFunctions["dummy"] = DummyIntc::create;
   }
 
   //*********************************************************************************************************************/
-  void InterruptControllerHandlerFactory::addInterruptController(
+  void InterruptControllerHandlerFactory::addControllerDescription(
       std::vector<uint32_t> const& controllerID, std::string const& name, std::string const& description) {
     _controllerDescriptions[controllerID] = {name, description};
   }
@@ -43,7 +42,7 @@ namespace ChimeraTK {
     if(creatorFunctionIter == _creatorFunctions.end()) {
       throw ChimeraTK::logic_error("Unknown interrupt controller type \"" + name + "\"");
     }
-    return creatorFunctionIter->second(_backend, controllerID, description);
+    return creatorFunctionIter->second(_backend, this, controllerID, description);
   }
 
   //*********************************************************************************************************************/
@@ -51,8 +50,8 @@ namespace ChimeraTK {
     assert(!interruptID.empty());
     auto qualifiedInterruptId = _id;
     qualifiedInterruptId.push_back(interruptID.front());
-    auto [dispatcherIter, isNew] = _dispatchers.try_emplace(
-        interruptID.front(), boost::make_shared<NumericAddressedInterruptDispatcher>(_backend, qualifiedInterruptId));
+    auto [dispatcherIter, isNew] = _dispatchers.try_emplace(interruptID.front(),
+        boost::make_shared<TriggerPollDistributor>(_backend, _controllerHandlerFactory, qualifiedInterruptId));
     auto& dispatcher = dispatcherIter->second; // a map iterator is a pair of key/value
     if(interruptID.size() > 1) {
       dispatcher->addNestedInterrupt({++interruptID.begin(), interruptID.end()});
@@ -60,7 +59,7 @@ namespace ChimeraTK {
   }
 
   //*********************************************************************************************************************/
-  boost::shared_ptr<NumericAddressedInterruptDispatcher> const& InterruptControllerHandler::getInterruptDispatcher(
+  boost::shared_ptr<TriggerPollDistributor> const& InterruptControllerHandler::getInterruptDispatcher(
       uint32_t interruptNumber) const {
     return _dispatchers.at(interruptNumber);
   }

@@ -50,8 +50,8 @@ namespace ChimeraTK {
 
   /** Helper class to have a complete descriton to create an Accessor.
    *  It contains all the information given to DeviceBackend:getNDRegisterAccessor, incl. the offset in the
-   *  register which is not known to the accessor itself. Just just to keep the number of parameters for
-   * createAsyncVariable in check.
+   *  register which is not known to the catalogue entry and the accessor itself. Just just to keep the number of
+   * parameters for createAsyncVariable in check.
    */
   struct AccessorInstanceDescriptor {
     RegisterPath name;

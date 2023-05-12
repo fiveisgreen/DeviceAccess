@@ -5,27 +5,24 @@
 #include "AsyncAccessorManager.h"
 #include "AsyncNDRegisterAccessor.h"
 #include "InterruptControllerHandler.h"
-#include "NumericAddressedBackendRegisterAccessor.h"
 #include "TransferGroup.h"
 
 #include <memory>
 #include <mutex>
 
 namespace ChimeraTK {
-  class NumericAddressedBackend;
-
-  /** Typeless base class. The implementations will have a list of all asynchronous
-   *  accessors and one synchronous accessor.
+  /** Typeless base class. The implementations will have a synchronous accessor which can be
+   *  polled and then the send buffer is filled with its content.
    */
-  struct NumericAddressedAsyncVariable {
-    virtual ~NumericAddressedAsyncVariable() = default;
+  struct PolledAsyncVariable {
+    virtual ~PolledAsyncVariable() = default;
 
     /** Fill the user buffer from the sync accessor, and replace the version number with the given version.
      */
     virtual void fillSendBuffer(VersionNumber const& version) = 0;
   };
 
-  /** The NumericAddressedInterruptDispatcher has two main functionalities:
+  /** The TriggerPollDistributor has two main functionalities:
    *  * It calls functions for all asynchronous accessors associated with one interrupt
    *  * It serves as a subscription manager
    *
@@ -33,14 +30,15 @@ namespace ChimeraTK {
    *  subscribed variables is not thread safe. This class has implements a lock so
    *  dispatching an interrupt is safe against concurrent subscription/unsubscription.
    */
-  class NumericAddressedInterruptDispatcher : public AsyncAccessorManager {
+  class TriggerPollDistributor : public AsyncAccessorManager {
    public:
-    /** Trigger all NumericAddressedAsyncVariables that are stored in this dispatcher. Creates a new VersionNumber and
+    /** Poll all sync variables and push the data via their async counterparts. Creates a new VersionNumber and
      * sends all data with this version.
      */
     VersionNumber trigger();
 
-    NumericAddressedInterruptDispatcher(NumericAddressedBackend* backend, std::vector<uint32_t> const& interruptID);
+    TriggerPollDistributor(DeviceBackend* backend, InterruptControllerHandlerFactory* controllerHandlerFactory,
+        std::vector<uint32_t> const& interruptID);
 
     template<typename UserType>
     std::unique_ptr<AsyncVariable> createAsyncVariable(
@@ -51,8 +49,7 @@ namespace ChimeraTK {
     void postSendExceptionHook(const std::exception_ptr& e) override;
 
     void addNestedInterrupt(std::vector<uint32_t> const& interruptID);
-    boost::shared_ptr<NumericAddressedInterruptDispatcher> const& getNestedDispatcher(
-        std::vector<uint32_t> const& interruptID);
+    boost::shared_ptr<TriggerPollDistributor> const& getNestedDispatcher(std::vector<uint32_t> const& interruptID);
 
    protected:
     void asyncVariableMapChanged() override {
@@ -66,21 +63,22 @@ namespace ChimeraTK {
     // unique_ptr because we want to delete it manually
     std::unique_ptr<TransferGroup> _transferGroup{new TransferGroup};
     std::vector<uint32_t> _id;
-    NumericAddressedBackend* _backend;
+    DeviceBackend* _backend;
+    InterruptControllerHandlerFactory* _controllerHandlerFactory;
     std::unique_ptr<InterruptControllerHandler> _controllerHandler;
   };
 
-  /** Implementation of the NumericAddressedAsyncVariable for the concrete UserType.
+  /** Implementation of the PolledAsyncVariable for the concrete UserType.
    */
   template<typename UserType>
-  struct NumericAddressedAsyncVariableImpl : public AsyncVariableImpl<UserType>, public NumericAddressedAsyncVariable {
+  struct PolledAsyncVariableImpl : public AsyncVariableImpl<UserType>, public PolledAsyncVariable {
     void fillSendBuffer(VersionNumber const& version) final;
 
     /** The constructor takes an already created synchronous accessor and a flag
      *  whether the variable is active. If the variable is active all new subscribers will automatically
      *  be activated and immediately get their initial value.
      */
-    explicit NumericAddressedAsyncVariableImpl(boost::shared_ptr<NDRegisterAccessor<UserType>> syncAccessor_);
+    explicit PolledAsyncVariableImpl(boost::shared_ptr<NDRegisterAccessor<UserType>> syncAccessor_);
 
     boost::shared_ptr<NDRegisterAccessor<UserType>> syncAccessor;
 
@@ -96,7 +94,7 @@ namespace ChimeraTK {
   //*********************************************************************************************************************/
 
   template<typename UserType>
-  std::unique_ptr<AsyncVariable> NumericAddressedInterruptDispatcher::createAsyncVariable(
+  std::unique_ptr<AsyncVariable> TriggerPollDistributor::createAsyncVariable(
       const boost::shared_ptr<DeviceBackend>& backend, AccessorInstanceDescriptor const& descriptor, bool isActive) {
     auto synchronousFlags = descriptor.flags;
     synchronousFlags.remove(AccessMode::wait_for_new_data);
@@ -114,12 +112,12 @@ namespace ChimeraTK {
     }
 
     _transferGroup->addAccessor(syncAccessor);
-    return std::make_unique<NumericAddressedAsyncVariableImpl<UserType>>(syncAccessor);
+    return std::make_unique<PolledAsyncVariableImpl<UserType>>(syncAccessor);
   }
 
   //*********************************************************************************************************************/
   template<typename UserType>
-  void NumericAddressedAsyncVariableImpl<UserType>::fillSendBuffer(VersionNumber const& version) {
+  void PolledAsyncVariableImpl<UserType>::fillSendBuffer(VersionNumber const& version) {
     this->_sendBuffer.versionNumber = version;
     this->_sendBuffer.dataValidity = syncAccessor->dataValidity();
     this->_sendBuffer.value.swap(syncAccessor->accessChannels());
@@ -127,11 +125,11 @@ namespace ChimeraTK {
 
   //*********************************************************************************************************************/
   template<typename UserType>
-  NumericAddressedAsyncVariableImpl<UserType>::NumericAddressedAsyncVariableImpl(
+  PolledAsyncVariableImpl<UserType>::PolledAsyncVariableImpl(
       boost::shared_ptr<NDRegisterAccessor<UserType>> syncAccessor_)
   : AsyncVariableImpl<UserType>(syncAccessor_->getNumberOfChannels(), syncAccessor_->getNumberOfSamples()),
     syncAccessor(syncAccessor_) {
-    NumericAddressedAsyncVariableImpl<UserType>::fillSendBuffer({});
+    PolledAsyncVariableImpl<UserType>::fillSendBuffer({});
   }
 
 } // namespace ChimeraTK

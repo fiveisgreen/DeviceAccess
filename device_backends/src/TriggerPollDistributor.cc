@@ -9,8 +9,9 @@ namespace ChimeraTK {
 
   TriggerPollDistributor::TriggerPollDistributor(DeviceBackend* backend,
       InterruptControllerHandlerFactory* controllerHandlerFactory, std::vector<uint32_t> interruptID,
-      std::shared_ptr<InterruptControllerHandler> owner)
-  : _id(std::move(interruptID)), _backend(backend), _controllerHandlerFactory(controllerHandlerFactory), _owner(owner) {
+      std::shared_ptr<InterruptControllerHandler> parent)
+  : _id(std::move(interruptID)), _backend(backend), _controllerHandlerFactory(controllerHandlerFactory),
+    _parent(parent) {
     FILL_VIRTUAL_FUNCTION_TEMPLATE_VTABLE(createAsyncVariable);
   }
 

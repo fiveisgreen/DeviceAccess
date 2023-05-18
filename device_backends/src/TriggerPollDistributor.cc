@@ -8,8 +8,9 @@
 namespace ChimeraTK {
 
   TriggerPollDistributor::TriggerPollDistributor(DeviceBackend* backend,
-      InterruptControllerHandlerFactory* controllerHandlerFactory, std::vector<uint32_t> const& interruptID)
-  : _id(interruptID), _backend(backend), _controllerHandlerFactory(controllerHandlerFactory) {
+      InterruptControllerHandlerFactory* controllerHandlerFactory, std::vector<uint32_t> interruptID,
+      std::shared_ptr<InterruptControllerHandler> owner)
+  : _id(std::move(interruptID)), _backend(backend), _controllerHandlerFactory(controllerHandlerFactory), _owner(owner) {
     FILL_VIRTUAL_FUNCTION_TEMPLATE_VTABLE(createAsyncVariable);
   }
 
@@ -29,8 +30,9 @@ namespace ChimeraTK {
         var.second->send(); // send function from  the AsyncVariable base class
       }
 
-      if(_controllerHandler) {
-        _controllerHandler->handle();
+      auto controllerHandler = _controllerHandler.lock();
+      if(controllerHandler) {
+        controllerHandler->handle();
       }
     }
     catch(ChimeraTK::runtime_error&) {
@@ -54,8 +56,9 @@ namespace ChimeraTK {
         polledAsyncVariable->fillSendBuffer(ver);
         var.second->activateAndSend(); // function from  the AsyncVariable base class
       }
-      if(_controllerHandler) {
-        _controllerHandler->activate();
+      auto controllerHandler = _controllerHandler.lock();
+      if(controllerHandler) {
+        controllerHandler->activate();
       }
       _isActive = true;
     }
@@ -68,33 +71,31 @@ namespace ChimeraTK {
   }
 
   //*********************************************************************************************************************/
-  void TriggerPollDistributor::addNestedInterrupt(std::vector<uint32_t> const& interruptID) {
-    if(!_controllerHandler) {
-      _controllerHandler = _controllerHandlerFactory->createInterruptControllerHandler(_id);
-    }
-    _controllerHandler->addInterrupt(interruptID);
-  }
-  //*********************************************************************************************************************/
-  boost::shared_ptr<TriggerPollDistributor> const& TriggerPollDistributor::getNestedDispatcher(
+  boost::shared_ptr<TriggerPollDistributor> TriggerPollDistributor::getNestedPollDistributor(
       std::vector<uint32_t> const& interruptID) {
-    const auto& firstLevelNestedDispatcher = _controllerHandler->getInterruptDispatcher(interruptID.front());
-    if(interruptID.size() == 1) {
-      return firstLevelNestedDispatcher;
+    std::lock_guard<std::recursive_mutex> variablesLock(_variablesMutex);
+
+    auto controllerHandler = _controllerHandler.lock();
+    if(!controllerHandler) {
+      controllerHandler = _controllerHandlerFactory->createInterruptControllerHandler(_id);
+      _controllerHandler = controllerHandler;
     }
-    return firstLevelNestedDispatcher->getNestedDispatcher({++interruptID.begin(), interruptID.end()});
+    return controllerHandler->getTriggerPollDistributorRecursive(interruptID);
   }
 
   //*********************************************************************************************************************/
   void TriggerPollDistributor::postDeactivateHook() {
-    if(_controllerHandler) {
-      _controllerHandler->deactivate();
+    auto controllerHandler = _controllerHandler.lock();
+    if(controllerHandler) {
+      controllerHandler->deactivate();
     }
   }
 
   //*********************************************************************************************************************/
   void TriggerPollDistributor::postSendExceptionHook(const std::exception_ptr& e) {
-    if(_controllerHandler) {
-      _controllerHandler->sendException(e);
+    auto controllerHandler = _controllerHandler.lock();
+    if(controllerHandler) {
+      controllerHandler->sendException(e);
     }
   }
 

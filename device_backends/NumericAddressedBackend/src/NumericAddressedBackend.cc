@@ -141,10 +141,7 @@ namespace ChimeraTK {
         interruptDispatcher = primaryDispatcher;
       }
       else {
-        // The controller handler and nested dispatcher might not exist yet. Just call add.
-        // It does nothing if they already exist.
-        primaryDispatcher->addNestedInterrupt({++registerInfo.interruptId.begin(), registerInfo.interruptId.end()});
-        interruptDispatcher = primaryDispatcher->getNestedDispatcher(
+        interruptDispatcher = primaryDispatcher->getNestedPollDistributor(
             {++registerInfo.interruptId.begin(), registerInfo.interruptId.end()});
       }
 

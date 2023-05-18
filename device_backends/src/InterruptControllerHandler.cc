@@ -46,22 +46,20 @@ namespace ChimeraTK {
   }
 
   //*********************************************************************************************************************/
-  void InterruptControllerHandler::addInterrupt(std::vector<uint32_t> const& interruptID) {
+  boost::shared_ptr<TriggerPollDistributor> InterruptControllerHandler::getTriggerPollDistributorRecursive(
+      std::vector<uint32_t> const& interruptID) {
+    // assert(false); // FIXME: needs container lock!
     assert(!interruptID.empty());
     auto qualifiedInterruptId = _id;
     qualifiedInterruptId.push_back(interruptID.front());
     auto [dispatcherIter, isNew] = _dispatchers.try_emplace(interruptID.front(),
-        boost::make_shared<TriggerPollDistributor>(_backend, _controllerHandlerFactory, qualifiedInterruptId));
+        boost::make_shared<TriggerPollDistributor>(
+            _backend, _controllerHandlerFactory, qualifiedInterruptId, shared_from_this()));
     auto& dispatcher = dispatcherIter->second; // a map iterator is a pair of key/value
-    if(interruptID.size() > 1) {
-      dispatcher->addNestedInterrupt({++interruptID.begin(), interruptID.end()});
+    if(interruptID.size() == 1) {
+      return dispatcher;
     }
-  }
-
-  //*********************************************************************************************************************/
-  boost::shared_ptr<TriggerPollDistributor> const& InterruptControllerHandler::getInterruptDispatcher(
-      uint32_t interruptNumber) const {
-    return _dispatchers.at(interruptNumber);
+    return dispatcher->getNestedPollDistributor({++interruptID.begin(), interruptID.end()});
   }
 
   //*********************************************************************************************************************/

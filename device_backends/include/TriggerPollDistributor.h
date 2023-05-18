@@ -3,7 +3,6 @@
 #pragma once
 
 #include "AsyncAccessorManager.h"
-#include "AsyncNDRegisterAccessor.h"
 #include "InterruptControllerHandler.h"
 #include "TransferGroup.h"
 
@@ -38,7 +37,7 @@ namespace ChimeraTK {
     VersionNumber trigger();
 
     TriggerPollDistributor(DeviceBackend* backend, InterruptControllerHandlerFactory* controllerHandlerFactory,
-        std::vector<uint32_t> const& interruptID);
+        std::vector<uint32_t> interruptID, std::shared_ptr<InterruptControllerHandler> owner = {});
 
     template<typename UserType>
     std::unique_ptr<AsyncVariable> createAsyncVariable(
@@ -48,8 +47,7 @@ namespace ChimeraTK {
     void postDeactivateHook() override;
     void postSendExceptionHook(const std::exception_ptr& e) override;
 
-    void addNestedInterrupt(std::vector<uint32_t> const& interruptID);
-    boost::shared_ptr<TriggerPollDistributor> const& getNestedDispatcher(std::vector<uint32_t> const& interruptID);
+    boost::shared_ptr<TriggerPollDistributor> getNestedPollDistributor(std::vector<uint32_t> const& interruptID);
 
    protected:
     void asyncVariableMapChanged() override {
@@ -65,7 +63,8 @@ namespace ChimeraTK {
     std::vector<uint32_t> _id;
     DeviceBackend* _backend;
     InterruptControllerHandlerFactory* _controllerHandlerFactory;
-    std::unique_ptr<InterruptControllerHandler> _controllerHandler;
+    std::weak_ptr<InterruptControllerHandler> _controllerHandler;
+    std::shared_ptr<InterruptControllerHandler> _owner;
   };
 
   /** Implementation of the PolledAsyncVariable for the concrete UserType.

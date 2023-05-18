@@ -46,7 +46,7 @@ namespace ChimeraTK {
    * DeviceBackend and the InterruptDispatchers. Implementations must fill the pure virtual "handle()"
    * function with life and register the constructor to the factory.
    */
-  class InterruptControllerHandler {
+  class InterruptControllerHandler : public std::enable_shared_from_this<InterruptControllerHandler> {
    public:
     /** InterruptControllerHandler classes must only be constructed inside and held by a DeviceBackend,
      * which is known to the handler via plain pointer (to avoid shared pointer loops)
@@ -56,21 +56,18 @@ namespace ChimeraTK {
     : _backend(backend), _controllerHandlerFactory(controllerHandlerFactory), _id(controllerID) {}
     virtual ~InterruptControllerHandler() = default;
 
-    /** Called by the owning backend during instantiation.
+    /** Needed to get a new accessor for a certain interrupt. The whole chain will be created recursively if it does not
+     * exist yet.
      */
-    void addInterrupt(std::vector<uint32_t> const& interruptID);
-
-    /** During initialisation the owning backend needs to access the according triggerPollDistributors.
-     */
-    [[nodiscard]] boost::shared_ptr<TriggerPollDistributor> const& getInterruptDispatcher(
-        uint32_t interruptNumber) const;
+    [[nodiscard]] boost::shared_ptr<TriggerPollDistributor> getTriggerPollDistributorRecursive(
+        std::vector<uint32_t> const& interruptID);
 
     void activate();
     void sendException(const std::exception_ptr& e);
     void deactivate();
 
     /** The interrupt handling functions implements the handshake with the interrupt controller. It needs to
-     * beimplemented individually for each interrupt controller.
+     * be implemented individually for each interrupt controller.
      */
     virtual void handle() = 0;
 

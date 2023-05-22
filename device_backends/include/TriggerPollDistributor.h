@@ -64,7 +64,7 @@ namespace ChimeraTK {
     DeviceBackend* _backend;
     InterruptControllerHandlerFactory* _controllerHandlerFactory;
     std::weak_ptr<InterruptControllerHandler> _controllerHandler;
-    std::shared_ptr<InterruptControllerHandler> _owner;
+    std::shared_ptr<InterruptControllerHandler> _parent;
   };
 
   /** Implementation of the PolledAsyncVariable for the concrete UserType.

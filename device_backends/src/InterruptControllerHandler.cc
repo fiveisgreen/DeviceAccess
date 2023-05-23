@@ -57,7 +57,6 @@ namespace ChimeraTK {
     boost::shared_ptr<TriggerPollDistributor> dispatcher;
     auto dispatcherIter = _dispatchers.find(interruptID.front());
     if(dispatcherIter == _dispatchers.end()) {
-      std::cout << "Creating new TriggerPolldistributor level " << qualifiedInterruptId.size() << std::endl;
       dispatcher = boost::make_shared<TriggerPollDistributor>(
           _backend, _controllerHandlerFactory, qualifiedInterruptId, shared_from_this());
       _dispatchers[interruptID.front()] = dispatcher;
@@ -68,7 +67,6 @@ namespace ChimeraTK {
     else {
       dispatcher = dispatcherIter->second.lock();
       if(!dispatcher) {
-        std::cout << "Replacing lost TriggerPolldistributor level " << qualifiedInterruptId.size() << std::endl;
         dispatcher = boost::make_shared<TriggerPollDistributor>(
             _backend, _controllerHandlerFactory, qualifiedInterruptId, shared_from_this());
         _dispatchers[interruptID.front()] = dispatcher;
@@ -91,9 +89,6 @@ namespace ChimeraTK {
       if(dispatcher) {
         dispatcher->activate();
       }
-      else {
-        std::cout << "Warning, not activating because weak pointer did not lock" << std::endl;
-      }
     }
   }
 
@@ -104,9 +99,6 @@ namespace ChimeraTK {
       if(dispatcher) {
         dispatcher->sendException(e);
       }
-      else {
-        std::cout << "Warning, not sending exception because weak pointer did not lock" << std::endl;
-      }
     }
   }
 
@@ -116,9 +108,6 @@ namespace ChimeraTK {
       auto dispatcher = dispatcherIter.second.lock();
       if(dispatcher) {
         dispatcher->deactivate();
-      }
-      else {
-        std::cout << "Warning, not deactivating because weak pointer did not lock" << std::endl;
       }
     }
   }

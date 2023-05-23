@@ -13,7 +13,6 @@ namespace ChimeraTK {
   : _id(std::move(interruptID)), _backend(backend), _controllerHandlerFactory(controllerHandlerFactory),
     _parent(parent) {
     FILL_VIRTUAL_FUNCTION_TEMPLATE_VTABLE(createAsyncVariable);
-    std::cout << "This is TriggerPollDistributor level " << _id.size() << std::endl;
   }
 
   //*********************************************************************************************************************/

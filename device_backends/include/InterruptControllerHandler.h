@@ -5,7 +5,6 @@
 #include <boost/shared_ptr.hpp>
 
 #include <functional>
-#include <iostream>
 #include <map>
 #include <memory>
 #include <vector>
@@ -54,11 +53,8 @@ namespace ChimeraTK {
      */
     InterruptControllerHandler(DeviceBackend* backend, InterruptControllerHandlerFactory* controllerHandlerFactory,
         std::vector<uint32_t> const& controllerID, boost::shared_ptr<TriggerPollDistributor> parent)
-    : _backend(backend), _controllerHandlerFactory(controllerHandlerFactory), _id(controllerID), _parent(parent) {
-      std::cout << "This is InterruptControllerHandler level " << controllerID.size() << std::endl;
-    }
-    // virtual ~InterruptControllerHandler() = default;
-    virtual ~InterruptControllerHandler() { std::cout << "this is ~InterruptControllerHandler()" << std::endl; }
+    : _backend(backend), _controllerHandlerFactory(controllerHandlerFactory), _id(controllerID), _parent(parent) {}
+    virtual ~InterruptControllerHandler() = default;
 
     /** Needed to get a new accessor for a certain interrupt. The whole chain will be created recursively if it does not
      * exist yet.

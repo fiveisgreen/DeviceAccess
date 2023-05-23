@@ -26,10 +26,6 @@ namespace ChimeraTK {
           auto dispatcher = _dispatchers.at(i).lock();
           if(dispatcher) {
             dispatcher->trigger();
-            std::cout << "triggered " << i << std::endl;
-          }
-          else {
-            std::cout << "Warning, not triggering because weak pointer did not lock for interrupt " << i << std::endl;
           }
         }
         catch(std::out_of_range&) {

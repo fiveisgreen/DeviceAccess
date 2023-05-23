@@ -13,6 +13,7 @@ namespace ChimeraTK {
   : _id(std::move(interruptID)), _backend(backend), _controllerHandlerFactory(controllerHandlerFactory),
     _parent(parent) {
     FILL_VIRTUAL_FUNCTION_TEMPLATE_VTABLE(createAsyncVariable);
+    std::cout << "This is TriggerPollDistributor level " << _id.size() << std::endl;
   }
 
   //*********************************************************************************************************************/
@@ -78,10 +79,11 @@ namespace ChimeraTK {
 
     auto controllerHandler = _controllerHandler.lock();
     if(!controllerHandler) {
-      controllerHandler = _controllerHandlerFactory->createInterruptControllerHandler(_id);
+      controllerHandler = _controllerHandlerFactory->createInterruptControllerHandler(
+          _id, boost::dynamic_pointer_cast<TriggerPollDistributor>(shared_from_this()));
       _controllerHandler = controllerHandler;
     }
-    return controllerHandler->getTriggerPollDistributorRecursive(interruptID);
+    return controllerHandler->getTriggerPollDistributorRecursive(interruptID, _isActive);
   }
 
   //*********************************************************************************************************************/

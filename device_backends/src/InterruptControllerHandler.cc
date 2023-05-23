@@ -24,7 +24,7 @@ namespace ChimeraTK {
 
   //*********************************************************************************************************************/
   std::unique_ptr<InterruptControllerHandler> InterruptControllerHandlerFactory::createInterruptControllerHandler(
-      std::vector<uint32_t> const& controllerID) {
+      std::vector<uint32_t> const& controllerID, boost::shared_ptr<TriggerPollDistributor> parent) {
     assert(!controllerID.empty());
     std::string name, description;
     try {
@@ -42,20 +42,42 @@ namespace ChimeraTK {
     if(creatorFunctionIter == _creatorFunctions.end()) {
       throw ChimeraTK::logic_error("Unknown interrupt controller type \"" + name + "\"");
     }
-    return creatorFunctionIter->second(_backend, this, controllerID, description);
+    return creatorFunctionIter->second(_backend, this, controllerID, description, parent);
   }
 
   //*********************************************************************************************************************/
   boost::shared_ptr<TriggerPollDistributor> InterruptControllerHandler::getTriggerPollDistributorRecursive(
-      std::vector<uint32_t> const& interruptID) {
+      std::vector<uint32_t> const& interruptID, bool activateIfNew) {
     // assert(false); // FIXME: needs container lock!
     assert(!interruptID.empty());
     auto qualifiedInterruptId = _id;
     qualifiedInterruptId.push_back(interruptID.front());
-    auto [dispatcherIter, isNew] = _dispatchers.try_emplace(interruptID.front(),
-        boost::make_shared<TriggerPollDistributor>(
-            _backend, _controllerHandlerFactory, qualifiedInterruptId, shared_from_this()));
-    auto& dispatcher = dispatcherIter->second; // a map iterator is a pair of key/value
+
+    // we can't use try_emplace because the map contains weak pointers
+    boost::shared_ptr<TriggerPollDistributor> dispatcher;
+    auto dispatcherIter = _dispatchers.find(interruptID.front());
+    if(dispatcherIter == _dispatchers.end()) {
+      std::cout << "Creating new TriggerPolldistributor level " << qualifiedInterruptId.size() << std::endl;
+      dispatcher = boost::make_shared<TriggerPollDistributor>(
+          _backend, _controllerHandlerFactory, qualifiedInterruptId, shared_from_this());
+      _dispatchers[interruptID.front()] = dispatcher;
+      if(activateIfNew) {
+        dispatcher->activate();
+      }
+    }
+    else {
+      dispatcher = dispatcherIter->second.lock();
+      if(!dispatcher) {
+        std::cout << "Replacing lost TriggerPolldistributor level " << qualifiedInterruptId.size() << std::endl;
+        dispatcher = boost::make_shared<TriggerPollDistributor>(
+            _backend, _controllerHandlerFactory, qualifiedInterruptId, shared_from_this());
+        _dispatchers[interruptID.front()] = dispatcher;
+        if(activateIfNew) {
+          dispatcher->activate();
+        }
+      }
+    }
+
     if(interruptID.size() == 1) {
       return dispatcher;
     }
@@ -64,22 +86,40 @@ namespace ChimeraTK {
 
   //*********************************************************************************************************************/
   void InterruptControllerHandler::activate() {
-    for(auto& dispatcher : _dispatchers) {
-      dispatcher.second->activate();
+    for(auto& dispatcherIter : _dispatchers) {
+      auto dispatcher = dispatcherIter.second.lock();
+      if(dispatcher) {
+        dispatcher->activate();
+      }
+      else {
+        std::cout << "Warning, not activating because weak pointer did not lock" << std::endl;
+      }
     }
   }
 
   //*********************************************************************************************************************/
   void InterruptControllerHandler::sendException(const std::exception_ptr& e) {
-    for(auto& dispatcher : _dispatchers) {
-      dispatcher.second->sendException(e);
+    for(auto& dispatcherIter : _dispatchers) {
+      auto dispatcher = dispatcherIter.second.lock();
+      if(dispatcher) {
+        dispatcher->sendException(e);
+      }
+      else {
+        std::cout << "Warning, not sending exception because weak pointer did not lock" << std::endl;
+      }
     }
   }
 
   //*********************************************************************************************************************/
   void InterruptControllerHandler::deactivate() {
-    for(auto& dispatcher : _dispatchers) {
-      dispatcher.second->deactivate();
+    for(auto& dispatcherIter : _dispatchers) {
+      auto dispatcher = dispatcherIter.second.lock();
+      if(dispatcher) {
+        dispatcher->deactivate();
+      }
+      else {
+        std::cout << "Warning, not deactivating because weak pointer did not lock" << std::endl;
+      }
     }
   }
 

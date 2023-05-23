@@ -10,13 +10,15 @@ namespace ChimeraTK {
   class DummyIntc : public InterruptControllerHandler {
    public:
     explicit DummyIntc(DeviceBackend* backend, InterruptControllerHandlerFactory* controllerHandlerFactory,
-        std::vector<uint32_t> const& controllerID, RegisterPath const& module);
+        std::vector<uint32_t> const& controllerID, boost::shared_ptr<TriggerPollDistributor> parent,
+        RegisterPath const& module);
     ~DummyIntc() override = default;
 
     void handle() override;
 
     static std::unique_ptr<DummyIntc> create(DeviceBackend*, InterruptControllerHandlerFactory*,
-        std::vector<uint32_t> const& controllerID, std::string const& desrciption);
+        std::vector<uint32_t> const& controllerID, std::string const& desrciption,
+        boost::shared_ptr<TriggerPollDistributor> parent);
 
    protected:
     boost::shared_ptr<NDRegisterAccessor<uint32_t>> _activeInterrupts;

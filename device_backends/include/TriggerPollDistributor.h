@@ -37,7 +37,9 @@ namespace ChimeraTK {
     VersionNumber trigger();
 
     TriggerPollDistributor(DeviceBackend* backend, InterruptControllerHandlerFactory* controllerHandlerFactory,
-        std::vector<uint32_t> interruptID, std::shared_ptr<InterruptControllerHandler> owner = {});
+        std::vector<uint32_t> interruptID, std::shared_ptr<InterruptControllerHandler> parent);
+
+    ~TriggerPollDistributor() { std::cout << "this is ~TriggerPollDistributor()" << std::endl; }
 
     template<typename UserType>
     std::unique_ptr<AsyncVariable> createAsyncVariable(

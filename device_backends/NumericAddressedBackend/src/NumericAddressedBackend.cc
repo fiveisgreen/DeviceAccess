@@ -46,7 +46,7 @@ namespace ChimeraTK {
       for(const auto& interruptID : _registerMap.getListOfInterrupts()) {
         _primaryInterruptDispatchersNonConst.try_emplace(interruptID.front(),
             boost::make_shared<TriggerPollDistributor>(
-                this, &_interruptControllerHandlerFactory, std::vector<uint32_t>({interruptID.front()})));
+                this, &_interruptControllerHandlerFactory, std::vector<uint32_t>({interruptID.front()}), nullptr));
       }
     }
   }

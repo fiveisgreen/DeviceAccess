@@ -5,6 +5,7 @@
 #include <boost/shared_ptr.hpp>
 
 #include <functional>
+#include <iostream>
 #include <map>
 #include <memory>
 #include <vector>
@@ -22,7 +23,7 @@ namespace ChimeraTK {
     explicit InterruptControllerHandlerFactory(DeviceBackend* backend);
 
     std::unique_ptr<InterruptControllerHandler> createInterruptControllerHandler(
-        std::vector<uint32_t> const& controllerID);
+        std::vector<uint32_t> const& controllerID, boost::shared_ptr<TriggerPollDistributor> parent);
     void addControllerDescription(
         std::vector<uint32_t> const& controllerID, std::string const& name, std::string const& description);
 
@@ -37,8 +38,8 @@ namespace ChimeraTK {
     /** Each controller type is registered via name and creator function.
      */
     std::map<std::string,
-        std::function<std::unique_ptr<InterruptControllerHandler>(
-            DeviceBackend*, InterruptControllerHandlerFactory*, std::vector<uint32_t> const&, std::string)>>
+        std::function<std::unique_ptr<InterruptControllerHandler>(DeviceBackend*, InterruptControllerHandlerFactory*,
+            std::vector<uint32_t> const&, std::string, boost::shared_ptr<TriggerPollDistributor>)>>
         _creatorFunctions;
   };
 
@@ -51,16 +52,19 @@ namespace ChimeraTK {
     /** InterruptControllerHandler classes must only be constructed inside and held by a DeviceBackend,
      * which is known to the handler via plain pointer (to avoid shared pointer loops)
      */
-    explicit InterruptControllerHandler(DeviceBackend* backend,
-        InterruptControllerHandlerFactory* controllerHandlerFactory, std::vector<uint32_t> const& controllerID)
-    : _backend(backend), _controllerHandlerFactory(controllerHandlerFactory), _id(controllerID) {}
-    virtual ~InterruptControllerHandler() = default;
+    InterruptControllerHandler(DeviceBackend* backend, InterruptControllerHandlerFactory* controllerHandlerFactory,
+        std::vector<uint32_t> const& controllerID, boost::shared_ptr<TriggerPollDistributor> parent)
+    : _backend(backend), _controllerHandlerFactory(controllerHandlerFactory), _id(controllerID), _parent(parent) {
+      std::cout << "This is InterruptControllerHandler level " << controllerID.size() << std::endl;
+    }
+    // virtual ~InterruptControllerHandler() = default;
+    virtual ~InterruptControllerHandler() { std::cout << "this is ~InterruptControllerHandler()" << std::endl; }
 
     /** Needed to get a new accessor for a certain interrupt. The whole chain will be created recursively if it does not
      * exist yet.
      */
     [[nodiscard]] boost::shared_ptr<TriggerPollDistributor> getTriggerPollDistributorRecursive(
-        std::vector<uint32_t> const& interruptID);
+        std::vector<uint32_t> const& interruptID, bool activateIfNew);
 
     void activate();
     void sendException(const std::exception_ptr& e);
@@ -74,7 +78,7 @@ namespace ChimeraTK {
    protected:
     /** Each known interrupt has its own dispatcher
      */
-    std::map<uint32_t, boost::shared_ptr<TriggerPollDistributor>> _dispatchers;
+    std::map<uint32_t, boost::weak_ptr<TriggerPollDistributor>> _dispatchers;
 
     DeviceBackend* _backend;
     InterruptControllerHandlerFactory* _controllerHandlerFactory;
@@ -82,6 +86,8 @@ namespace ChimeraTK {
     /** The ID of this controller handler.
      */
     std::vector<uint32_t> _id;
+
+    boost::shared_ptr<TriggerPollDistributor> _parent;
   };
 
 } // namespace ChimeraTK

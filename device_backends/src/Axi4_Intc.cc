@@ -8,16 +8,22 @@ namespace ChimeraTK {
 
   void Axi4_Intc::handle() {
     // Stupid testing implementation that always triggers all children
-    for(auto& dispatcher : _dispatchers) {
-      dispatcher.second->trigger();
+    for(auto& dispatcherIter : _dispatchers) {
+      auto dispatcher = dispatcherIter.second.lock();
+      // The weak pointer might have gone.
+      // FIXME: We need a cleanup function which removes the map entry. Otherwise we might
+      // be stuck with a bad weak pointer wich is tried in each handle() call.
+      if(dispatcher) {
+        dispatcher->trigger();
+      }
     }
   }
 
   std::unique_ptr<Axi4_Intc> Axi4_Intc::create(DeviceBackend* backend,
       InterruptControllerHandlerFactory* controllerHandlerFactory, std::vector<uint32_t> const& controllerID,
-      std::string desrciption) {
+      std::string desrciption, boost::shared_ptr<TriggerPollDistributor> parent) {
     std::ignore = desrciption;
-    return std::make_unique<Axi4_Intc>(backend, controllerHandlerFactory, controllerID);
+    return std::make_unique<Axi4_Intc>(backend, controllerHandlerFactory, controllerID, parent);
   }
 
 } // namespace ChimeraTK

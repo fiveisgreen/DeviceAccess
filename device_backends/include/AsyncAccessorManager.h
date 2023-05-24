@@ -66,16 +66,18 @@ namespace ChimeraTK {
   };
 
   /** The AsyncAccessorManager has three main functionalities:
-   *  * It manages the subscription/unsubscription mechanism. During subscription an AsyncNDRegisterAccessor is
-   *    created, so the manager also serves as a factory for the asynchronous accessors.
-   *  * The manager provides functions for all asynchronous accessors associated with one interrupt
+   *  * It manages the subscription/unsubscription mechanism.
+   *  * It serves as a factory for the asynchronous accessors which are during
+   *    the subscription to get consistent behaviour.
+   *  * The manager provides functions for all asynchronous accessors subscribed
+   *    to this manager, like enabling, disabling or sending exceptions.
    *
    *  This is done in a single class because the container with the fluctuating number of
-   *  subscribed variables is not thread safe. This class implements a lock so
-   *  dispatching an interrupt is safe against concurrent subscriptions/unsubscriptions.
+   *  subscribed variables is not thread safe. This class implements a lock so data
+   *  distribution to the variables is safe against concurrent subscriptions/unsubscriptions.
    *
-   *  The AsyncAccessorManager has some pure virtual functions. The implementation is backend
-   *  specific and must be provided by a derived version of the AsyncAccessorManager.
+   *  The AsyncAccessorManager has some pure virtual functions. They have implementation
+   *  specific functionality which must be provided by a derived version of the AsyncAccessorManager.
    */
   class AsyncAccessorManager : public boost::enable_shared_from_this<AsyncAccessorManager> {
    public:

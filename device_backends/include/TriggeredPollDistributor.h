@@ -29,14 +29,14 @@ namespace ChimeraTK {
    *  subscribed variables is not thread safe. This class has implements a lock so
    *  dispatching an interrupt is safe against concurrent subscription/unsubscription.
    */
-  class TriggerPollDistributor : public AsyncAccessorManager {
+  class TriggeredPollDistributor : public AsyncAccessorManager {
    public:
     /** Poll all sync variables and push the data via their async counterparts. Creates a new VersionNumber and
      * sends all data with this version.
      */
     VersionNumber trigger();
 
-    TriggerPollDistributor(DeviceBackend* backend, InterruptControllerHandlerFactory* controllerHandlerFactory,
+    TriggeredPollDistributor(DeviceBackend* backend, InterruptControllerHandlerFactory* controllerHandlerFactory,
         std::vector<uint32_t> interruptID, std::shared_ptr<InterruptControllerHandler> parent);
 
     template<typename UserType>
@@ -47,7 +47,7 @@ namespace ChimeraTK {
     void postDeactivateHook() override;
     void postSendExceptionHook(const std::exception_ptr& e) override;
 
-    boost::shared_ptr<TriggerPollDistributor> getNestedPollDistributor(std::vector<uint32_t> const& interruptID);
+    boost::shared_ptr<TriggeredPollDistributor> getNestedPollDistributor(std::vector<uint32_t> const& interruptID);
 
    protected:
     void asyncVariableMapChanged() override {
@@ -93,7 +93,7 @@ namespace ChimeraTK {
   //*********************************************************************************************************************/
 
   template<typename UserType>
-  std::unique_ptr<AsyncVariable> TriggerPollDistributor::createAsyncVariable(
+  std::unique_ptr<AsyncVariable> TriggeredPollDistributor::createAsyncVariable(
       const boost::shared_ptr<DeviceBackend>& backend, AccessorInstanceDescriptor const& descriptor, bool isActive) {
     auto synchronousFlags = descriptor.flags;
     synchronousFlags.remove(AccessMode::wait_for_new_data);

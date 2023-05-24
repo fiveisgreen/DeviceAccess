@@ -1,13 +1,13 @@
 // SPDX-FileCopyrightText: Deutsches Elektronen-Synchrotron DESY, MSK, ChimeraTK Project <chimeratk-support@desy.de>
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
-#include "TriggerPollDistributor.h"
+#include "TriggeredPollDistributor.h"
 
 #include "InterruptControllerHandler.h"
 
 namespace ChimeraTK {
 
-  TriggerPollDistributor::TriggerPollDistributor(DeviceBackend* backend,
+  TriggeredPollDistributor::TriggeredPollDistributor(DeviceBackend* backend,
       InterruptControllerHandlerFactory* controllerHandlerFactory, std::vector<uint32_t> interruptID,
       std::shared_ptr<InterruptControllerHandler> parent)
   : _id(std::move(interruptID)), _backend(backend), _controllerHandlerFactory(controllerHandlerFactory),
@@ -16,7 +16,7 @@ namespace ChimeraTK {
   }
 
   //*********************************************************************************************************************/
-  VersionNumber TriggerPollDistributor::trigger() {
+  VersionNumber TriggeredPollDistributor::trigger() {
     std::lock_guard<std::recursive_mutex> variablesLock(_variablesMutex);
     VersionNumber ver; // a common VersionNumber for this trigger. Must be generated under mutex
     if(!_isActive) return ver;
@@ -45,7 +45,7 @@ namespace ChimeraTK {
   }
 
   //*********************************************************************************************************************/
-  VersionNumber TriggerPollDistributor::activate() {
+  VersionNumber TriggeredPollDistributor::activate() {
     std::lock_guard<std::recursive_mutex> variablesLock(_variablesMutex);
     VersionNumber ver; // a common VersionNumber for this trigger. Must be generated under mutex
     try {
@@ -72,21 +72,21 @@ namespace ChimeraTK {
   }
 
   //*********************************************************************************************************************/
-  boost::shared_ptr<TriggerPollDistributor> TriggerPollDistributor::getNestedPollDistributor(
+  boost::shared_ptr<TriggeredPollDistributor> TriggeredPollDistributor::getNestedPollDistributor(
       std::vector<uint32_t> const& interruptID) {
     std::lock_guard<std::recursive_mutex> variablesLock(_variablesMutex);
 
     auto controllerHandler = _controllerHandler.lock();
     if(!controllerHandler) {
       controllerHandler = _controllerHandlerFactory->createInterruptControllerHandler(
-          _id, boost::dynamic_pointer_cast<TriggerPollDistributor>(shared_from_this()));
+          _id, boost::dynamic_pointer_cast<TriggeredPollDistributor>(shared_from_this()));
       _controllerHandler = controllerHandler;
     }
     return controllerHandler->getTriggerPollDistributorRecursive(interruptID, _isActive);
   }
 
   //*********************************************************************************************************************/
-  void TriggerPollDistributor::postDeactivateHook() {
+  void TriggeredPollDistributor::postDeactivateHook() {
     auto controllerHandler = _controllerHandler.lock();
     if(controllerHandler) {
       controllerHandler->deactivate();
@@ -94,7 +94,7 @@ namespace ChimeraTK {
   }
 
   //*********************************************************************************************************************/
-  void TriggerPollDistributor::postSendExceptionHook(const std::exception_ptr& e) {
+  void TriggeredPollDistributor::postSendExceptionHook(const std::exception_ptr& e) {
     auto controllerHandler = _controllerHandler.lock();
     if(controllerHandler) {
       controllerHandler->sendException(e);

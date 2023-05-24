@@ -8,7 +8,7 @@ namespace ChimeraTK {
   class Axi4_Intc : public InterruptControllerHandler {
    public:
     explicit Axi4_Intc(DeviceBackend* backend, InterruptControllerHandlerFactory* controllerHandlerFactory,
-        std::vector<uint32_t> const& controllerID, boost::shared_ptr<TriggerPollDistributor> parent)
+        std::vector<uint32_t> const& controllerID, boost::shared_ptr<TriggeredPollDistributor> parent)
     : InterruptControllerHandler(backend, controllerHandlerFactory, controllerID, std::move(parent)) {}
     ~Axi4_Intc() override = default;
 
@@ -16,7 +16,7 @@ namespace ChimeraTK {
 
     static std::unique_ptr<Axi4_Intc> create(DeviceBackend*, InterruptControllerHandlerFactory*,
         std::vector<uint32_t> const& controllerID, std::string desrciption,
-        boost::shared_ptr<TriggerPollDistributor> parent);
+        boost::shared_ptr<TriggeredPollDistributor> parent);
   };
 
 } // namespace ChimeraTK

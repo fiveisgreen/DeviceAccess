@@ -13,7 +13,7 @@
 namespace ChimeraTK {
 
   class NumericAddressedLowLevelTransferElement;
-  class TriggerPollDistributor;
+  class TriggeredPollDistributor;
 
   /** Base class for address-based device backends (e.g. PICe, Rebot, ...) */
   class NumericAddressedBackend : public DeviceBackendImpl {
@@ -153,7 +153,7 @@ namespace ChimeraTK {
     std::atomic<bool> _hasActiveException{false};
 
     friend NumericAddressedLowLevelTransferElement;
-    friend TriggerPollDistributor;
+    friend TriggeredPollDistributor;
 
     template<class UserType, class ConverterType>
     friend class NumericAddressedBackendMuxedRegisterAccessor;
@@ -175,11 +175,11 @@ namespace ChimeraTK {
      * modified. This map is filled in the constructor. The rest of the code is accessing it through the const
      * _interruptDispatchers reference, which is thread safe.
      */
-    std::map<uint32_t, boost::shared_ptr<TriggerPollDistributor>> _primaryInterruptDispatchersNonConst;
+    std::map<uint32_t, boost::shared_ptr<TriggeredPollDistributor>> _primaryInterruptDispatchersNonConst;
 
     /** Access to const members of std::containers is thread safe. So we use a const reference throughout the code.
      */
-    std::map<uint32_t, boost::shared_ptr<TriggerPollDistributor>> const& _primaryInterruptDispatchers{
+    std::map<uint32_t, boost::shared_ptr<TriggeredPollDistributor>> const& _primaryInterruptDispatchers{
         _primaryInterruptDispatchersNonConst};
 
     InterruptControllerHandlerFactory _interruptControllerHandlerFactory{this};

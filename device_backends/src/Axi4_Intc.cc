@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: LGPL-3.0-or-later
 #include "Axi4_Intc.h"
 
-#include "TriggerPollDistributor.h"
+#include "TriggeredPollDistributor.h"
 
 namespace ChimeraTK {
 
@@ -21,7 +21,7 @@ namespace ChimeraTK {
 
   std::unique_ptr<Axi4_Intc> Axi4_Intc::create(DeviceBackend* backend,
       InterruptControllerHandlerFactory* controllerHandlerFactory, std::vector<uint32_t> const& controllerID,
-      std::string desrciption, boost::shared_ptr<TriggerPollDistributor> parent) {
+      std::string desrciption, boost::shared_ptr<TriggeredPollDistributor> parent) {
     std::ignore = desrciption;
     return std::make_unique<Axi4_Intc>(backend, controllerHandlerFactory, controllerID, parent);
   }

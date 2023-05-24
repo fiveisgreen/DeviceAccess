@@ -9,7 +9,7 @@
 #include "NumericAddressedBackendASCIIAccessor.h"
 #include "NumericAddressedBackendMuxedRegisterAccessor.h"
 #include "NumericAddressedBackendRegisterAccessor.h"
-#include "TriggerPollDistributor.h"
+#include "TriggeredPollDistributor.h"
 #include <nlohmann/json.hpp>
 
 namespace ChimeraTK {
@@ -45,7 +45,7 @@ namespace ChimeraTK {
       // They will be added when accessors are subscribing.
       for(const auto& interruptID : _registerMap.getListOfInterrupts()) {
         _primaryInterruptDispatchersNonConst.try_emplace(interruptID.front(),
-            boost::make_shared<TriggerPollDistributor>(
+            boost::make_shared<TriggeredPollDistributor>(
                 this, &_interruptControllerHandlerFactory, std::vector<uint32_t>({interruptID.front()}), nullptr));
       }
     }
@@ -134,7 +134,7 @@ namespace ChimeraTK {
             "Register " + registerPathName + " does not support AccessMode::wait_for_new_data.");
       }
 
-      boost::shared_ptr<TriggerPollDistributor> interruptDispatcher;
+      boost::shared_ptr<TriggeredPollDistributor> interruptDispatcher;
       const auto& primaryDispatcher = _primaryInterruptDispatchers.at(registerInfo.interruptId.front());
 
       if(registerInfo.interruptId.size() == 1) {

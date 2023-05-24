@@ -4,7 +4,7 @@
 
 #include "Axi4_Intc.h"
 #include "DummyIntc.h"
-#include "TriggerPollDistributor.h"
+#include "TriggeredPollDistributor.h"
 
 #include <tuple>
 
@@ -24,7 +24,7 @@ namespace ChimeraTK {
 
   //*********************************************************************************************************************/
   std::unique_ptr<InterruptControllerHandler> InterruptControllerHandlerFactory::createInterruptControllerHandler(
-      std::vector<uint32_t> const& controllerID, boost::shared_ptr<TriggerPollDistributor> parent) {
+      std::vector<uint32_t> const& controllerID, boost::shared_ptr<TriggeredPollDistributor> parent) {
     assert(!controllerID.empty());
     std::string name, description;
     try {
@@ -46,7 +46,7 @@ namespace ChimeraTK {
   }
 
   //*********************************************************************************************************************/
-  boost::shared_ptr<TriggerPollDistributor> InterruptControllerHandler::getTriggerPollDistributorRecursive(
+  boost::shared_ptr<TriggeredPollDistributor> InterruptControllerHandler::getTriggerPollDistributorRecursive(
       std::vector<uint32_t> const& interruptID, bool activateIfNew) {
     // assert(false); // FIXME: needs container lock!
     assert(!interruptID.empty());
@@ -54,10 +54,10 @@ namespace ChimeraTK {
     qualifiedInterruptId.push_back(interruptID.front());
 
     // we can't use try_emplace because the map contains weak pointers
-    boost::shared_ptr<TriggerPollDistributor> dispatcher;
+    boost::shared_ptr<TriggeredPollDistributor> dispatcher;
     auto dispatcherIter = _dispatchers.find(interruptID.front());
     if(dispatcherIter == _dispatchers.end()) {
-      dispatcher = boost::make_shared<TriggerPollDistributor>(
+      dispatcher = boost::make_shared<TriggeredPollDistributor>(
           _backend, _controllerHandlerFactory, qualifiedInterruptId, shared_from_this());
       _dispatchers[interruptID.front()] = dispatcher;
       if(activateIfNew) {
@@ -67,7 +67,7 @@ namespace ChimeraTK {
     else {
       dispatcher = dispatcherIter->second.lock();
       if(!dispatcher) {
-        dispatcher = boost::make_shared<TriggerPollDistributor>(
+        dispatcher = boost::make_shared<TriggeredPollDistributor>(
             _backend, _controllerHandlerFactory, qualifiedInterruptId, shared_from_this());
         _dispatchers[interruptID.front()] = dispatcher;
         if(activateIfNew) {

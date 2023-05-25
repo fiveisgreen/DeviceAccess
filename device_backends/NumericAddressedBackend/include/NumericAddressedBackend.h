@@ -175,12 +175,12 @@ namespace ChimeraTK {
      * modified. This map is filled in the constructor. The rest of the code is accessing it through the const
      * _interruptDispatchers reference, which is thread safe.
      */
-    std::map<uint32_t, boost::shared_ptr<TriggeredPollDistributor>> _primaryInterruptDispatchersNonConst;
+    std::map<uint32_t, boost::shared_ptr<TriggerDistributor>> _primaryInterruptDistributorsNonConst;
 
     /** Access to const members of std::containers is thread safe. So we use a const reference throughout the code.
      */
-    std::map<uint32_t, boost::shared_ptr<TriggeredPollDistributor>> const& _primaryInterruptDispatchers{
-        _primaryInterruptDispatchersNonConst};
+    std::map<uint32_t, boost::shared_ptr<TriggerDistributor>> const& _primaryInterruptDistributors{
+        _primaryInterruptDistributorsNonConst};
 
     InterruptControllerHandlerFactory _interruptControllerHandlerFactory{this};
   };

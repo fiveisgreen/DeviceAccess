@@ -2,8 +2,9 @@
 // SPDX-License-Identifier: LGPL-3.0-or-later
 #pragma once
 
-#include <ChimeraTK/VersionNumber.h>
+#include "VersionNumber.h"
 
+#include <boost/enable_shared_from_this.hpp>
 #include <boost/shared_ptr.hpp>
 
 #include <functional>
@@ -14,6 +15,7 @@
 namespace ChimeraTK {
   class InterruptControllerHandler;
   class TriggeredPollDistributor;
+  class TriggerDistributor;
   class DeviceBackend;
 
   /** Knows which type of InterruptControllerHandler to create for which interrupt.
@@ -23,8 +25,8 @@ namespace ChimeraTK {
    public:
     explicit InterruptControllerHandlerFactory(DeviceBackend* backend);
 
-    std::unique_ptr<InterruptControllerHandler> createInterruptControllerHandler(
-        std::vector<uint32_t> const& controllerID, boost::shared_ptr<TriggeredPollDistributor> parent);
+    boost::shared_ptr<InterruptControllerHandler> createInterruptControllerHandler(
+        std::vector<uint32_t> const& controllerID, boost::shared_ptr<TriggerDistributor> parent);
     void addControllerDescription(
         std::vector<uint32_t> const& controllerID, std::string const& name, std::string const& description);
 
@@ -40,7 +42,7 @@ namespace ChimeraTK {
      */
     std::map<std::string,
         std::function<std::unique_ptr<InterruptControllerHandler>(DeviceBackend*, InterruptControllerHandlerFactory*,
-            std::vector<uint32_t> const&, std::string, boost::shared_ptr<TriggeredPollDistributor>)>>
+            std::vector<uint32_t> const&, std::string, boost::shared_ptr<TriggerDistributor>)>>
         _creatorFunctions;
   };
 
@@ -48,13 +50,13 @@ namespace ChimeraTK {
    * DeviceBackend and the InterruptDispatchers. Implementations must fill the pure virtual "handle()"
    * function with life and register the constructor to the factory.
    */
-  class InterruptControllerHandler : public std::enable_shared_from_this<InterruptControllerHandler> {
+  class InterruptControllerHandler : public boost::enable_shared_from_this<InterruptControllerHandler> {
    public:
     /** InterruptControllerHandler classes must only be constructed inside and held by a DeviceBackend,
      * which is known to the handler via plain pointer (to avoid shared pointer loops)
      */
     InterruptControllerHandler(DeviceBackend* backend, InterruptControllerHandlerFactory* controllerHandlerFactory,
-        std::vector<uint32_t> const& controllerID, boost::shared_ptr<TriggeredPollDistributor> parent)
+        std::vector<uint32_t> const& controllerID, boost::shared_ptr<TriggerDistributor> parent)
     : _backend(backend), _controllerHandlerFactory(controllerHandlerFactory), _id(controllerID), _parent(parent) {}
     virtual ~InterruptControllerHandler() = default;
 
@@ -76,7 +78,7 @@ namespace ChimeraTK {
    protected:
     /** Each known interrupt has its own dispatcher
      */
-    std::map<uint32_t, boost::weak_ptr<TriggeredPollDistributor>> _dispatchers;
+    std::map<uint32_t, boost::weak_ptr<TriggerDistributor>> _distributors;
 
     DeviceBackend* _backend;
     InterruptControllerHandlerFactory* _controllerHandlerFactory;
@@ -85,7 +87,7 @@ namespace ChimeraTK {
      */
     std::vector<uint32_t> _id;
 
-    boost::shared_ptr<TriggeredPollDistributor> _parent;
+    boost::shared_ptr<TriggerDistributor> _parent;
   };
 
 } // namespace ChimeraTK

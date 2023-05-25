@@ -9,6 +9,7 @@
 #include "NumericAddressedBackendASCIIAccessor.h"
 #include "NumericAddressedBackendMuxedRegisterAccessor.h"
 #include "NumericAddressedBackendRegisterAccessor.h"
+#include "TriggerDistributor.h"
 #include "TriggeredPollDistributor.h"
 #include <nlohmann/json.hpp>
 
@@ -44,8 +45,8 @@ namespace ChimeraTK {
       // in turn have shared pointers to the backend, which cannot be created in the backend constructor.
       // They will be added when accessors are subscribing.
       for(const auto& interruptID : _registerMap.getListOfInterrupts()) {
-        _primaryInterruptDispatchersNonConst.try_emplace(interruptID.front(),
-            boost::make_shared<TriggeredPollDistributor>(
+        _primaryInterruptDistributorsNonConst.try_emplace(interruptID.front(),
+            boost::make_shared<TriggerDistributor>(
                 this, &_interruptControllerHandlerFactory, std::vector<uint32_t>({interruptID.front()}), nullptr));
       }
     }
@@ -134,18 +135,11 @@ namespace ChimeraTK {
             "Register " + registerPathName + " does not support AccessMode::wait_for_new_data.");
       }
 
-      boost::shared_ptr<TriggeredPollDistributor> interruptDispatcher;
-      const auto& primaryDispatcher = _primaryInterruptDispatchers.at(registerInfo.interruptId.front());
+      const auto& primaryDistributor = _primaryInterruptDistributors.at(registerInfo.interruptId.front());
+      // FIXME: This might be a VariableDistributor if it's a void accessor.
+      auto pollDistributor = primaryDistributor->getPollDistributorRecursive(registerInfo.interruptId);
 
-      if(registerInfo.interruptId.size() == 1) {
-        interruptDispatcher = primaryDispatcher;
-      }
-      else {
-        interruptDispatcher = primaryDispatcher->getNestedPollDistributor(
-            {++registerInfo.interruptId.begin(), registerInfo.interruptId.end()});
-      }
-
-      auto newSubscriber = interruptDispatcher->template subscribe<UserType>(
+      auto newSubscriber = pollDistributor->template subscribe<UserType>(
           boost::dynamic_pointer_cast<NumericAddressedBackend>(shared_from_this()), registerPathName, numberOfWords,
           wordOffsetInRegister, flags);
       // The new subscriber might already be activated. Hence the exception backend is already set by the interrupt
@@ -228,7 +222,7 @@ namespace ChimeraTK {
 
   void NumericAddressedBackend::activateAsyncRead() noexcept {
     VersionNumber v{};
-    for(const auto& it : _primaryInterruptDispatchers) {
+    for(const auto& it : _primaryInterruptDistributors) {
       it.second->activate(v);
     }
   }
@@ -241,7 +235,7 @@ namespace ChimeraTK {
       throw ChimeraTK::runtime_error("NumericAddressedBackend is in exception state.");
     }
     catch(...) {
-      for(const auto& it : _primaryInterruptDispatchers) {
+      for(const auto& it : _primaryInterruptDistributors) {
         it.second->sendException(std::current_exception());
       }
     }
@@ -255,7 +249,7 @@ namespace ChimeraTK {
   /********************************************************************************************************************/
 
   void NumericAddressedBackend::close() {
-    for(const auto& it : _primaryInterruptDispatchers) {
+    for(const auto& it : _primaryInterruptDistributors) {
       it.second->deactivate();
     }
     closeImpl();
@@ -267,7 +261,7 @@ namespace ChimeraTK {
     // This function just makes sure that at() is used to access the _interruptDispatchers map,
     // which guarantees that the map is not altered.
     VersionNumber v{};
-    _primaryInterruptDispatchers.at(interruptNumber)->trigger(v);
+    _primaryInterruptDistributors.at(interruptNumber)->trigger(v);
     return v;
   }
 

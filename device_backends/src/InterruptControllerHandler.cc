@@ -4,6 +4,7 @@
 
 #include "Axi4_Intc.h"
 #include "DummyIntc.h"
+#include "TriggerDistributor.h"
 #include "TriggeredPollDistributor.h"
 
 #include <tuple>
@@ -23,8 +24,8 @@ namespace ChimeraTK {
   }
 
   //*********************************************************************************************************************/
-  std::unique_ptr<InterruptControllerHandler> InterruptControllerHandlerFactory::createInterruptControllerHandler(
-      std::vector<uint32_t> const& controllerID, boost::shared_ptr<TriggeredPollDistributor> parent) {
+  boost::shared_ptr<InterruptControllerHandler> InterruptControllerHandlerFactory::createInterruptControllerHandler(
+      std::vector<uint32_t> const& controllerID, boost::shared_ptr<TriggerDistributor> parent) {
     assert(!controllerID.empty());
     std::string name, description;
     try {
@@ -54,37 +55,31 @@ namespace ChimeraTK {
     qualifiedInterruptId.push_back(interruptID.front());
 
     // we can't use try_emplace because the map contains weak pointers
-    boost::shared_ptr<TriggeredPollDistributor> dispatcher;
-    auto dispatcherIter = _dispatchers.find(interruptID.front());
-    if(dispatcherIter == _dispatchers.end()) {
-      dispatcher = boost::make_shared<TriggeredPollDistributor>(
+    boost::shared_ptr<TriggerDistributor> distributor;
+    auto distributorIter = _distributors.find(interruptID.front());
+    if(distributorIter == _distributors.end()) {
+      distributor = boost::make_shared<TriggerDistributor>(
           _backend, _controllerHandlerFactory, qualifiedInterruptId, shared_from_this());
-      _dispatchers[interruptID.front()] = dispatcher;
       if(activateIfNew) {
-        dispatcher->activate({});
+        distributor->activate({});
       }
     }
     else {
-      dispatcher = dispatcherIter->second.lock();
-      if(!dispatcher) {
-        dispatcher = boost::make_shared<TriggeredPollDistributor>(
+      distributor = distributorIter->second.lock();
+      if(!distributor) {
+        distributor = boost::make_shared<TriggerDistributor>(
             _backend, _controllerHandlerFactory, qualifiedInterruptId, shared_from_this());
-        _dispatchers[interruptID.front()] = dispatcher;
         if(activateIfNew) {
-          dispatcher->activate({});
+          distributor->activate({});
         }
       }
     }
-
-    if(interruptID.size() == 1) {
-      return dispatcher;
-    }
-    return dispatcher->getNestedPollDistributor({++interruptID.begin(), interruptID.end()});
+    return distributor->getPollDistributorRecursive(interruptID);
   }
 
   //*********************************************************************************************************************/
   void InterruptControllerHandler::activate(VersionNumber version) {
-    for(auto& dispatcherIter : _dispatchers) {
+    for(auto& dispatcherIter : _distributors) {
       auto dispatcher = dispatcherIter.second.lock();
       if(dispatcher) {
         dispatcher->activate(version);
@@ -94,7 +89,7 @@ namespace ChimeraTK {
 
   //*********************************************************************************************************************/
   void InterruptControllerHandler::sendException(const std::exception_ptr& e) {
-    for(auto& dispatcherIter : _dispatchers) {
+    for(auto& dispatcherIter : _distributors) {
       auto dispatcher = dispatcherIter.second.lock();
       if(dispatcher) {
         dispatcher->sendException(e);
@@ -104,7 +99,7 @@ namespace ChimeraTK {
 
   //*********************************************************************************************************************/
   void InterruptControllerHandler::deactivate() {
-    for(auto& dispatcherIter : _dispatchers) {
+    for(auto& dispatcherIter : _distributors) {
       auto dispatcher = dispatcherIter.second.lock();
       if(dispatcher) {
         dispatcher->deactivate();

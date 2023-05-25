@@ -3,13 +3,13 @@
 
 #include "TriggeredPollDistributor.h"
 
-#include "InterruptControllerHandler.h"
+#include "TriggerDistributor.h"
 
 namespace ChimeraTK {
 
   TriggeredPollDistributor::TriggeredPollDistributor(DeviceBackend* backend,
       InterruptControllerHandlerFactory* controllerHandlerFactory, std::vector<uint32_t> interruptID,
-      std::shared_ptr<InterruptControllerHandler> parent)
+      boost::shared_ptr<TriggerDistributor> parent)
   : _id(std::move(interruptID)), _backend(backend), _controllerHandlerFactory(controllerHandlerFactory),
     _parent(parent) {
     FILL_VIRTUAL_FUNCTION_TEMPLATE_VTABLE(createAsyncVariable);
@@ -66,18 +66,17 @@ namespace ChimeraTK {
   }
 
   //*********************************************************************************************************************/
-  boost::shared_ptr<TriggeredPollDistributor> TriggeredPollDistributor::getNestedPollDistributor(
-      std::vector<uint32_t> const& interruptID) {
-    std::lock_guard<std::recursive_mutex> variablesLock(_variablesMutex);
+  //  boost::shared_ptr<TriggeredPollDistributor> TriggeredPollDistributor::getNestedPollDistributor(
+  //      std::vector<uint32_t> const& interruptID) {
+  //    std::lock_guard<std::recursive_mutex> variablesLock(_variablesMutex);
 
-    auto controllerHandler = _controllerHandler.lock();
-    if(!controllerHandler) {
-      controllerHandler = _controllerHandlerFactory->createInterruptControllerHandler(
-          _id, boost::dynamic_pointer_cast<TriggeredPollDistributor>(shared_from_this()));
-      _controllerHandler = controllerHandler;
-    }
-    return controllerHandler->getTriggerPollDistributorRecursive(interruptID, _isActive);
-  }
+  //    auto controllerHandler = _controllerHandler.lock();
+  //    if(!controllerHandler) {
+  //      controllerHandler = _controllerHandlerFactory->createInterruptControllerHandler(_id, shared_from_this());
+  //      _controllerHandler = controllerHandler;
+  //    }
+  //    return controllerHandler->getTriggerPollDistributorRecursive(interruptID, _isActive);
+  //  }
 
   //*********************************************************************************************************************/
   void TriggeredPollDistributor::postDeactivateHook() {

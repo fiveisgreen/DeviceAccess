@@ -37,7 +37,7 @@ namespace ChimeraTK {
     void trigger(VersionNumber version);
 
     TriggeredPollDistributor(DeviceBackend* backend, InterruptControllerHandlerFactory* controllerHandlerFactory,
-        std::vector<uint32_t> interruptID, std::shared_ptr<InterruptControllerHandler> parent);
+        std::vector<uint32_t> interruptID, boost::shared_ptr<TriggerDistributor> parent);
 
     template<typename UserType>
     std::unique_ptr<AsyncVariable> createAsyncVariable(
@@ -47,7 +47,7 @@ namespace ChimeraTK {
     void postDeactivateHook() override;
     void postSendExceptionHook(const std::exception_ptr& e) override;
 
-    boost::shared_ptr<TriggeredPollDistributor> getNestedPollDistributor(std::vector<uint32_t> const& interruptID);
+    // boost::shared_ptr<TriggeredPollDistributor> getNestedPollDistributor(std::vector<uint32_t> const& interruptID);
 
    protected:
     void asyncVariableMapChanged() override {
@@ -63,8 +63,8 @@ namespace ChimeraTK {
     std::vector<uint32_t> _id;
     DeviceBackend* _backend;
     InterruptControllerHandlerFactory* _controllerHandlerFactory;
-    std::weak_ptr<InterruptControllerHandler> _controllerHandler;
-    std::shared_ptr<InterruptControllerHandler> _parent;
+    boost::weak_ptr<InterruptControllerHandler> _controllerHandler;
+    boost::shared_ptr<TriggerDistributor> _parent;
   };
 
   /** Implementation of the PolledAsyncVariable for the concrete UserType.

@@ -34,7 +34,7 @@ namespace ChimeraTK {
     /** Poll all sync variables and push the data via their async counterparts. Creates a new VersionNumber and
      * sends all data with this version.
      */
-    VersionNumber trigger();
+    void trigger(VersionNumber version);
 
     TriggeredPollDistributor(DeviceBackend* backend, InterruptControllerHandlerFactory* controllerHandlerFactory,
         std::vector<uint32_t> interruptID, std::shared_ptr<InterruptControllerHandler> parent);
@@ -43,7 +43,7 @@ namespace ChimeraTK {
     std::unique_ptr<AsyncVariable> createAsyncVariable(
         const boost::shared_ptr<DeviceBackend>& backend, AccessorInstanceDescriptor const& descriptor, bool isActive);
 
-    VersionNumber activate() override;
+    void activate(VersionNumber version) override;
     void postDeactivateHook() override;
     void postSendExceptionHook(const std::exception_ptr& e) override;
 

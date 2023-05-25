@@ -6,7 +6,7 @@
 
 namespace ChimeraTK {
 
-  void Axi4_Intc::handle() {
+  void Axi4_Intc::handle(VersionNumber version) {
     // Stupid testing implementation that always triggers all children
     for(auto& dispatcherIter : _dispatchers) {
       auto dispatcher = dispatcherIter.second.lock();
@@ -14,7 +14,7 @@ namespace ChimeraTK {
       // FIXME: We need a cleanup function which removes the map entry. Otherwise we might
       // be stuck with a bad weak pointer wich is tried in each handle() call.
       if(dispatcher) {
-        dispatcher->trigger();
+        dispatcher->trigger(version);
       }
     }
   }

@@ -104,7 +104,7 @@ namespace ChimeraTK {
      *  all initial values and  which can be read out with getLastVersion().
      *  This function has to be provided by each AsyncAccessorManager implementation.
      */
-    virtual VersionNumber activate() = 0;
+    virtual void activate(VersionNumber version) = 0;
 
     /** Deactivate all subscribers without throwing an exception.
      *  This has to happen when a backend is closed.

@@ -14,7 +14,7 @@ namespace ChimeraTK {
         RegisterPath const& module);
     ~DummyIntc() override = default;
 
-    void handle() override;
+    void handle(VersionNumber version) override;
 
     static std::unique_ptr<DummyIntc> create(DeviceBackend*, InterruptControllerHandlerFactory*,
         std::vector<uint32_t> const& controllerID, std::string const& desrciption,

@@ -18,14 +18,14 @@ namespace ChimeraTK {
     }
   }
 
-  void DummyIntc::handle() {
+  void DummyIntc::handle(VersionNumber version) {
     _activeInterrupts->read();
     for(uint32_t i = 0; i < 32; ++i) {
       if(_activeInterrupts->accessData(0) & 0x1U << i) {
         try {
           auto dispatcher = _dispatchers.at(i).lock();
           if(dispatcher) {
-            dispatcher->trigger();
+            dispatcher->trigger(version);
           }
         }
         catch(std::out_of_range&) {

@@ -61,7 +61,7 @@ namespace ChimeraTK {
           _backend, _controllerHandlerFactory, qualifiedInterruptId, shared_from_this());
       _dispatchers[interruptID.front()] = dispatcher;
       if(activateIfNew) {
-        dispatcher->activate();
+        dispatcher->activate({});
       }
     }
     else {
@@ -71,7 +71,7 @@ namespace ChimeraTK {
             _backend, _controllerHandlerFactory, qualifiedInterruptId, shared_from_this());
         _dispatchers[interruptID.front()] = dispatcher;
         if(activateIfNew) {
-          dispatcher->activate();
+          dispatcher->activate({});
         }
       }
     }
@@ -83,11 +83,11 @@ namespace ChimeraTK {
   }
 
   //*********************************************************************************************************************/
-  void InterruptControllerHandler::activate() {
+  void InterruptControllerHandler::activate(VersionNumber version) {
     for(auto& dispatcherIter : _dispatchers) {
       auto dispatcher = dispatcherIter.second.lock();
       if(dispatcher) {
-        dispatcher->activate();
+        dispatcher->activate(version);
       }
     }
   }

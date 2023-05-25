@@ -12,7 +12,7 @@ namespace ChimeraTK {
     : InterruptControllerHandler(backend, controllerHandlerFactory, controllerID, std::move(parent)) {}
     ~Axi4_Intc() override = default;
 
-    void handle() override;
+    void handle(VersionNumber version) override;
 
     static std::unique_ptr<Axi4_Intc> create(DeviceBackend*, InterruptControllerHandlerFactory*,
         std::vector<uint32_t> const& controllerID, std::string desrciption,

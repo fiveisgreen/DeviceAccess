@@ -16,10 +16,9 @@ namespace ChimeraTK {
   }
 
   //*********************************************************************************************************************/
-  VersionNumber TriggeredPollDistributor::trigger() {
+  void TriggeredPollDistributor::trigger(VersionNumber version) {
     std::lock_guard<std::recursive_mutex> variablesLock(_variablesMutex);
-    VersionNumber ver; // a common VersionNumber for this trigger. Must be generated under mutex
-    if(!_isActive) return ver;
+    if(!_isActive) return;
 
     try {
       _transferGroup->read();
@@ -27,39 +26,36 @@ namespace ChimeraTK {
       for(auto& var : _asyncVariables) {
         auto* polledAsyncVariable = dynamic_cast<PolledAsyncVariable*>(var.second.get());
         assert(polledAsyncVariable);
-        polledAsyncVariable->fillSendBuffer(ver);
+        polledAsyncVariable->fillSendBuffer(version);
         var.second->send(); // send function from  the AsyncVariable base class
       }
 
       auto controllerHandler = _controllerHandler.lock();
       if(controllerHandler) {
-        controllerHandler->handle();
+        controllerHandler->handle(version);
       }
     }
     catch(ChimeraTK::runtime_error&) {
       // Nothing to do. Backend's set exception has already been called by the accessor in the transfer group that
       // raised it.
     }
-
-    return ver;
   }
 
   //*********************************************************************************************************************/
-  VersionNumber TriggeredPollDistributor::activate() {
+  void TriggeredPollDistributor::activate(VersionNumber version) {
     std::lock_guard<std::recursive_mutex> variablesLock(_variablesMutex);
-    VersionNumber ver; // a common VersionNumber for this trigger. Must be generated under mutex
     try {
       _transferGroup->read();
 
       for(auto& var : _asyncVariables) {
         auto* polledAsyncVariable = dynamic_cast<PolledAsyncVariable*>(var.second.get());
         assert(polledAsyncVariable);
-        polledAsyncVariable->fillSendBuffer(ver);
+        polledAsyncVariable->fillSendBuffer(version);
         var.second->activateAndSend(); // function from  the AsyncVariable base class
       }
       auto controllerHandler = _controllerHandler.lock();
       if(controllerHandler) {
-        controllerHandler->activate();
+        controllerHandler->activate(version);
       }
       _isActive = true;
     }
@@ -67,8 +63,6 @@ namespace ChimeraTK {
       // Nothing to do. Backend's set exception has already been called by the accessor in the transfer group that
       // raised it.
     }
-
-    return ver;
   }
 
   //*********************************************************************************************************************/

@@ -227,8 +227,9 @@ namespace ChimeraTK {
   /********************************************************************************************************************/
 
   void NumericAddressedBackend::activateAsyncRead() noexcept {
+    VersionNumber v{};
     for(const auto& it : _primaryInterruptDispatchers) {
-      it.second->activate();
+      it.second->activate(v);
     }
   }
 
@@ -265,7 +266,9 @@ namespace ChimeraTK {
   VersionNumber NumericAddressedBackend::dispatchInterrupt(uint32_t interruptNumber) {
     // This function just makes sure that at() is used to access the _interruptDispatchers map,
     // which guarantees that the map is not altered.
-    return _primaryInterruptDispatchers.at(interruptNumber)->trigger();
+    VersionNumber v{};
+    _primaryInterruptDispatchers.at(interruptNumber)->trigger(v);
+    return v;
   }
 
   /********************************************************************************************************************/

@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: LGPL-3.0-or-later
 #pragma once
 
+#include <ChimeraTK/VersionNumber.h>
+
 #include <boost/shared_ptr.hpp>
 
 #include <functional>
@@ -62,14 +64,14 @@ namespace ChimeraTK {
     [[nodiscard]] boost::shared_ptr<TriggeredPollDistributor> getTriggerPollDistributorRecursive(
         std::vector<uint32_t> const& interruptID, bool activateIfNew);
 
-    void activate();
+    void activate(VersionNumber version);
     void sendException(const std::exception_ptr& e);
     void deactivate();
 
     /** The interrupt handling functions implements the handshake with the interrupt controller. It needs to
      * be implemented individually for each interrupt controller.
      */
-    virtual void handle() = 0;
+    virtual void handle(VersionNumber version) = 0;
 
    protected:
     /** Each known interrupt has its own dispatcher

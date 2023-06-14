@@ -19,19 +19,26 @@ namespace ChimeraTK {
   }
 
   void DummyIntc::handle(VersionNumber version) {
-    _activeInterrupts->read();
-    for(uint32_t i = 0; i < 32; ++i) {
-      if(_activeInterrupts->accessData(0) & 0x1U << i) {
-        try {
-          auto dispatcher = _distributors.at(i).lock();
-          if(dispatcher) {
-            dispatcher->trigger(version);
+    try {
+      _activeInterrupts->read();
+      for(uint32_t i = 0; i < 32; ++i) {
+        if(_activeInterrupts->accessData(0) & 0x1U << i) {
+          try {
+            auto dispatcher = _distributors.at(i).lock();
+            if(dispatcher) {
+              dispatcher->trigger(version);
+            }
+          }
+          catch(std::out_of_range&) {
+            // FIXME: change singature of setException so we get a good exception message (is there already a ticket?)
+            std::cout << "ERROR: DummyIntc reports unknown active interrupt " + std::to_string(i) << std::endl;
+            _backend->setException();
           }
         }
-        catch(std::out_of_range&) {
-          throw ChimeraTK::runtime_error("DummyIntc reports unknown active interrupt " + std::to_string(i));
-        }
       }
+    }
+    catch(ChimeraTK::runtime_error&) {
+      // Nothing to do. The transferElement part of _activeInterrupts has already called the backend's setException
     }
   }
 

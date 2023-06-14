@@ -60,6 +60,7 @@ namespace ChimeraTK {
     if(distributorIter == _distributors.end()) {
       distributor = boost::make_shared<TriggerDistributor>(
           _backend, _controllerHandlerFactory, qualifiedInterruptId, shared_from_this());
+      _distributors[interruptID.front()] = distributor;
       if(activateIfNew) {
         distributor->activate({});
       }

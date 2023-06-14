@@ -46,11 +46,11 @@ namespace ChimeraTK {
       return;
     }
     auto pollDistributor = _pollDistributor.lock();
-    if(!pollDistributor) {
+    if(pollDistributor) {
       pollDistributor->trigger(version);
     }
     auto controllerHandler = _interruptControllerHandler.lock();
-    if(!controllerHandler) {
+    if(controllerHandler) {
       controllerHandler->handle(version);
     }
   }
@@ -58,11 +58,11 @@ namespace ChimeraTK {
   void TriggerDistributor::activate(VersionNumber version) {
     _isActive = true;
     auto pollDistributor = _pollDistributor.lock();
-    if(!pollDistributor) {
+    if(pollDistributor) {
       pollDistributor->activate(version);
     }
     auto controllerHandler = _interruptControllerHandler.lock();
-    if(!controllerHandler) {
+    if(controllerHandler) {
       controllerHandler->activate(version);
     }
   }
@@ -70,11 +70,11 @@ namespace ChimeraTK {
   void TriggerDistributor::deactivate() {
     _isActive = false;
     auto pollDistributor = _pollDistributor.lock();
-    if(!pollDistributor) {
+    if(pollDistributor) {
       pollDistributor->deactivate();
     }
     auto controllerHandler = _interruptControllerHandler.lock();
-    if(!controllerHandler) {
+    if(controllerHandler) {
       controllerHandler->deactivate();
     }
   }
@@ -82,11 +82,11 @@ namespace ChimeraTK {
   void TriggerDistributor::sendException(const std::exception_ptr& e) {
     _isActive = false;
     auto pollDistributor = _pollDistributor.lock();
-    if(!pollDistributor) {
+    if(pollDistributor) {
       pollDistributor->sendException(e);
     }
     auto controllerHandler = _interruptControllerHandler.lock();
-    if(!controllerHandler) {
+    if(controllerHandler) {
       controllerHandler->sendException(e);
     }
   }

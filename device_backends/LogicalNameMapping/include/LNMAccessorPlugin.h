@@ -11,8 +11,10 @@ namespace ChimeraTK::LNMBackend {
 
   /** Helper struct to hold extra parameters needed by some plugins, used in decorateAccessor() */
   struct UndecoratedParams {
-    UndecoratedParams(size_t numberOfWords, size_t wordOffsetInRegister, AccessModeFlags flags)
-    : _numberOfWords(numberOfWords), _wordOffsetInRegister(wordOffsetInRegister), _flags(std::move(flags)) {}
+    UndecoratedParams(const std::string& name, size_t numberOfWords, size_t wordOffsetInRegister, AccessModeFlags flags)
+    : _name(name), _numberOfWords(numberOfWords), _wordOffsetInRegister(wordOffsetInRegister),
+      _flags(std::move(flags)) {}
+    std::string _name;
     size_t _numberOfWords;
     size_t _wordOffsetInRegister;
     AccessModeFlags _flags;
@@ -55,7 +57,7 @@ namespace ChimeraTK::LNMBackend {
      *
      *  If the plugin needs data that depends on the target and which is only available after opening (e.g. whether the
      *  register is writeable), the plugin has to call updateRegisterInfo() in the openHook() and can then
-     *  modify internal variables in the updateRegisterInfo function.
+     *  modify internal variables in the doRegisterInfoUpdate() function.
      *
      *  Note: in principle it is fine to do nothing in this function, if no catalogue change is required. This function
      *  intentionally has no empty default implementation, because it might otherwise easy to overlook that the register
@@ -68,6 +70,12 @@ namespace ChimeraTK::LNMBackend {
      *  already.
      */
     virtual void openHook(const boost::shared_ptr<LogicalNameMappingBackend>& backend) { std::ignore = backend; }
+
+    /**
+     *  Hook called after the parsing of logical name map. This can be used for setup code which needs complete
+     *  logical name map definitions but must be executed before any register accessor is created.
+     */
+    virtual void postParsingHook([[maybe_unused]] const boost::shared_ptr<const LogicalNameMappingBackend>& backend) {}
 
     /**
      *  Hook called when the backend is closed, at the beginning of the close() function when the device is still open.
@@ -95,15 +103,24 @@ namespace ChimeraTK::LNMBackend {
   template<typename Derived>
   class AccessorPlugin : public AccessorPluginBase {
    public:
-    /** The constructor of the plugin should also accept a second argument:
+    /**
+     * The constructor of the plugin should also accept a 3rd argument:
      *   const std::map<std::string, std::string>& parameters
-     *  Since the parameters are not used in the base class, they do not need to be passed on. */
-    explicit AccessorPlugin(const LNMBackendRegisterInfo& info);
+     *  Since the parameters are not used in the base class, they do not need to be passed on.
+     */
+    explicit AccessorPlugin(const LNMBackendRegisterInfo& info, size_t pluginIndex, bool shareTargetAccessors = false);
 
    private:
     // we make our destructor private and add Derived as a friend to enforce the correct CRTP
     ~AccessorPlugin() override = default;
     friend Derived;
+
+   protected:
+    /**
+     * Deriving plugins should set this to true if they want to use interlocked access to the same
+     * target accessor. Otherwise different accessors for the same target will given out.
+     */
+    const bool _needSharedTarget;
 
    public:
     /**
@@ -131,13 +148,18 @@ namespace ChimeraTK::LNMBackend {
     boost::shared_ptr<NDRegisterAccessor<UserType>> getAccessor_impl(
         boost::shared_ptr<LogicalNameMappingBackend>& backend, size_t numberOfWords, size_t wordOffsetInRegister,
         AccessModeFlags flags, size_t pluginIndex);
+
+    /**
+     * Index of the plugin instance within the stack of plugins on a particular register.
+     */
+    size_t _pluginIndex;
   };
 
   /********************************************************************************************************************/
 
   /** Factory function for accessor plugins */
-  boost::shared_ptr<AccessorPluginBase> makePlugin(
-      LNMBackendRegisterInfo info, const std::string& name, const std::map<std::string, std::string>& parameters);
+  boost::shared_ptr<AccessorPluginBase> makePlugin(LNMBackendRegisterInfo info, size_t pluginIndex,
+      const std::string& name, const std::map<std::string, std::string>& parameters);
 
   /********************************************************************************************************************/
   /* Known plugins are defined below (implementations should go to a separate .cc file)                               */
@@ -146,7 +168,8 @@ namespace ChimeraTK::LNMBackend {
   /** Multiplier Plugin: Multiply register's data with a constant factor */
   class MultiplierPlugin : public AccessorPlugin<MultiplierPlugin> {
    public:
-    MultiplierPlugin(const LNMBackendRegisterInfo& info, const std::map<std::string, std::string>& parameters);
+    MultiplierPlugin(
+        const LNMBackendRegisterInfo& info, size_t pluginIndex, const std::map<std::string, std::string>& parameters);
 
     void doRegisterInfoUpdate() override;
     DataType getTargetDataType(DataType) const override { return DataType::float64; }
@@ -164,7 +187,8 @@ namespace ChimeraTK::LNMBackend {
   /** Monostable Trigger Plugin: Write value to target which falls back to another value after defined time. */
   class MonostableTriggerPlugin : public AccessorPlugin<MonostableTriggerPlugin> {
    public:
-    MonostableTriggerPlugin(LNMBackendRegisterInfo info, const std::map<std::string, std::string>& parameters);
+    MonostableTriggerPlugin(
+        LNMBackendRegisterInfo info, size_t pluginIndex, const std::map<std::string, std::string>& parameters);
 
     void doRegisterInfoUpdate() override;
     DataType getTargetDataType(DataType) const override { return DataType::uint32; }
@@ -182,7 +206,8 @@ namespace ChimeraTK::LNMBackend {
   /** ForceReadOnly Plugin: Forces a register to be read only. */
   class ForceReadOnlyPlugin : public AccessorPlugin<ForceReadOnlyPlugin> {
    public:
-    ForceReadOnlyPlugin(const LNMBackendRegisterInfo& info, const std::map<std::string, std::string>& parameters);
+    ForceReadOnlyPlugin(
+        const LNMBackendRegisterInfo& info, size_t pluginIndex, const std::map<std::string, std::string>& parameters);
 
     void doRegisterInfoUpdate() override;
 
@@ -195,7 +220,8 @@ namespace ChimeraTK::LNMBackend {
   /** ForcePollingRead Plugin: Forces a register to not allow setting the AccessMode::wait_for_new_data flag. */
   class ForcePollingReadPlugin : public AccessorPlugin<ForcePollingReadPlugin> {
    public:
-    ForcePollingReadPlugin(const LNMBackendRegisterInfo& info, const std::map<std::string, std::string>& parameters);
+    ForcePollingReadPlugin(
+        const LNMBackendRegisterInfo& info, size_t pluginIndex, const std::map<std::string, std::string>& parameters);
 
     void doRegisterInfoUpdate() override;
 
@@ -205,10 +231,11 @@ namespace ChimeraTK::LNMBackend {
         boost::shared_ptr<NDRegisterAccessor<TargetType>>& target, const UndecoratedParams& accessorParams);
   };
 
-  /** TypeHintModifier Plugin: Change the catalog type of the mapped register. No actual type conversion takes place */
+  /** TypeHintModifier Plugin: Change the catalogue type of the mapped register. No actual type conversion takes place */
   class TypeHintModifierPlugin : public AccessorPlugin<TypeHintModifierPlugin> {
    public:
-    TypeHintModifierPlugin(const LNMBackendRegisterInfo& info, const std::map<std::string, std::string>& parameters);
+    TypeHintModifierPlugin(
+        const LNMBackendRegisterInfo& info, size_t pluginIndex, const std::map<std::string, std::string>& parameters);
 
     void doRegisterInfoUpdate() override;
 
@@ -216,41 +243,49 @@ namespace ChimeraTK::LNMBackend {
     DataType _dataType{DataType::none};
   };
 
+  class BitRangeAccessPlugin : public AccessorPlugin<BitRangeAccessPlugin> {
+   public:
+    BitRangeAccessPlugin(
+        const LNMBackendRegisterInfo& info, size_t pluginIndex, const std::map<std::string, std::string>& parameters);
+
+    template<typename UserType, typename TargetType>
+    boost::shared_ptr<NDRegisterAccessor<UserType>> decorateAccessor(
+        boost::shared_ptr<LogicalNameMappingBackend>& backend,
+        boost::shared_ptr<NDRegisterAccessor<TargetType>>& target, const UndecoratedParams& accessorParams);
+
+    void doRegisterInfoUpdate() override;
+    DataType getTargetDataType(DataType /*userType*/) const override { return DataType::uint64; }
+    uint32_t _shift{0};
+    uint32_t _numberOfBits{0};
+    bool _writeable{true};
+  };
+
   /********************************************************************************************************************/
   /* Implementations follow here                                                                                      */
   /********************************************************************************************************************/
 
   template<typename Derived>
-  AccessorPlugin<Derived>::AccessorPlugin(const LNMBackendRegisterInfo& info) : AccessorPluginBase(info) {
+  AccessorPlugin<Derived>::AccessorPlugin(
+      const LNMBackendRegisterInfo& info, size_t pluginIndex, bool shareTargetAccessors)
+  : AccessorPluginBase(info), _needSharedTarget{shareTargetAccessors}, _pluginIndex(pluginIndex) {
     FILL_VIRTUAL_FUNCTION_TEMPLATE_VTABLE(getAccessor_impl);
   }
 
   /********************************************************************************************************************/
-
-  template<typename UserType, typename TargetType>
-  struct AccessorPlugin_Helper {
-    static boost::shared_ptr<NDRegisterAccessor<UserType>> decorateAccessor(
-        boost::shared_ptr<NDRegisterAccessor<TargetType>>&) {
-      assert(false); // When overriding getTargetDataType(), also decorateAccessor()
-                     // must be overridden!
-      return {};
-    }
-  };
-
-  template<typename UserType>
-  struct AccessorPlugin_Helper<UserType, UserType> {
-    static boost::shared_ptr<NDRegisterAccessor<UserType>> decorateAccessor(
-        boost::shared_ptr<NDRegisterAccessor<UserType>>& target) {
-      return target;
-    }
-  };
 
   template<typename Derived>
   template<typename UserType, typename TargetType>
   boost::shared_ptr<NDRegisterAccessor<UserType>> AccessorPlugin<Derived>::decorateAccessor(
       boost::shared_ptr<LogicalNameMappingBackend>&, boost::shared_ptr<NDRegisterAccessor<TargetType>>& target,
       const UndecoratedParams&) {
-    return AccessorPlugin_Helper<UserType, TargetType>::decorateAccessor(target);
+    if constexpr(std::is_same<UserType, TargetType>::value) {
+      return target;
+    }
+
+    assert(false); // When overriding getTargetDataType(), also decorateAccessor()
+                   // must be overridden!
+
+    return {};
   }
 
   /********************************************************************************************************************/
@@ -262,19 +297,39 @@ namespace ChimeraTK::LNMBackend {
       AccessModeFlags flags, size_t pluginIndex) {
     boost::shared_ptr<NDRegisterAccessor<UserType>> decorated;
 
+    assert(_pluginIndex == pluginIndex);
+
     // obtain desired target type from plugin implementation
     auto type = getTargetDataType(typeid(UserType));
-    if((_info._dataDescriptor.rawDataType() == DataType::none) and flags.has(AccessMode::raw)) {
+    if((_info._dataDescriptor.rawDataType() == DataType::none) && flags.has(AccessMode::raw)) {
       throw ChimeraTK::logic_error(
           "Access mode 'raw' is not supported for register '" + std::string(_info.getRegisterName()) + "'");
     }
 
     callForType(type, [&](auto T) {
-      // obtain target accessor with desired type
-      auto target = backend->getRegisterAccessor_impl<decltype(T)>(
-          _info.getRegisterName(), numberOfWords, wordOffsetInRegister, flags, pluginIndex + 1);
+      boost::shared_ptr<ChimeraTK::NDRegisterAccessor<decltype(T)>> target;
+
+      if(_needSharedTarget) {
+        auto& map = boost::fusion::at_key<decltype(T)>(backend->sharedAccessorMap.table);
+        RegisterPath path{_info.registerName};
+        path.setAltSeparator(".");
+        LogicalNameMappingBackend::AccessorKey key{backend.get(), path};
+
+        auto it = map.find(key);
+        if(it == map.end() || (target = it->second.accessor.lock()) == nullptr) {
+          // obtain target accessor with desired type
+          target = backend->getRegisterAccessor_impl<decltype(T)>(
+              _info.getRegisterName(), numberOfWords, wordOffsetInRegister, flags, pluginIndex + 1);
+          map[key].accessor = target;
+        }
+      }
+      else {
+        target = backend->getRegisterAccessor_impl<decltype(T)>(
+            _info.getRegisterName(), numberOfWords, wordOffsetInRegister, flags, pluginIndex + 1);
+      }
+
       // double buffering plugin needs numberOfWords, wordOffsetInRegister of already existing accessor
-      UndecoratedParams accessorParams(numberOfWords, wordOffsetInRegister, flags);
+      UndecoratedParams accessorParams(_info.registerName, numberOfWords, wordOffsetInRegister, flags);
       decorated = static_cast<Derived*>(this)->template decorateAccessor<UserType>(backend, target, accessorParams);
     });
 

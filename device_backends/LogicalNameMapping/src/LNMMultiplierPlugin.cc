@@ -13,8 +13,8 @@ namespace ChimeraTK::LNMBackend {
   /********************************************************************************************************************/
 
   MultiplierPlugin::MultiplierPlugin(
-      const LNMBackendRegisterInfo& info, const std::map<std::string, std::string>& parameters)
-  : AccessorPlugin(info) {
+      const LNMBackendRegisterInfo& info, size_t pluginIndex, const std::map<std::string, std::string>& parameters)
+  : AccessorPlugin(info, pluginIndex) {
     // extract parameters
     if(parameters.find("factor") == parameters.end()) {
       throw ChimeraTK::logic_error("LogicalNameMappingBackend MultiplierPlugin: Missing parameter 'factor'.");
@@ -77,27 +77,16 @@ namespace ChimeraTK::LNMBackend {
 
   /********************************************************************************************************************/
 
-  /** Helper class to implement MultiplierPlugin::decorateAccessor (can later be realised with if constexpr) */
-  template<typename UserType, typename TargetType>
-  struct MultiplierPlugin_Helper {
-    static boost::shared_ptr<NDRegisterAccessor<UserType>> decorateAccessor(
-        boost::shared_ptr<NDRegisterAccessor<TargetType>>&, double) {
-      assert(false); // only specialisation is valid
-      return {};
-    }
-  };
-  template<typename UserType>
-  struct MultiplierPlugin_Helper<UserType, double> {
-    static boost::shared_ptr<NDRegisterAccessor<UserType>> decorateAccessor(
-        boost::shared_ptr<NDRegisterAccessor<double>>& target, double factor) {
-      return boost::make_shared<MultiplierPluginDecorator<UserType>>(target, factor);
-    }
-  };
-
   template<typename UserType, typename TargetType>
   boost::shared_ptr<NDRegisterAccessor<UserType>> MultiplierPlugin::decorateAccessor(
       boost::shared_ptr<LogicalNameMappingBackend>&, boost::shared_ptr<NDRegisterAccessor<TargetType>>& target,
       const UndecoratedParams&) {
-    return MultiplierPlugin_Helper<UserType, TargetType>::decorateAccessor(target, _factor);
+    if constexpr(std::is_same<TargetType, double>::value) {
+      return boost::make_shared<MultiplierPluginDecorator<UserType>>(target, _factor);
+    }
+
+    assert(false);
+
+    return {};
   }
 } // namespace ChimeraTK::LNMBackend

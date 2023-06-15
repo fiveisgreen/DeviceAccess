@@ -192,11 +192,51 @@
         <parameter name="enable_push_parameters"/>
       </plugin>
     </redirectedRegister>
+
+    <variable name="RedirectedBitWithMath">
+      <type>float64</type>
+      <value>11</value>
+    </variable>
+    <redirectedBit name="RedirectedBitWithMath_helper">
+      <targetDevice><par>target</par></targetDevice>
+      <targetRegister>BOARD.WORD_STATUS</targetRegister>
+      <targetBit>3</targetBit>
+      <plugin name="math">
+        <parameter name="formula">myBit - x</parameter>
+        <parameter name="myBit">/RedirectedBitWithMath</parameter>
+        <parameter name="enable_push_parameters"/>
+      </plugin>
+    </redirectedBit>
+
     <redirectedRegister name="MonostableTrigger">
     <targetDevice><par>target</par></targetDevice>
       <targetRegister>ADC.WORD_ADC_ENA</targetRegister>
       <plugin name="monostableTrigger">
         <parameter name="milliseconds">100</parameter>
+      </plugin>
+    </redirectedRegister>
+    <redirectedRegister name="BitRangeLower">
+      <targetDevice><par>target</par></targetDevice>
+      <targetRegister>BOARD/WORD_FIRMWARE</targetRegister>
+      <plugin name="bitRange">
+        <parameter name="shift">8</parameter>
+        <parameter name="numberOfBits">8</parameter>
+      </plugin>
+    </redirectedRegister>
+    <redirectedRegister name="BitRangeUpper">
+      <targetDevice><par>target</par></targetDevice>
+      <targetRegister>BOARD/WORD_FIRMWARE</targetRegister>
+      <plugin name="bitRange">
+        <parameter name="shift">16</parameter>
+        <parameter name="numberOfBits">16</parameter>
+      </plugin>
+    </redirectedRegister>
+    <redirectedRegister name="BitRangeMiddle">
+      <targetDevice><par>target</par></targetDevice>
+      <targetRegister>BOARD/WORD_FIRMWARE</targetRegister>
+      <plugin name ="bitRange">
+      <parameter name="shift">4</parameter>
+      <parameter name="numberOfBits">9</parameter>
       </plugin>
     </redirectedRegister>
 </logicalNameMap>

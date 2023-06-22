@@ -22,9 +22,7 @@ namespace ChimeraTK {
       _transferGroup->read();
 
       for(auto& var : _asyncVariables) {
-        auto* polledAsyncVariable = dynamic_cast<PolledAsyncVariable*>(var.second.get());
-        assert(polledAsyncVariable);
-        polledAsyncVariable->fillSendBuffer(version);
+        var.second->fillSendBuffer(version);
         var.second->send(); // send function from  the AsyncVariable base class
       }
 
@@ -42,9 +40,7 @@ namespace ChimeraTK {
       _transferGroup->read();
 
       for(auto& var : _asyncVariables) {
-        auto* polledAsyncVariable = dynamic_cast<PolledAsyncVariable*>(var.second.get());
-        assert(polledAsyncVariable);
-        polledAsyncVariable->fillSendBuffer(version);
+        var.second->fillSendBuffer(version);
         var.second->activateAndSend(); // function from  the AsyncVariable base class
       }
       _isActive = true;

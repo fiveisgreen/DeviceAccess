@@ -46,6 +46,10 @@ namespace ChimeraTK {
     virtual const std::string& getUnit() = 0;
     virtual const std::string& getDescription() = 0;
     virtual bool isWriteable() = 0;
+
+    /** Fill the user buffer from the sync accessor, and replace the version number with the given version.
+     */
+    virtual void fillSendBuffer(VersionNumber const& version) = 0;
   };
 
   /** Helper class to have a complete descriton to create an Accessor.
@@ -154,7 +158,7 @@ namespace ChimeraTK {
    *  The AsyncVariableManager cannot hold a shared pointer of the AsyncNDRegisterAccessor because then you could never
    * get rid of a created accessor, which means the manager would just keep growing in memory if accessors are
    * dynamically created and removed. Hence a weak pointer is used, and this class provides all the functions that
-   * access this weak pointer and to all the locking and nullptr checking.
+   * access this weak pointer and do all the locking and nullptr checking.
    */
   template<typename UserType>
   struct AsyncVariableImpl : public AsyncVariable {

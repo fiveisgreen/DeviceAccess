@@ -10,17 +10,6 @@
 #include <mutex>
 
 namespace ChimeraTK {
-  /** Typeless base class. The implementations will have a synchronous accessor which can be
-   *  polled and then the send buffer is filled with its content.
-   */
-  struct PolledAsyncVariable {
-    virtual ~PolledAsyncVariable() = default;
-
-    /** Fill the user buffer from the sync accessor, and replace the version number with the given version.
-     */
-    virtual void fillSendBuffer(VersionNumber const& version) = 0;
-  };
-
   /** The TriggerPollDistributor has two main functionalities:
    *  * It calls functions for all asynchronous accessors associated with one interrupt
    *  * It serves as a subscription manager
@@ -46,8 +35,6 @@ namespace ChimeraTK {
     void postDeactivateHook() override;
     void postSendExceptionHook(const std::exception_ptr& e) override;
 
-    // boost::shared_ptr<TriggeredPollDistributor> getNestedPollDistributor(std::vector<uint32_t> const& interruptID);
-
    protected:
     void asyncVariableMapChanged() override {
       if(_asyncVariables.empty()) {
@@ -66,7 +53,7 @@ namespace ChimeraTK {
   /** Implementation of the PolledAsyncVariable for the concrete UserType.
    */
   template<typename UserType>
-  struct PolledAsyncVariableImpl : public AsyncVariableImpl<UserType>, public PolledAsyncVariable {
+  struct PolledAsyncVariableImpl : public AsyncVariableImpl<UserType> {
     void fillSendBuffer(VersionNumber const& version) final;
 
     /** The constructor takes an already created synchronous accessor and a flag

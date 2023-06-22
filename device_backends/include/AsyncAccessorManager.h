@@ -169,13 +169,14 @@ namespace ChimeraTK {
     void deactivate() final;
     void activateAndSend() final;
 
+    typename NDRegisterAccessor<UserType>::Buffer _sendBuffer;
+
    private:
     // This weak pointer is private so the user cannot bypass correct locking and nullptr-checking.
     boost::weak_ptr<AsyncNDRegisterAccessor<UserType>> _asyncAccessor;
     friend AsyncAccessorManager; // is allowed to set the _asyncAccessor
 
    protected:
-    typename NDRegisterAccessor<UserType>::Buffer _sendBuffer;
     std::atomic<bool> _isActive{false};
   };
 

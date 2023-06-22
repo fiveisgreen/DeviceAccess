@@ -34,8 +34,8 @@ namespace ChimeraTK {
     void sendException(const std::exception_ptr& e);
 
     boost::shared_ptr<TriggeredPollDistributor> getPollDistributorRecursive(std::vector<uint32_t> const& interruptID);
-    // boost::shared_ptr<VariableDistributor<void>> getVariableDistributorRecursive(
-    //     std::vector<uint32_t> const& interruptID);
+    boost::shared_ptr<VariableDistributor<ChimeraTK::Void>> getVariableDistributorRecursive(
+        std::vector<uint32_t> const& interruptID);
 
    protected:
     std::recursive_mutex _creationMutex;
@@ -44,7 +44,7 @@ namespace ChimeraTK {
     InterruptControllerHandlerFactory* _interruptControllerHandlerFactory;
     boost::weak_ptr<InterruptControllerHandler> _interruptControllerHandler;
     boost::weak_ptr<TriggeredPollDistributor> _pollDistributor;
-    boost::weak_ptr<VariableDistributor<void>> _variableDistributor;
+    boost::weak_ptr<VariableDistributor<ChimeraTK::Void>> _variableDistributor;
     boost::shared_ptr<InterruptControllerHandler> _parent;
     bool _isActive{false};
   };

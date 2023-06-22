@@ -79,6 +79,38 @@ namespace ChimeraTK {
   }
 
   //*********************************************************************************************************************/
+  boost::shared_ptr<VariableDistributor<ChimeraTK::Void>> InterruptControllerHandler::getVariableDistributorRecursive(
+      std::vector<uint32_t> const& interruptID, bool activateIfNew) {
+    // assert(false); // FIXME: needs container lock!
+    assert(!interruptID.empty());
+    auto qualifiedInterruptId = _id;
+    qualifiedInterruptId.push_back(interruptID.front());
+
+    // we can't use try_emplace because the map contains weak pointers
+    boost::shared_ptr<TriggerDistributor> distributor;
+    auto distributorIter = _distributors.find(interruptID.front());
+    if(distributorIter == _distributors.end()) {
+      distributor = boost::make_shared<TriggerDistributor>(
+          _backend, _controllerHandlerFactory, qualifiedInterruptId, shared_from_this());
+      _distributors[interruptID.front()] = distributor;
+      if(activateIfNew) {
+        distributor->activate({});
+      }
+    }
+    else {
+      distributor = distributorIter->second.lock();
+      if(!distributor) {
+        distributor = boost::make_shared<TriggerDistributor>(
+            _backend, _controllerHandlerFactory, qualifiedInterruptId, shared_from_this());
+        if(activateIfNew) {
+          distributor->activate({});
+        }
+      }
+    }
+    return distributor->getVariableDistributorRecursive(interruptID);
+  }
+
+  //*********************************************************************************************************************/
   void InterruptControllerHandler::activate(VersionNumber version) {
     for(auto& dispatcherIter : _distributors) {
       auto dispatcher = dispatcherIter.second.lock();

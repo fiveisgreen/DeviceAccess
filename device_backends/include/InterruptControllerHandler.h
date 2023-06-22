@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LGPL-3.0-or-later
 #pragma once
 
+#include "SupportedUserTypes.h"
 #include "VersionNumber.h"
 
 #include <boost/enable_shared_from_this.hpp>
@@ -16,6 +17,8 @@ namespace ChimeraTK {
   class InterruptControllerHandler;
   class TriggeredPollDistributor;
   class TriggerDistributor;
+  template<typename UserType>
+  class VariableDistributor;
   class DeviceBackend;
 
   /** Knows which type of InterruptControllerHandler to create for which interrupt.
@@ -64,6 +67,9 @@ namespace ChimeraTK {
      * exist yet.
      */
     [[nodiscard]] boost::shared_ptr<TriggeredPollDistributor> getTriggerPollDistributorRecursive(
+        std::vector<uint32_t> const& interruptID, bool activateIfNew);
+
+    [[nodiscard]] boost::shared_ptr<VariableDistributor<ChimeraTK::Void>> getVariableDistributorRecursive(
         std::vector<uint32_t> const& interruptID, bool activateIfNew);
 
     void activate(VersionNumber version);

@@ -5,7 +5,7 @@
 
 #include "InterruptControllerHandler.h"
 #include "TriggeredPollDistributor.h"
-// #include "VariableDistributor.h"
+#include "VariableDistributor.h"
 
 namespace ChimeraTK {
 
@@ -40,6 +40,31 @@ namespace ChimeraTK {
     return controllerHandler->getTriggerPollDistributorRecursive({++interruptID.begin(), interruptID.end()}, _isActive);
   }
 
+  boost::shared_ptr<VariableDistributor<ChimeraTK::Void>> TriggerDistributor::getVariableDistributorRecursive(
+      std::vector<uint32_t> const& interruptID) {
+    std::lock_guard<std::recursive_mutex> crerationLock(_creationMutex);
+
+    if(interruptID.size() == 1) {
+      // return the variable distributor from this instance, not a nested one
+      auto variableDistributor = _variableDistributor.lock();
+      if(!variableDistributor) {
+        variableDistributor = boost::make_shared<VariableDistributor<ChimeraTK::Void>>(_id, shared_from_this());
+        _variableDistributor = variableDistributor;
+        if(_isActive) {
+          variableDistributor->activate({});
+        }
+      }
+      return variableDistributor;
+    }
+    // get a nested variable distributor
+    auto controllerHandler = _interruptControllerHandler.lock();
+    if(!controllerHandler) {
+      controllerHandler = _interruptControllerHandlerFactory->createInterruptControllerHandler(_id, shared_from_this());
+      _interruptControllerHandler = controllerHandler;
+    }
+    return controllerHandler->getVariableDistributorRecursive({++interruptID.begin(), interruptID.end()}, _isActive);
+  }
+
   void TriggerDistributor::trigger(VersionNumber version) {
     if(!_isActive) {
       return;
@@ -51,6 +76,10 @@ namespace ChimeraTK {
     auto controllerHandler = _interruptControllerHandler.lock();
     if(controllerHandler) {
       controllerHandler->handle(version);
+    }
+    auto variableDistributor = _variableDistributor.lock();
+    if(variableDistributor) {
+      variableDistributor->_sourceBuffer.versionNumber = version;
     }
   }
 

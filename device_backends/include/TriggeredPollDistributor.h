@@ -36,8 +36,7 @@ namespace ChimeraTK {
      */
     void trigger(VersionNumber version);
 
-    TriggeredPollDistributor(DeviceBackend* backend, InterruptControllerHandlerFactory* controllerHandlerFactory,
-        std::vector<uint32_t> interruptID, boost::shared_ptr<TriggerDistributor> parent);
+    TriggeredPollDistributor(std::vector<uint32_t> interruptID, boost::shared_ptr<TriggerDistributor> parent);
 
     template<typename UserType>
     std::unique_ptr<AsyncVariable> createAsyncVariable(
@@ -61,9 +60,6 @@ namespace ChimeraTK {
     // unique_ptr because we want to delete it manually
     std::unique_ptr<TransferGroup> _transferGroup{new TransferGroup};
     std::vector<uint32_t> _id;
-    DeviceBackend* _backend;
-    InterruptControllerHandlerFactory* _controllerHandlerFactory;
-    boost::weak_ptr<InterruptControllerHandler> _controllerHandler;
     boost::shared_ptr<TriggerDistributor> _parent;
   };
 

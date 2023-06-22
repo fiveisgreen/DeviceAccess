@@ -23,8 +23,7 @@ namespace ChimeraTK {
       // return the poll distributor from this instance, not a nested one
       auto pollDistributor = _pollDistributor.lock();
       if(!pollDistributor) {
-        pollDistributor = boost::make_shared<TriggeredPollDistributor>(
-            _backend, _interruptControllerHandlerFactory, _id, shared_from_this());
+        pollDistributor = boost::make_shared<TriggeredPollDistributor>(_id, shared_from_this());
         _pollDistributor = pollDistributor;
         if(_isActive) {
           pollDistributor->activate({});

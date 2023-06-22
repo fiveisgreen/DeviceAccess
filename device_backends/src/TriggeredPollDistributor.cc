@@ -7,11 +7,9 @@
 
 namespace ChimeraTK {
 
-  TriggeredPollDistributor::TriggeredPollDistributor(DeviceBackend* backend,
-      InterruptControllerHandlerFactory* controllerHandlerFactory, std::vector<uint32_t> interruptID,
-      boost::shared_ptr<TriggerDistributor> parent)
-  : _id(std::move(interruptID)), _backend(backend), _controllerHandlerFactory(controllerHandlerFactory),
-    _parent(parent) {
+  TriggeredPollDistributor::TriggeredPollDistributor(
+      std::vector<uint32_t> interruptID, boost::shared_ptr<TriggerDistributor> parent)
+  : _id(std::move(interruptID)), _parent(parent) {
     FILL_VIRTUAL_FUNCTION_TEMPLATE_VTABLE(createAsyncVariable);
   }
 
@@ -30,10 +28,6 @@ namespace ChimeraTK {
         var.second->send(); // send function from  the AsyncVariable base class
       }
 
-      auto controllerHandler = _controllerHandler.lock();
-      if(controllerHandler) {
-        controllerHandler->handle(version);
-      }
     }
     catch(ChimeraTK::runtime_error&) {
       // Nothing to do. Backend's set exception has already been called by the accessor in the transfer group that
@@ -53,10 +47,6 @@ namespace ChimeraTK {
         polledAsyncVariable->fillSendBuffer(version);
         var.second->activateAndSend(); // function from  the AsyncVariable base class
       }
-      auto controllerHandler = _controllerHandler.lock();
-      if(controllerHandler) {
-        controllerHandler->activate(version);
-      }
       _isActive = true;
     }
     catch(ChimeraTK::runtime_error&) {
@@ -66,32 +56,10 @@ namespace ChimeraTK {
   }
 
   //*********************************************************************************************************************/
-  //  boost::shared_ptr<TriggeredPollDistributor> TriggeredPollDistributor::getNestedPollDistributor(
-  //      std::vector<uint32_t> const& interruptID) {
-  //    std::lock_guard<std::recursive_mutex> variablesLock(_variablesMutex);
-
-  //    auto controllerHandler = _controllerHandler.lock();
-  //    if(!controllerHandler) {
-  //      controllerHandler = _controllerHandlerFactory->createInterruptControllerHandler(_id, shared_from_this());
-  //      _controllerHandler = controllerHandler;
-  //    }
-  //    return controllerHandler->getTriggerPollDistributorRecursive(interruptID, _isActive);
-  //  }
-
-  //*********************************************************************************************************************/
   void TriggeredPollDistributor::postDeactivateHook() {
-    auto controllerHandler = _controllerHandler.lock();
-    if(controllerHandler) {
-      controllerHandler->deactivate();
-    }
   }
 
   //*********************************************************************************************************************/
-  void TriggeredPollDistributor::postSendExceptionHook(const std::exception_ptr& e) {
-    auto controllerHandler = _controllerHandler.lock();
-    if(controllerHandler) {
-      controllerHandler->sendException(e);
-    }
-  }
+  void TriggeredPollDistributor::postSendExceptionHook([[maybe_unused]] const std::exception_ptr& e) {}
 
 } // namespace ChimeraTK

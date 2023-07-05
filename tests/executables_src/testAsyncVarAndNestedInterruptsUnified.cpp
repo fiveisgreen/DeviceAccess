@@ -153,6 +153,73 @@ struct datafrom4_8_3 : public TriggeredInt<datafrom4_8_3, 4> {
   }
 };
 
+// Use bool accessors instead of void
+template<class WITHPATH, uint32_t INTERRUPT>
+struct BoolAsVoid {
+  bool isWriteable() { return false; }
+  bool isReadable() { return true; }
+  ChimeraTK::AccessModeFlags supportedFlags() {
+    return {ChimeraTK::AccessMode::raw, ChimeraTK::AccessMode::wait_for_new_data};
+  }
+  size_t nChannels() { return 1; }
+  size_t nElementsPerChannel() { return 1; }
+  size_t writeQueueLength() { return std::numeric_limits<size_t>::max(); }
+  size_t nRuntimeErrorCases() { return 1; }
+  typedef ChimeraTK::Boolean minimumUserType;
+  typedef ChimeraTK::Void rawUserType;
+
+  static constexpr auto capabilities = TestCapabilities<>()
+                                           .disableForceDataLossWrite()
+                                           .disableSwitchReadOnly()
+                                           .disableSwitchWriteOnly()
+                                           .disableTestWriteNeverLosesData();
+  //.enableTestRawTransfer();
+
+  template<typename Type>
+  std::vector<std::vector<Type>> generateValue([[maybe_unused]] bool raw = false) {
+    return {{{}}};
+  }
+
+  template<typename UserType>
+  std::vector<std::vector<UserType>> getRemoteValue([[maybe_unused]] bool raw = false) {
+    return {{{}}};
+  }
+
+  void setRemoteValue() {
+    if(!WITHPATH::activeInterruptsPath().empty()) {
+      DummyRegisterAccessor<uint32_t> activeInterrupts{exceptionDummy.get(), "", WITHPATH::activeInterruptsPath()};
+      activeInterrupts = WITHPATH::activeInterruptsValue();
+    }
+    if(exceptionDummy->isOpen()) {
+      exceptionDummy->triggerInterrupt(INTERRUPT);
+    }
+  }
+
+  void forceAsyncReadInconsistency() {}
+
+  void setForceRuntimeError(bool enable, size_t) {
+    exceptionDummy->throwExceptionRead = enable;
+    exceptionDummy->throwExceptionWrite = enable;
+    exceptionDummy->throwExceptionOpen = enable;
+    if(exceptionDummy->isOpen()) {
+      exceptionDummy->triggerInterrupt(INTERRUPT);
+      // exceptionDummy->setException();
+    }
+  }
+};
+
+struct interrupt6 : public BoolAsVoid<interrupt6, 6> {
+  static std::string path() { return "/interrupt6"; }
+  static std::string activeInterruptsPath() { return ""; } // empty
+  static uint32_t activeInterruptsValue() { return 0; }
+};
+
+struct interrupt5_9 : public BoolAsVoid<interrupt5_9, 5> {
+  static std::string path() { return "/interrupt5_9"; }
+  static std::string activeInterruptsPath() { return "/int_ctrls/controller5/active_ints"; }
+  static uint32_t activeInterruptsValue() { return 1U << 9U; }
+};
+
 /**********************************************************************************************************************/
 
 BOOST_AUTO_TEST_CASE(testRegisterAccessor) {
@@ -163,6 +230,7 @@ BOOST_AUTO_TEST_CASE(testRegisterAccessor) {
         .addRegister<datafrom5_9>()
         .addRegister<datafrom4_8_2>()
         .addRegister<datafrom4_8_3>()
+        .addRegister<interrupt6>()
         .runTests(cdd);
   }
   exceptionDummy = nullptr;

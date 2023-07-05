@@ -79,7 +79,7 @@ namespace ChimeraTK {
     }
     auto variableDistributor = _variableDistributor.lock();
     if(variableDistributor) {
-      variableDistributor->_sourceBuffer.versionNumber = version;
+      variableDistributor->distribute(version);
     }
   }
 
@@ -93,6 +93,10 @@ namespace ChimeraTK {
     if(controllerHandler) {
       controllerHandler->activate(version);
     }
+    auto variableDistributor = _variableDistributor.lock();
+    if(variableDistributor) {
+      variableDistributor->activate(version);
+    }
   }
 
   void TriggerDistributor::deactivate() {
@@ -105,6 +109,10 @@ namespace ChimeraTK {
     if(controllerHandler) {
       controllerHandler->deactivate();
     }
+    auto variableDistributor = _variableDistributor.lock();
+    if(variableDistributor) {
+      variableDistributor->deactivate();
+    }
   }
 
   void TriggerDistributor::sendException(const std::exception_ptr& e) {
@@ -116,6 +124,10 @@ namespace ChimeraTK {
     auto controllerHandler = _interruptControllerHandler.lock();
     if(controllerHandler) {
       controllerHandler->sendException(e);
+    }
+    auto variableDistributor = _variableDistributor.lock();
+    if(variableDistributor) {
+      variableDistributor->sendException(e);
     }
   }
 

@@ -11,6 +11,7 @@
 #include "NumericAddressedBackendRegisterAccessor.h"
 #include "TriggerDistributor.h"
 #include "TriggeredPollDistributor.h"
+#include "VariableDistributor.h"
 #include <nlohmann/json.hpp>
 
 namespace ChimeraTK {
@@ -136,10 +137,15 @@ namespace ChimeraTK {
       }
 
       const auto& primaryDistributor = _primaryInterruptDistributors.at(registerInfo.interruptId.front());
-      // FIXME: This might be a VariableDistributor if it's a void accessor.
-      auto pollDistributor = primaryDistributor->getPollDistributorRecursive(registerInfo.interruptId);
+      boost::shared_ptr<AsyncAccessorManager> distributor;
+      if(registerInfo.getDataDescriptor().fundamentalType() == DataDescriptor::FundamentalType::nodata) {
+        distributor = primaryDistributor->getVariableDistributorRecursive(registerInfo.interruptId);
+      }
+      else {
+        distributor = primaryDistributor->getPollDistributorRecursive(registerInfo.interruptId);
+      }
 
-      auto newSubscriber = pollDistributor->template subscribe<UserType>(
+      auto newSubscriber = distributor->template subscribe<UserType>(
           boost::dynamic_pointer_cast<NumericAddressedBackend>(shared_from_this()), registerPathName, numberOfWords,
           wordOffsetInRegister, flags);
       // The new subscriber might already be activated. Hence the exception backend is already set by the interrupt

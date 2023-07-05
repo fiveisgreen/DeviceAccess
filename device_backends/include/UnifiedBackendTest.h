@@ -3462,7 +3462,8 @@ namespace ChimeraTK {
       }
       else {
         BOOST_CHECK(not registerInfo.getSupportedAccessModes().has(AccessMode::raw));
-        BOOST_TEST(registerInfo.getDataDescriptor().rawDataType() == DataType::none);
+        BOOST_CHECK((registerInfo.getDataDescriptor().rawDataType() == DataType::none) ||
+            (registerInfo.getDataDescriptor().rawDataType() == DataType::Void));
       }
     });
   }

@@ -158,9 +158,7 @@ template<class WITHPATH, uint32_t INTERRUPT>
 struct BoolAsVoid {
   bool isWriteable() { return false; }
   bool isReadable() { return true; }
-  ChimeraTK::AccessModeFlags supportedFlags() {
-    return {ChimeraTK::AccessMode::raw, ChimeraTK::AccessMode::wait_for_new_data};
-  }
+  ChimeraTK::AccessModeFlags supportedFlags() { return {ChimeraTK::AccessMode::wait_for_new_data}; }
   size_t nChannels() { return 1; }
   size_t nElementsPerChannel() { return 1; }
   size_t writeQueueLength() { return std::numeric_limits<size_t>::max(); }
@@ -230,7 +228,8 @@ BOOST_AUTO_TEST_CASE(testRegisterAccessor) {
         .addRegister<datafrom5_9>()
         .addRegister<datafrom4_8_2>()
         .addRegister<datafrom4_8_3>()
-        .addRegister<interrupt6>()
+        //.addRegister<interrupt6>()
+        .addRegister<interrupt5_9>()
         .runTests(cdd);
   }
   exceptionDummy = nullptr;

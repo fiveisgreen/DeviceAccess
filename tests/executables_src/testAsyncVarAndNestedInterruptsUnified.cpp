@@ -170,8 +170,8 @@ struct BoolAsVoid {
                                            .disableForceDataLossWrite()
                                            .disableSwitchReadOnly()
                                            .disableSwitchWriteOnly()
-                                           .disableTestWriteNeverLosesData();
-  //.enableTestRawTransfer();
+                                           .disableTestWriteNeverLosesData()
+                                           .disableTestRawTransfer();
 
   template<typename Type>
   std::vector<std::vector<Type>> generateValue([[maybe_unused]] bool raw = false) {

@@ -2612,10 +2612,13 @@ namespace ChimeraTK {
       if(!this->isAsyncRead(x)) return;
       typedef typename decltype(x)::minimumUserType UserType;
       auto registerName = x.path();
-      VersionNumber someVersion{nullptr};
 
       std::cout << "... registerName = " << registerName << " (async)" << std::endl;
       auto reg = d.getTwoDRegisterAccessor<UserType>(registerName, 0, 0, {AccessMode::wait_for_new_data});
+
+      reg.read();
+
+      VersionNumber someVersion = reg.getVersionNumber();
 
       for(size_t i = 0; i < 2; ++i) {
         // Set remote value to be read.

@@ -2643,7 +2643,7 @@ namespace ChimeraTK {
 
   /**
    *  Test version can be stricly ordered by their time of creation within the application
-   *  * \anchor UnifiedTest_TransferElement_B_11_1_1 \ref transferElement_B_11_2_1 "B.11.1.1",
+   *  * \anchor UnifiedTest_TransferElement_B_11_1_1 \ref transferElement_B_11_1_1 "B.11.1.1",
    *
    *  This test is checking that initial values have version numbers larger than VersionNumbers created
    *  by the application.
@@ -2685,7 +2685,7 @@ namespace ChimeraTK {
       typedef typename decltype(x)::minimumUserType UserType;
       auto registerName = x.path();
 
-      std::cout << "... registerName = " << registerName << " (async)" << std::endl;
+      std::cout << "... registerName = " << registerName << " (async1)" << std::endl;
       VersionNumber someVersion{};
 
       auto reg = d.getTwoDRegisterAccessor<UserType>(registerName, 0, 0, {AccessMode::wait_for_new_data});
@@ -2708,7 +2708,7 @@ namespace ChimeraTK {
 
       d.open();
 
-      std::cout << "... registerName = " << registerName << " (async)" << std::endl;
+      std::cout << "... registerName = " << registerName << " (async2)" << std::endl;
 
       auto reg = d.getTwoDRegisterAccessor<UserType>(registerName, 0, 0, {AccessMode::wait_for_new_data});
 

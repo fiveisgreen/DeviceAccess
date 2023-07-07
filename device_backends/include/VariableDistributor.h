@@ -45,8 +45,6 @@ namespace ChimeraTK {
   void VariableDistributor<SourceType>::activate(VersionNumber version) {
     std::lock_guard<std::recursive_mutex> variablesLock(_variablesMutex);
 
-    // FIXME: How do I get the initial value into the user buffer?
-    // This implementation only works for void
     for(auto& var : _asyncVariables) {
       var.second->fillSendBuffer(version);
       var.second->activateAndSend(); // function from  the AsyncVariable base class

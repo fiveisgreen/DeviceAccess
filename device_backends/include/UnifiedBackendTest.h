@@ -375,6 +375,7 @@ namespace ChimeraTK {
     void test_B_9_3_2();
     void test_B_9_4_1();
     void test_B_9_5();
+    void test_B_11_1_1();
     void test_B_11_2_1();
     void test_B_11_2_2();
     void test_B_11_6();
@@ -931,6 +932,7 @@ namespace ChimeraTK {
     test_B_9_3_2();
     test_B_9_4_1();
     test_B_9_5();
+    test_B_11_1_1();
     test_B_11_2_1();
     test_B_11_2_2();
     test_B_11_6();
@@ -2616,7 +2618,7 @@ namespace ChimeraTK {
       std::cout << "... registerName = " << registerName << " (async)" << std::endl;
       auto reg = d.getTwoDRegisterAccessor<UserType>(registerName, 0, 0, {AccessMode::wait_for_new_data});
 
-      reg.read();
+      reg.read(); // initial value
 
       VersionNumber someVersion = reg.getVersionNumber();
 
@@ -2636,6 +2638,93 @@ namespace ChimeraTK {
     // close device
     d.close();
   }
+
+  /********************************************************************************************************************/
+
+  /**
+   *  Test version can be stricly ordered by their time of creation within the application
+   *  * \anchor UnifiedTest_TransferElement_B_11_1_1 \ref transferElement_B_11_2_1 "B.11.1.1",
+   *
+   *  This test is checking that initial values have version numbers larger than VersionNumbers created
+   *  by the application.
+   */
+  template<typename VECTOR_OF_REGISTERS_T>
+  void UnifiedBackendTest<VECTOR_OF_REGISTERS_T>::test_B_11_1_1() {
+    std::cout << "--- test_B_11_1_1 - version number strictly ordered in application" << std::endl;
+    Device d(cdd);
+
+    // open the device
+    d.open();
+
+    // synchronous read
+    boost::mpl::for_each<VECTOR_OF_REGISTERS_T>([&](auto x) {
+      if(!this->isRead(x)) return;
+      typedef typename decltype(x)::minimumUserType UserType;
+      auto registerName = x.path();
+
+      std::cout << "... registerName = " << registerName << std::endl;
+      auto reg = d.getTwoDRegisterAccessor<UserType>(registerName);
+
+      // Application can create version numbers any time. All device actions after that must create newer version numbers
+      VersionNumber someVersion{};
+
+      // Set remote value to be read.
+      x.setRemoteValue();
+
+      // Read value
+      reg.read();
+
+      // Check application buffer
+      BOOST_CHECK(reg.getVersionNumber() > someVersion);
+    });
+
+    // asynchronous read 1: activate before creating accessor
+    d.activateAsyncRead();
+    boost::mpl::for_each<VECTOR_OF_REGISTERS_T>([&](auto x) {
+      if(!this->isAsyncRead(x)) return;
+      typedef typename decltype(x)::minimumUserType UserType;
+      auto registerName = x.path();
+
+      std::cout << "... registerName = " << registerName << " (async)" << std::endl;
+      VersionNumber someVersion{};
+
+      auto reg = d.getTwoDRegisterAccessor<UserType>(registerName, 0, 0, {AccessMode::wait_for_new_data});
+
+      reg.read();
+
+      // Check application buffer
+      BOOST_CHECK(reg.getVersionNumber() > someVersion);
+      someVersion = reg.getVersionNumber();
+    });
+
+    // close device
+    d.close();
+
+    // asynchronous read 2: activate after creating accessor
+    boost::mpl::for_each<VECTOR_OF_REGISTERS_T>([&](auto x) {
+      if(!this->isAsyncRead(x)) return;
+      typedef typename decltype(x)::minimumUserType UserType;
+      auto registerName = x.path();
+
+      d.open();
+
+      std::cout << "... registerName = " << registerName << " (async)" << std::endl;
+
+      auto reg = d.getTwoDRegisterAccessor<UserType>(registerName, 0, 0, {AccessMode::wait_for_new_data});
+
+      VersionNumber someVersion{};
+
+      d.activateAsyncRead();
+
+      reg.read();
+
+      // Check application buffer
+      BOOST_CHECK(reg.getVersionNumber() > someVersion);
+
+      d.close();
+    });
+  }
+
   /********************************************************************************************************************/
 
   /**

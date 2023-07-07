@@ -264,6 +264,7 @@ namespace ChimeraTK {
     asyncVariable->_asyncAccessor = newSubscriber;
     // Now that the AsyncVariable is complete we can finally activate it.
     if(_isActive) {
+      asyncVariable->fillSendBuffer({});
       asyncVariable->activateAndSend();
     }
     _asyncVariables[newSubscriber->getId()] = std::move(untypedAsyncVariable);

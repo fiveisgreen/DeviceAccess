@@ -110,8 +110,6 @@ namespace ChimeraTK {
   PolledAsyncVariableImpl<UserType>::PolledAsyncVariableImpl(
       boost::shared_ptr<NDRegisterAccessor<UserType>> syncAccessor_)
   : AsyncVariableImpl<UserType>(syncAccessor_->getNumberOfChannels(), syncAccessor_->getNumberOfSamples()),
-    syncAccessor(syncAccessor_) {
-    PolledAsyncVariableImpl<UserType>::fillSendBuffer({});
-  }
+    syncAccessor(syncAccessor_) {}
 
 } // namespace ChimeraTK

@@ -375,7 +375,7 @@ namespace ChimeraTK {
     void test_B_9_3_2();
     void test_B_9_4_1();
     void test_B_9_5();
-    void test_B_11_1_1();
+    void test_NOSPEC_newVersionAfterOpen();
     void test_B_11_2_1();
     void test_B_11_2_2();
     void test_B_11_6();
@@ -932,7 +932,7 @@ namespace ChimeraTK {
     test_B_9_3_2();
     test_B_9_4_1();
     test_B_9_5();
-    test_B_11_1_1();
+    test_NOSPEC_newVersionAfterOpen();
     test_B_11_2_1();
     test_B_11_2_2();
     test_B_11_6();
@@ -2642,18 +2642,21 @@ namespace ChimeraTK {
   /********************************************************************************************************************/
 
   /**
-   *  Test version can be stricly ordered by their time of creation within the application
-   *  * \anchor UnifiedTest_TransferElement_B_11_1_1 \ref transferElement_B_11_1_1 "B.11.1.1",
+   *  Test versions after calling open() are newer than any version before.
+   *  FIXME: missing in spec
    *
    *  This test is checking that initial values have version numbers larger than VersionNumbers created
-   *  by the application.
+   *  by the application before calling open().
    */
   template<typename VECTOR_OF_REGISTERS_T>
-  void UnifiedBackendTest<VECTOR_OF_REGISTERS_T>::test_B_11_1_1() {
-    std::cout << "--- test_B_11_1_1 - version number strictly ordered in application" << std::endl;
+  void UnifiedBackendTest<VECTOR_OF_REGISTERS_T>::test_NOSPEC_newVersionAfterOpen() {
+    std::cout << "--- test_NOSPEC_newVersionsAfterOpen - version numbers after open() are newer" << std::endl;
     Device d(cdd);
 
-    // open the device
+    // Application can create version numbers any time.
+    VersionNumber someVersion{};
+
+    // Open the device. All versions from the backend must be newer than someVersion from now on.
     d.open();
 
     // synchronous read
@@ -2664,9 +2667,6 @@ namespace ChimeraTK {
 
       std::cout << "... registerName = " << registerName << std::endl;
       auto reg = d.getTwoDRegisterAccessor<UserType>(registerName);
-
-      // Application can create version numbers any time. All device actions after that must create newer version numbers
-      VersionNumber someVersion{};
 
       // Set remote value to be read.
       x.setRemoteValue();
@@ -2686,7 +2686,6 @@ namespace ChimeraTK {
       auto registerName = x.path();
 
       std::cout << "... registerName = " << registerName << " (async1)" << std::endl;
-      VersionNumber someVersion{};
 
       auto reg = d.getTwoDRegisterAccessor<UserType>(registerName, 0, 0, {AccessMode::wait_for_new_data});
 
@@ -2694,7 +2693,6 @@ namespace ChimeraTK {
 
       // Check application buffer
       BOOST_CHECK(reg.getVersionNumber() > someVersion);
-      someVersion = reg.getVersionNumber();
     });
 
     // close device
@@ -2706,13 +2704,12 @@ namespace ChimeraTK {
       typedef typename decltype(x)::minimumUserType UserType;
       auto registerName = x.path();
 
+      someVersion = {};
       d.open();
 
       std::cout << "... registerName = " << registerName << " (async2)" << std::endl;
 
       auto reg = d.getTwoDRegisterAccessor<UserType>(registerName, 0, 0, {AccessMode::wait_for_new_data});
-
-      VersionNumber someVersion{};
 
       d.activateAsyncRead();
 

@@ -120,7 +120,12 @@ namespace ChimeraTK {
           continue;
         }
 
-        for(uint32_t i = 0; i < numberOfInterrupts; i++) {
+        if (numberOfInterrupts > 1) {
+          std::cerr << "Lost " << (numberOfInterrupts - 1) << " interrupts. " << std::endl;
+        }
+
+        //for(uint32_t i = 0; i < numberOfInterrupts; i++)
+        {
           dispatchInterrupt(0);
         }
       }

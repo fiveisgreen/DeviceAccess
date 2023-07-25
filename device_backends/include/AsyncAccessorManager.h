@@ -252,6 +252,9 @@ namespace ChimeraTK {
       asyncVariable->activateAndSend();
     }
     _asyncVariables[newSubscriber->getId()] = std::move(untypedAsyncVariable);
+    std::cerr << newSubscriber->getId() << " "
+              << reinterpret_cast<std::uintptr_t>(_asyncVariables[newSubscriber->getId()].get())
+              << std::endl;
     asyncVariableMapChanged();
     return newSubscriber;
   }

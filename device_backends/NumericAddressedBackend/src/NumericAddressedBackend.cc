@@ -26,6 +26,7 @@ namespace ChimeraTK {
       MapFileParser parser;
       std::tie(_registerMap, _metadataCatalogue) = parser.parse(mapFileName);
 
+      // Add information about interrupt controller handlers from the map file meta data to the factory.
       for(auto const& metaDataEntry : _metadataCatalogue) {
         auto const& key = metaDataEntry.first;
         if(key[0] == '!') {

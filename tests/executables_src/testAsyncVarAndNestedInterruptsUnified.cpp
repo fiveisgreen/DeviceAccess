@@ -201,7 +201,6 @@ struct BoolAsVoid {
     exceptionDummy->throwExceptionOpen = enable;
     if(exceptionDummy->isOpen()) {
       exceptionDummy->triggerInterrupt(INTERRUPT);
-      // exceptionDummy->setException();
     }
   }
 };
@@ -210,12 +209,29 @@ struct interrupt6 : public BoolAsVoid<interrupt6, 6> {
   static std::string path() { return "/interrupt6"; }
   static std::string activeInterruptsPath() { return ""; } // empty
   static uint32_t activeInterruptsValue() { return 0; }
+
+  // The accessor itself cannot trigger a runtime error, as it is indirectly fed by a thread that does not
+  // know about the individual accessors.
+  // Exceptions only are written to the queue when setException() is called.
+  size_t nRuntimeErrorCases() { return 0; }
 };
 
 struct interrupt5_9 : public BoolAsVoid<interrupt5_9, 5> {
   static std::string path() { return "/interrupt5_9"; }
   static std::string activeInterruptsPath() { return "/int_ctrls/controller5/active_ints"; }
   static uint32_t activeInterruptsValue() { return 1U << 9U; }
+};
+
+struct interrupt4_8_2 : public BoolAsVoid<interrupt4_8_2, 4> {
+  static std::string path() { return "/interrupt4_8_2"; }
+  static std::string activeInterruptsPath() { return "/int_ctrls/controller4_8/active_ints"; }
+  static uint32_t activeInterruptsValue() { return 1U << 2U; }
+};
+
+struct interrupt4_8_3 : public BoolAsVoid<interrupt4_8_3, 4> {
+  static std::string path() { return "/interrupt4_8_3"; }
+  static std::string activeInterruptsPath() { return "/int_ctrls/controller4_8/active_ints"; }
+  static uint32_t activeInterruptsValue() { return 1U << 3U; }
 };
 
 /**********************************************************************************************************************/
@@ -228,8 +244,9 @@ BOOST_AUTO_TEST_CASE(testRegisterAccessor) {
         .addRegister<datafrom5_9>()
         .addRegister<datafrom4_8_2>()
         .addRegister<datafrom4_8_3>()
-        //.addRegister<interrupt6>()
+        .addRegister<interrupt6>()
         .addRegister<interrupt5_9>()
+        .addRegister<interrupt4_8_2>()
         .runTests(cdd);
   }
   exceptionDummy = nullptr;

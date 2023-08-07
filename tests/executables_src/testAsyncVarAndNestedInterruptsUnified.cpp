@@ -216,8 +216,28 @@ struct interrupt6 : public BoolAsVoid<interrupt6, 6> {
   size_t nRuntimeErrorCases() { return 0; }
 };
 
+struct canonicalInterrupt6 : public BoolAsVoid<canonicalInterrupt6, 6> {
+  static std::string path() { return "/!6"; }
+  static std::string activeInterruptsPath() { return ""; } // empty
+  static uint32_t activeInterruptsValue() { return 0; }
+  size_t nRuntimeErrorCases() { return 0; }
+};
+
 struct interrupt5_9 : public BoolAsVoid<interrupt5_9, 5> {
   static std::string path() { return "/interrupt5_9"; }
+  static std::string activeInterruptsPath() { return "/int_ctrls/controller5/active_ints"; }
+  static uint32_t activeInterruptsValue() { return 1U << 9U; }
+};
+
+struct canonicalInterrupt5 : public BoolAsVoid<canonicalInterrupt5, 5> {
+  static std::string path() { return "/!5"; }
+  static std::string activeInterruptsPath() { return "/int_ctrls/controller5/active_ints"; }
+  static uint32_t activeInterruptsValue() { return 1U << 9U; }
+  size_t nRuntimeErrorCases() { return 0; }
+};
+
+struct canonicalInterrupt5_9 : public BoolAsVoid<canonicalInterrupt5_9, 5> {
+  static std::string path() { return "/!5:9"; }
   static std::string activeInterruptsPath() { return "/int_ctrls/controller5/active_ints"; }
   static uint32_t activeInterruptsValue() { return 1U << 9U; }
 };
@@ -228,8 +248,46 @@ struct interrupt4_8_2 : public BoolAsVoid<interrupt4_8_2, 4> {
   static uint32_t activeInterruptsValue() { return 1U << 2U; }
 };
 
+struct canonicalInterrupt4a : public BoolAsVoid<canonicalInterrupt4a, 4> {
+  static std::string path() { return "/!4"; }
+  static std::string activeInterruptsPath() { return "/int_ctrls/controller4_8/active_ints"; }
+  static uint32_t activeInterruptsValue() { return 1U << 2U; }
+  size_t nRuntimeErrorCases() { return 0; }
+};
+
+struct canonicalInterrupt4_8a : public BoolAsVoid<canonicalInterrupt4_8a, 4> {
+  static std::string path() { return "/!4:8"; }
+  static std::string activeInterruptsPath() { return "/int_ctrls/controller4_8/active_ints"; }
+  static uint32_t activeInterruptsValue() { return 1U << 2U; }
+};
+
+struct canonicalInterrupt4_8_2 : public BoolAsVoid<canonicalInterrupt4_8_2, 4> {
+  static std::string path() { return "/!4:8:2"; }
+  static std::string activeInterruptsPath() { return "/int_ctrls/controller4_8/active_ints"; }
+  static uint32_t activeInterruptsValue() { return 1U << 2U; }
+};
+
 struct interrupt4_8_3 : public BoolAsVoid<interrupt4_8_3, 4> {
   static std::string path() { return "/interrupt4_8_3"; }
+  static std::string activeInterruptsPath() { return "/int_ctrls/controller4_8/active_ints"; }
+  static uint32_t activeInterruptsValue() { return 1U << 3U; }
+};
+
+struct canonicalInterrupt4b : public BoolAsVoid<canonicalInterrupt4b, 4> {
+  static std::string path() { return "/!4"; }
+  static std::string activeInterruptsPath() { return "/int_ctrls/controller4_8/active_ints"; }
+  static uint32_t activeInterruptsValue() { return 1U << 3U; }
+  size_t nRuntimeErrorCases() { return 0; }
+};
+
+struct canonicalInterrupt4_8b : public BoolAsVoid<canonicalInterrupt4_8b, 4> {
+  static std::string path() { return "/!4:8"; }
+  static std::string activeInterruptsPath() { return "/int_ctrls/controller4_8/active_ints"; }
+  static uint32_t activeInterruptsValue() { return 1U << 3U; }
+};
+
+struct canonicalInterrupt4_8_3 : public BoolAsVoid<canonicalInterrupt4_8_3, 4> {
+  static std::string path() { return "/!4:8:3"; }
   static std::string activeInterruptsPath() { return "/int_ctrls/controller4_8/active_ints"; }
   static uint32_t activeInterruptsValue() { return 1U << 3U; }
 };
@@ -237,6 +295,12 @@ struct interrupt4_8_3 : public BoolAsVoid<interrupt4_8_3, 4> {
 /**********************************************************************************************************************/
 
 BOOST_AUTO_TEST_CASE(testRegisterAccessor) {
+  struct canonicalInterrupt4_8b : public BoolAsVoid<canonicalInterrupt4_8b, 4> {
+    static std::string path() { return "/!4:8"; }
+    static std::string activeInterruptsPath() { return "/int_ctrls/controller4_8/active_ints"; }
+    static uint32_t activeInterruptsValue() { return 1U << 3U; }
+  };
+
   std::cout << "*** testRegisterAccessor *** " << std::endl;
   {
     ChimeraTK::UnifiedBackendTest<>()
@@ -245,8 +309,18 @@ BOOST_AUTO_TEST_CASE(testRegisterAccessor) {
         .addRegister<datafrom4_8_2>()
         .addRegister<datafrom4_8_3>()
         .addRegister<interrupt6>()
+        .addRegister<canonicalInterrupt6>()
         .addRegister<interrupt5_9>()
+        .addRegister<canonicalInterrupt5>()
+        .addRegister<canonicalInterrupt5_9>()
         .addRegister<interrupt4_8_2>()
+        .addRegister<canonicalInterrupt4a>()
+        .addRegister<canonicalInterrupt4_8a>()
+        .addRegister<canonicalInterrupt4_8_2>()
+        .addRegister<interrupt4_8_3>()
+        .addRegister<canonicalInterrupt4b>()
+        .addRegister<canonicalInterrupt4_8b>()
+        .addRegister<canonicalInterrupt4_8_3>()
         .runTests(cdd);
   }
   exceptionDummy = nullptr;

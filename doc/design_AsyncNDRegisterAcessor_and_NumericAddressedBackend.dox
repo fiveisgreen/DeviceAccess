@@ -5,9 +5,26 @@ namespace ChimeraTK {
 
 \section conceptOverview Concept overview
 
-@warning This concept is outdated. It describes the current state but will change with the introduction of nested interrupts and interrupt controller handlers!
+@warning This document is currently being rewritten!
 
-\image html "doc/NABackendAsyncConcept.png" "object diagram for AyncNDRegisterAccessor" width=1000
+\dot
+digraph aysnc_manager_var_relation {
+  compound=true;
+  node [shape=record, fontname=Helvetica, fontsize=10];
+  rankdir=LR
+  subgraph cluster_mgr{
+   label="AsyncAccessorManager" URL="\ref AsyncAccessorManager";
+   vars [ label="<var1>AsyncVariable|<var2>AsyncVariable|..." URL="\ref AsyncVariable"];
+  }
+  acc1 [ label="AsyncNDRegisterAccessor" URL="\ref AsyncNDRegisterAccessor"];
+  acc1 -> vars:var1  [ label="shared_ptr", lhead=cluster_mgr ];
+  vars:var1 -> acc1 [ arrowhead="empty", style="dashed", label="weak_ptr" ];
+  acc2 [ label="AsyncNDRegisterAccessor" URL="\ref AsyncNDRegisterAccessor"];
+  acc2 -> vars:var2  [ label="shared_ptr", lhead=cluster_mgr ];
+  vars:var2 -> acc2 [ arrowhead="empty", style="dashed", label="weak_ptr" ];
+}
+\enddot
+
 
 - For each AsyncAccessor that user requests: an AsyncVariable is created interally, with 1:1 correspondence
   AsyncAccessor ↔ AsyncVar

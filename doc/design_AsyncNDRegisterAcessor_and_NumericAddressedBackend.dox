@@ -7,6 +7,7 @@ namespace ChimeraTK {
 
 @warning This document is currently being rewritten!
 
+\subsection design_AsyncAccessorManager AsyncNDRegisterAccessors and the AsyncAccessorManager
 \dot
 digraph aysnc_manager_var_relation {
   compound=true;
@@ -20,10 +21,63 @@ digraph aysnc_manager_var_relation {
   acc1 -> vars:var1  [ label="shared_ptr", lhead=cluster_mgr ];
   vars:var1 -> acc1 [ arrowhead="empty", style="dashed", label="weak_ptr" ];
   acc2 [ label="AsyncNDRegisterAccessor" URL="\ref AsyncNDRegisterAccessor"];
+  acc2 -> vars:var2 [ lhead=cluster_mgr ];
+  vars:var2 -> acc2 [ arrowhead="empty", style="dashed" ];
+}
+\enddot
+
+\subsection design_TriggeredPollDistributor The TrigeredPollDistributor
+
+\dot
+digraph aysnc_manager_var_relation2 {
+  compound=true;
+  node [shape=record, fontname=Helvetica, fontsize=10];
+  rankdir=LR
+  subgraph cluster_PollDistributor{
+    label="TrigeredPollDistributor" URL="\ref TrigeredPollDistributor";
+    TransferGroup
+    NDRegisterAccessor [ label="NDRegisterAccessor" ]
+    NDRegisterAccessor2 [ label="NDRegisterAccessor" ]
+    vars [ label="<var1>PolledAsyncVariable|<var2>PolledAsyncVariable|..." URL="\ref AsyncVariable"];
+  }
+  acc1 [ label="AsyncNDRegisterAccessor" URL="\ref AsyncNDRegisterAccessor"];
+  vars:var1 ->  acc1 [ arrowhead="empty", style="dashed", label="weak_ptr" ];
+  acc1 -> vars:var1 [ label="shared_ptr",  lhead=cluster_PollDistributor];
+
+  acc2 [ label="AsyncNDRegisterAccessor" URL="\ref AsyncNDRegisterAccessor"];
+  acc2 -> vars:var2 [ lhead=cluster_PollDistributor ];
+  vars:var2 ->  acc2 [ arrowhead="empty", style="dashed"];
+  
+  TransferGroup -> NDRegisterAccessor;
+  TransferGroup -> NDRegisterAccessor2;
+
+  NDRegisterAccessor-> vars:var1 [ arrowhead="none", arrowtail="normal", dir = "back"];
+  NDRegisterAccessor2-> vars:var2 [ arrowhead="none", arrowtail="normal", dir = "back"];
+  
+  
+}
+\enddot
+
+\subsection design_TriggeredPollDistributor The TrigeredPollDistributor
+
+\dot
+digraph aysnc_manager_var_relation3 {
+  compound=true;
+  node [shape=record, fontname=Helvetica, fontsize=10];
+  rankdir=LR
+  subgraph cluster_PollDistributor{
+   label="TrigeredPollDistributor" URL="\ref TrigeredPollDistributor";
+   vars [ label="<var1>AsyncVariable|<var2>AsyncVariable|..." URL="\ref AsyncVariable"];
+  }
+  acc1 [ label="AsyncNDRegisterAccessor" URL="\ref AsyncNDRegisterAccessor"];
+  acc1 -> vars:var1  [ label="shared_ptr", lhead=cluster_mgr ];
+  vars:var1 -> acc1 [ arrowhead="empty", style="dashed", label="weak_ptr" ];
+  acc2 [ label="AsyncNDRegisterAccessor" URL="\ref AsyncNDRegisterAccessor"];
   acc2 -> vars:var2  [ label="shared_ptr", lhead=cluster_mgr ];
   vars:var2 -> acc2 [ arrowhead="empty", style="dashed", label="weak_ptr" ];
 }
 \enddot
+
 
 
 - For each AsyncAccessor that user requests: an AsyncVariable is created interally, with 1:1 correspondence

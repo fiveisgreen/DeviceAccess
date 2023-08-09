@@ -26,7 +26,7 @@ digraph aysnc_manager_var_relation {
 }
 \enddot
 
-\subsection design_TriggeredPollDistributor The TrigeredPollDistributor
+\subsection design_TriggeredPollDistributor The TriggeredPollDistributor
 
 \dot
 digraph triggered_poll_distributor {
@@ -34,7 +34,7 @@ digraph triggered_poll_distributor {
   node [shape=record, fontname=Helvetica, fontsize=10];
   rankdir=LR
   subgraph cluster_PollDistributor{
-    label="TrigeredPollDistributor" URL="\ref TrigeredPollDistributor";
+    label="TriggeredPollDistributor" URL="\ref TriggeredPollDistributor";
     TransferGroup
     NDRegisterAccessor [ label="NDRegisterAccessor" ]
     NDRegisterAccessor2 [ label="NDRegisterAccessor" ]
@@ -58,42 +58,50 @@ digraph triggered_poll_distributor {
 }
 \enddot
 
-\subsection design_TriggerDistributor The TrigerDistributor
+\subsection design_TriggerDistributor The TriggerDistributor
 
 \dot
-digraph the_whole_mess {
+digraph reverse_ownership_scheme {
   compound=true;
   node [shape=record, fontname=Helvetica, fontsize=10];
   rankdir=LR
-  Backend -> TriggerDistributor
+  
+  Backend[color=blue, fontcolor=blue]
+  TriggerDistributor[color=blue, fontcolor=blue]
+  Backend -> TriggerDistributor[color=blue, fontcolor=blue]
+  
+  secondPrimaryDistributor[label ="TriggerDistributor", style="dotted", color=blue, fontcolor=blue]
+  Backend -> secondPrimaryDistributor[color=blue, fontcolor=blue]
+  thirdPrimaryDistributor[label ="TriggerDistributor", style="dotted", color=blue, fontcolor=blue]
+  Backend -> thirdPrimaryDistributor[color=blue, fontcolor=blue]
 
   subgraph cluster_distributor1{
-   label="VariableDistributor" URL="\ref VariableDistributor";
-   distrVars1 [ label="<distrVar1>AsyncVariable|<distrVar2>AsyncVariable|..."];
+   label="VariableDistributor" URL="\ref VariableDistributor<Void>";
+   distrVars1 [ label="<distrVar1>VoidAsyncVariable|<distrVar2>VoidAsyncVariable|..."];
   }
 
   TriggerDistributor->distrVars1 [ lhead=cluster_distributor1, arrowhead="empty", style="dashed"  ];
   distrVars1->TriggerDistributor [ ltail=cluster_distributor1, label=" "];
 
-  distr1Acc1 [ label="AsyncNDRegisterAccessor" URL="\ref AsyncNDRegisterAccessor"];
+  distr1Acc1 [ label="AsyncNDRegisterAccessor" URL="\ref AsyncNDRegisterAccessor", color=green, fontcolor=green];
   distr1Acc1 ->  distrVars1:distrVar1  [ lhead=cluster_distributor1 ];
   distrVars1:distrVar1 -> distr1Acc1 [ arrowhead="empty", style="dashed"];
-  distr1Acc2 [ label="AsyncNDRegisterAccessor" URL="\ref AsyncNDRegisterAccessor"];
+  distr1Acc2 [ label="AsyncNDRegisterAccessor" URL="\ref AsyncNDRegisterAccessor", color=green, fontcolor=green];
   distr1Acc2 ->  distrVars1:distrVar2  [ lhead=cluster_distributor1 ];
   distrVars1:distrVar2 -> distr1Acc2 [ arrowhead="empty", style="dashed"];
 
   subgraph cluster_PollDistributor{
-    label="TrigeredPollDistributor" URL="\ref TrigeredPollDistributor";
+    label="TriggeredPollDistributor" URL="\ref TriggeredPollDistributor";
     TransferGroup
-    NDRegisterAccessor [ label="NDRegisterAccessor" ]
-    NDRegisterAccessor2 [ label="NDRegisterAccessor" ]
+    NDRegisterAccessor [ label="NDRegisterAccessor", color=red, fontcolor=red ]
+    NDRegisterAccessor2 [ label="NDRegisterAccessor", color=red, fontcolor=red  ]
     vars [ label="<var1>PolledAsyncVariable|<var2>PolledAsyncVariable|..." URL="\ref AsyncVariable"];
   }
-  acc1 [ label="AsyncNDRegisterAccessor" URL="\ref AsyncNDRegisterAccessor"];
+  acc1 [ label="AsyncNDRegisterAccessor" URL="\ref AsyncNDRegisterAccessor", color=green, fontcolor=green];
   vars:var1 ->  acc1 [ arrowhead="empty", style="dashed", label="weak_ptr" ];
   acc1 -> vars:var1 [ label="shared_ptr",  lhead=cluster_PollDistributor];
 
-  acc2 [ label="AsyncNDRegisterAccessor" URL="\ref AsyncNDRegisterAccessor"];
+  acc2 [ label="AsyncNDRegisterAccessor" URL="\ref AsyncNDRegisterAccessor", color=green, fontcolor=green];
   acc2 -> vars:var2 [ lhead=cluster_PollDistributor ];
   vars:var2 ->  acc2 [ arrowhead="empty", style="dashed"];
   
@@ -108,7 +116,7 @@ digraph the_whole_mess {
 
   subgraph cluster_interruptCtrlHdl1{
     label="InterruptControllerHandler" URL="\ref InterruptControllerHandler";
-    hdlAccs1 [ label="<hdlAcc1>NDRegisterAccessor|<hdlAcc2>NDRegisterAccessor|..."];
+    hdlAccs1 [ label="<hdlAcc1>NDRegisterAccessor|<hdlAcc2>NDRegisterAccessor|...", color=red, fontcolor=red ];
   }
   TriggerDistributor->hdlAccs1 [ lhead=cluster_interruptCtrlHdl1, arrowhead="empty", style="dashed"  ];
   hdlAccs1->TriggerDistributor [ ltail=cluster_interruptCtrlHdl1, label=" " ];
@@ -117,6 +125,48 @@ digraph the_whole_mess {
   hdlAccs1->TriggerDistributor2 [ ltail=cluster_interruptCtrlHdl1, arrowhead="empty", style="dashed"  ];
   TriggerDistributor2->hdlAccs1 [ lhead=cluster_interruptCtrlHdl1, label=" " ];
 
+  subgraph cluster_PollDistributor2{
+    label="TriggeredPollDistributor" URL="\ref TriggeredPollDistributor";
+    TransferGroup2 [ label="TransferGroup" ]
+    NDRegisterAccessor3 [ label="NDRegisterAccessor" , color=red, fontcolor=red ]
+    NDRegisterAccessor4 [ label="NDRegisterAccessor" , color=red, fontcolor=red ]
+    polledVars2 [ label="<polledVar3>PolledAsyncVariable|<polledVar4>PolledAsyncVariable|..."];
+  }
+  polledAcc3 [ label="AsyncNDRegisterAccessor" URL="\ref AsyncNDRegisterAccessor", color=green, fontcolor=green];
+  polledVars2:polledVar3 ->  polledAcc3 [ arrowhead="empty", style="dashed"];
+  polledAcc3 -> polledVars2:polledVar3 [ label=" ", lhead=cluster_PollDistributor2];
+
+  polledAcc4 [ label="AsyncNDRegisterAccessor" URL="\ref AsyncNDRegisterAccessor", color=green, fontcolor=green];
+  polledVars2:polledVar4 ->  polledAcc4 [arrowhead="empty", style="dashed" ];
+  polledAcc4 -> polledVars2:polledVar4 [ label=" ", lhead=cluster_PollDistributor2];
+  
+  TransferGroup2 -> NDRegisterAccessor3
+  TransferGroup2 -> NDRegisterAccessor4;
+
+  NDRegisterAccessor3->  polledVars2:polledVar3 [ arrowhead="none", arrowtail="normal", dir = "back"];
+  NDRegisterAccessor4->  polledVars2:polledVar4  [ arrowhead="none", arrowtail="normal", dir = "back"];
+
+  TriggerDistributor2->TransferGroup2  [ lhead=cluster_PollDistributor2, arrowhead="empty", style="dashed"  ];
+  TransferGroup2->TriggerDistributor2 [ ltail=cluster_PollDistributor2, label=" " ];
+
+  subgraph cluster_distributor2{
+   label="VariableDistributor" URL="\ref VariableDistributor<Void>";
+   distrVars2 [ label="<distrVar3>VoidAsyncVariable|<distrVar4>VoidAsyncVariable|..."];
+  }
+
+  TriggerDistributor2->distrVars2 [ lhead=cluster_distributor2, arrowhead="empty", style="dashed"  ];
+  distrVars2->TriggerDistributor2 [ ltail=cluster_distributor2, label=" "];
+
+  distr2Acc3 [ label="AsyncNDRegisterAccessor" URL="\ref AsyncNDRegisterAccessor", color=green, fontcolor=green];
+  distr2Acc3 ->  distrVars2:distrVar3  [ lhead=cluster_distributor2 ];
+  distrVars2:distrVar3 -> distr2Acc3 [ arrowhead="empty", style="dashed"];
+  distr2Acc4 [ label="AsyncNDRegisterAccessor" URL="\ref AsyncNDRegisterAccessor", color=green, fontcolor=green];
+  distr2Acc4 ->  distrVars2:distrVar4  [ lhead=cluster_distributor2 ];
+  distrVars2:distrVar4 -> distr2Acc4 [ arrowhead="empty", style="dashed"];
+
+  interruptCtrlHdl2 [label="InterruptControllerHandler\n...", style="dotted"]
+  
+  TriggerDistributor2->interruptCtrlHdl2
 }
 \enddot
 

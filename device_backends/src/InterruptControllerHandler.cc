@@ -11,7 +11,7 @@
 
 namespace ChimeraTK {
   //*********************************************************************************************************************/
-  InterruptControllerHandlerFactory::InterruptControllerHandlerFactory(DeviceBackend* backend) : _backend(backend) {
+  InterruptControllerHandlerFactory::InterruptControllerHandlerFactory(DeviceBackendImpl* backend) : _backend(backend) {
     // we already know about the build-in handlers
     _creatorFunctions["AXI4_INTC"] = Axi4_Intc::create;
     _creatorFunctions["dummy"] = DummyIntc::create;
@@ -43,12 +43,17 @@ namespace ChimeraTK {
     if(creatorFunctionIter == _creatorFunctions.end()) {
       throw ChimeraTK::logic_error("Unknown interrupt controller type \"" + name + "\"");
     }
-    return creatorFunctionIter->second(_backend, this, controllerID, description, parent);
+    return creatorFunctionIter->second(this, controllerID, description, parent);
+  }
+
+  //*********************************************************************************************************************/
+  boost::shared_ptr<DeviceBackendImpl> InterruptControllerHandlerFactory::getBackend() {
+    return boost::dynamic_pointer_cast<DeviceBackendImpl>(_backend->shared_from_this());
   }
 
   //*********************************************************************************************************************/
   boost::shared_ptr<TriggeredPollDistributor> InterruptControllerHandler::getTriggerPollDistributorRecursive(
-      std::vector<uint32_t> const& interruptID, bool activateIfNew) {
+      std::vector<uint32_t> const& interruptID) {
     // assert(false); // FIXME: needs container lock!
     assert(!interruptID.empty());
     auto qualifiedInterruptId = _id;
@@ -59,9 +64,9 @@ namespace ChimeraTK {
     auto distributorIter = _distributors.find(interruptID.front());
     if(distributorIter == _distributors.end()) {
       distributor = boost::make_shared<TriggerDistributor>(
-          _backend, _controllerHandlerFactory, qualifiedInterruptId, shared_from_this());
+          _backend.get(), _controllerHandlerFactory, qualifiedInterruptId, shared_from_this());
       _distributors[interruptID.front()] = distributor;
-      if(activateIfNew) {
+      if(_backend->isAsyncReadActive()) {
         distributor->activate({});
       }
     }
@@ -69,8 +74,8 @@ namespace ChimeraTK {
       distributor = distributorIter->second.lock();
       if(!distributor) {
         distributor = boost::make_shared<TriggerDistributor>(
-            _backend, _controllerHandlerFactory, qualifiedInterruptId, shared_from_this());
-        if(activateIfNew) {
+            _backend.get(), _controllerHandlerFactory, qualifiedInterruptId, shared_from_this());
+        if(_backend->isAsyncReadActive()) {
           distributor->activate({});
         }
       }
@@ -80,7 +85,7 @@ namespace ChimeraTK {
 
   //*********************************************************************************************************************/
   boost::shared_ptr<VariableDistributor<ChimeraTK::Void>> InterruptControllerHandler::getVariableDistributorRecursive(
-      std::vector<uint32_t> const& interruptID, bool activateIfNew) {
+      std::vector<uint32_t> const& interruptID) {
     // assert(false); // FIXME: needs container lock!
     assert(!interruptID.empty());
     auto qualifiedInterruptId = _id;
@@ -91,9 +96,9 @@ namespace ChimeraTK {
     auto distributorIter = _distributors.find(interruptID.front());
     if(distributorIter == _distributors.end()) {
       distributor = boost::make_shared<TriggerDistributor>(
-          _backend, _controllerHandlerFactory, qualifiedInterruptId, shared_from_this());
+          _backend.get(), _controllerHandlerFactory, qualifiedInterruptId, shared_from_this());
       _distributors[interruptID.front()] = distributor;
-      if(activateIfNew) {
+      if(_backend->isAsyncReadActive()) {
         distributor->activate({});
       }
     }
@@ -101,8 +106,8 @@ namespace ChimeraTK {
       distributor = distributorIter->second.lock();
       if(!distributor) {
         distributor = boost::make_shared<TriggerDistributor>(
-            _backend, _controllerHandlerFactory, qualifiedInterruptId, shared_from_this());
-        if(activateIfNew) {
+            _backend.get(), _controllerHandlerFactory, qualifiedInterruptId, shared_from_this());
+        if(_backend->isAsyncReadActive()) {
           distributor->activate({});
         }
       }

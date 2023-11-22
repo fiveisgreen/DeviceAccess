@@ -9,7 +9,7 @@
 
 namespace ChimeraTK {
 
-  TriggerDistributor::TriggerDistributor(DeviceBackend* backend,
+  TriggerDistributor::TriggerDistributor(DeviceBackendImpl* backend,
       InterruptControllerHandlerFactory* controllerHandlerFactory, std::vector<uint32_t> interruptID,
       boost::shared_ptr<InterruptControllerHandler> parent)
   : _id(interruptID), _backend(backend), _interruptControllerHandlerFactory(controllerHandlerFactory),
@@ -23,9 +23,10 @@ namespace ChimeraTK {
       // return the poll distributor from this instance, not a nested one
       auto pollDistributor = _pollDistributor.lock();
       if(!pollDistributor) {
-        pollDistributor = boost::make_shared<TriggeredPollDistributor>(_id, shared_from_this());
+        pollDistributor = boost::make_shared<TriggeredPollDistributor>(
+            boost::dynamic_pointer_cast<DeviceBackendImpl>(_backend->shared_from_this()), _id, shared_from_this());
         _pollDistributor = pollDistributor;
-        if(_isActive) {
+        if(_backend->isAsyncReadActive()) {
           pollDistributor->activate({});
         }
       }
@@ -37,7 +38,7 @@ namespace ChimeraTK {
       controllerHandler = _interruptControllerHandlerFactory->createInterruptControllerHandler(_id, shared_from_this());
       _interruptControllerHandler = controllerHandler;
     }
-    return controllerHandler->getTriggerPollDistributorRecursive({++interruptID.begin(), interruptID.end()}, _isActive);
+    return controllerHandler->getTriggerPollDistributorRecursive({++interruptID.begin(), interruptID.end()});
   }
 
   boost::shared_ptr<VariableDistributor<ChimeraTK::Void>> TriggerDistributor::getVariableDistributorRecursive(
@@ -48,9 +49,10 @@ namespace ChimeraTK {
       // return the variable distributor from this instance, not a nested one
       auto variableDistributor = _variableDistributor.lock();
       if(!variableDistributor) {
-        variableDistributor = boost::make_shared<VariableDistributor<ChimeraTK::Void>>(_id, shared_from_this());
+        variableDistributor = boost::make_shared<VariableDistributor<ChimeraTK::Void>>(
+            boost::dynamic_pointer_cast<DeviceBackendImpl>(_backend->shared_from_this()), _id, shared_from_this());
         _variableDistributor = variableDistributor;
-        if(_isActive) {
+        if(_backend->isAsyncReadActive()) {
           variableDistributor->activate({});
         }
       }
@@ -62,11 +64,11 @@ namespace ChimeraTK {
       controllerHandler = _interruptControllerHandlerFactory->createInterruptControllerHandler(_id, shared_from_this());
       _interruptControllerHandler = controllerHandler;
     }
-    return controllerHandler->getVariableDistributorRecursive({++interruptID.begin(), interruptID.end()}, _isActive);
+    return controllerHandler->getVariableDistributorRecursive({++interruptID.begin(), interruptID.end()});
   }
 
   void TriggerDistributor::trigger(VersionNumber version) {
-    if(!_isActive) {
+    if(!_backend->isAsyncReadActive()) {
       return;
     }
     auto pollDistributor = _pollDistributor.lock();
@@ -84,7 +86,6 @@ namespace ChimeraTK {
   }
 
   void TriggerDistributor::activate(VersionNumber version) {
-    _isActive = true;
     auto pollDistributor = _pollDistributor.lock();
     if(pollDistributor) {
       pollDistributor->activate(version);
@@ -100,23 +101,13 @@ namespace ChimeraTK {
   }
 
   void TriggerDistributor::deactivate() {
-    _isActive = false;
-    auto pollDistributor = _pollDistributor.lock();
-    if(pollDistributor) {
-      pollDistributor->deactivate();
-    }
     auto controllerHandler = _interruptControllerHandler.lock();
     if(controllerHandler) {
       controllerHandler->deactivate();
     }
-    auto variableDistributor = _variableDistributor.lock();
-    if(variableDistributor) {
-      variableDistributor->deactivate();
-    }
   }
 
   void TriggerDistributor::sendException(const std::exception_ptr& e) {
-    _isActive = false;
     auto pollDistributor = _pollDistributor.lock();
     if(pollDistributor) {
       pollDistributor->sendException(e);

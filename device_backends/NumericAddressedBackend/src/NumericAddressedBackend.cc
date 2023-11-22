@@ -41,7 +41,7 @@ namespace ChimeraTK {
         }
       }
 
-      // Create all primay interrupt dispatchers that are described in the map file. The interrupt dispatcher thread
+      // Create all primary interrupt dispatchers that are described in the map file. The interrupt dispatcher thread
       // needs them so have something to access (even though nothing will happen as long as none is subscribed).
       // They don't have controller handlers (nested interrupts) yet because these can hold accessors, which
       // in turn have shared pointers to the backend, which cannot be created in the backend constructor.
@@ -146,9 +146,8 @@ namespace ChimeraTK {
         distributor = primaryDistributor->getPollDistributorRecursive(registerInfo.interruptId);
       }
 
-      auto newSubscriber = distributor->template subscribe<UserType>(
-          boost::dynamic_pointer_cast<NumericAddressedBackend>(shared_from_this()), registerPathName, numberOfWords,
-          wordOffsetInRegister, flags);
+      auto newSubscriber =
+          distributor->template subscribe<UserType>(registerPathName, numberOfWords, wordOffsetInRegister, flags);
       // The new subscriber might already be activated. Hence the exception backend is already set by the interrupt
       // dispatcher.
       startInterruptHandlingThread(registerInfo.interruptId.front());

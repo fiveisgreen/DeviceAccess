@@ -7,16 +7,19 @@
 
 namespace ChimeraTK {
 
-  TriggeredPollDistributor::TriggeredPollDistributor(
+  TriggeredPollDistributor::TriggeredPollDistributor(boost::shared_ptr<DeviceBackendImpl> backend,
       std::vector<uint32_t> interruptID, boost::shared_ptr<TriggerDistributor> parent)
-  : _id(std::move(interruptID)), _parent(parent) {
+  : AsyncAccessorManager(backend), _id(std::move(interruptID)), _parent(parent) {
     FILL_VIRTUAL_FUNCTION_TEMPLATE_VTABLE(createAsyncVariable);
   }
 
   //*********************************************************************************************************************/
   void TriggeredPollDistributor::trigger(VersionNumber version) {
+    if(!_backend->isAsyncReadActive()) {
+      return;
+    }
+
     std::lock_guard<std::recursive_mutex> variablesLock(_variablesMutex);
-    if(!_isActive) return;
 
     try {
       _transferGroup->read();
@@ -42,16 +45,12 @@ namespace ChimeraTK {
         var.second->fillSendBuffer(version);
         var.second->activateAndSend(); // function from  the AsyncVariable base class
       }
-      _isActive = true;
     }
     catch(ChimeraTK::runtime_error&) {
       // Nothing to do. Backend's set exception has already been called by the accessor in the transfer group that
       // raised it.
     }
   }
-
-  //*********************************************************************************************************************/
-  void TriggeredPollDistributor::postDeactivateHook() {}
 
   //*********************************************************************************************************************/
   void TriggeredPollDistributor::postSendExceptionHook([[maybe_unused]] const std::exception_ptr& e) {}

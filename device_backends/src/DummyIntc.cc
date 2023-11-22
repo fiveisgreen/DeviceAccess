@@ -8,10 +8,10 @@
 
 namespace ChimeraTK {
 
-  DummyIntc::DummyIntc(DeviceBackend* backend, InterruptControllerHandlerFactory* controllerHandlerFactory,
+  DummyIntc::DummyIntc(InterruptControllerHandlerFactory* controllerHandlerFactory,
       std::vector<uint32_t> const& controllerID, boost::shared_ptr<TriggerDistributor> parent,
       ChimeraTK::RegisterPath const& module)
-  : InterruptControllerHandler(backend, controllerHandlerFactory, controllerID, parent), _module(module) {
+  : InterruptControllerHandler(controllerHandlerFactory, controllerID, parent), _module(module) {
     _activeInterrupts = _backend->getRegisterAccessor<uint32_t>(_module / "active_ints", 1, 0, {});
     if(!_activeInterrupts->isReadable()) {
       throw ChimeraTK::runtime_error("DummyIntc: Handshake register not readable: " + _activeInterrupts->getName());
@@ -42,12 +42,12 @@ namespace ChimeraTK {
     }
   }
 
-  std::unique_ptr<DummyIntc> DummyIntc::create(DeviceBackend* backend,
-      InterruptControllerHandlerFactory* controllerHandlerFactory, std::vector<uint32_t> const& controllerID,
-      std::string const& desrciption, boost::shared_ptr<TriggerDistributor> parent) {
+  std::unique_ptr<DummyIntc> DummyIntc::create(InterruptControllerHandlerFactory* controllerHandlerFactory,
+      std::vector<uint32_t> const& controllerID, std::string const& desrciption,
+      boost::shared_ptr<TriggerDistributor> parent) {
     auto jdescription = nlohmann::json::parse(desrciption);
     auto module = jdescription["module"].get<std::string>();
-    return std::make_unique<DummyIntc>(backend, controllerHandlerFactory, controllerID, parent, module);
+    return std::make_unique<DummyIntc>(controllerHandlerFactory, controllerID, parent, module);
   }
 
 } // namespace ChimeraTK

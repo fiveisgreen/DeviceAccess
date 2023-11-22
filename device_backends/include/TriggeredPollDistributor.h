@@ -25,14 +25,13 @@ namespace ChimeraTK {
      */
     void trigger(VersionNumber version);
 
-    TriggeredPollDistributor(std::vector<uint32_t> interruptID, boost::shared_ptr<TriggerDistributor> parent);
+    TriggeredPollDistributor(boost::shared_ptr<DeviceBackendImpl> backend, std::vector<uint32_t> interruptID,
+        boost::shared_ptr<TriggerDistributor> parent);
 
     template<typename UserType>
-    std::unique_ptr<AsyncVariable> createAsyncVariable(
-        const boost::shared_ptr<DeviceBackend>& backend, AccessorInstanceDescriptor const& descriptor, bool isActive);
+    std::unique_ptr<AsyncVariable> createAsyncVariable(AccessorInstanceDescriptor const& descriptor);
 
     void activate(VersionNumber version) override;
-    void postDeactivateHook() override;
     void postSendExceptionHook(const std::exception_ptr& e) override;
 
    protected:
@@ -77,19 +76,21 @@ namespace ChimeraTK {
 
   template<typename UserType>
   std::unique_ptr<AsyncVariable> TriggeredPollDistributor::createAsyncVariable(
-      const boost::shared_ptr<DeviceBackend>& backend, AccessorInstanceDescriptor const& descriptor, bool isActive) {
+      AccessorInstanceDescriptor const& descriptor) {
+    // FIXME: This needs a creation lock
+
     auto synchronousFlags = descriptor.flags;
     synchronousFlags.remove(AccessMode::wait_for_new_data);
     // Don't call backend->getSyncRegisterAccessor() here. It might skip the overriding of a backend.
-    auto syncAccessor = backend->getRegisterAccessor<UserType>(
+    auto syncAccessor = _backend->getRegisterAccessor<UserType>(
         descriptor.name, descriptor.numberOfWords, descriptor.wordOffsetInRegister, synchronousFlags);
     // read the initial value before adding it to the transfer group
-    if(isActive) {
+    if(_backend->isAsyncReadActive()) {
       try {
         syncAccessor->read();
       }
       catch(ChimeraTK::runtime_error&) {
-        isActive = false;
+        // Nothing to do here. The backend's setException() has already been called by the syncAccessor.
       }
     }
 

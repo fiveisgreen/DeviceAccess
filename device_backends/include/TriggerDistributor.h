@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: LGPL-3.0-or-later
 #pragma once
 
-#include "DeviceBackend.h"
+#include "DeviceBackendImpl.h"
 #include "VersionNumber.h"
 
 #include <boost/make_shared.hpp>
@@ -26,7 +26,7 @@ namespace ChimeraTK {
    public:
     void trigger(VersionNumber v);
 
-    TriggerDistributor(DeviceBackend* backend, InterruptControllerHandlerFactory* controllerHandlerFactory,
+    TriggerDistributor(DeviceBackendImpl* backend, InterruptControllerHandlerFactory* controllerHandlerFactory,
         std::vector<uint32_t> interruptID, boost::shared_ptr<InterruptControllerHandler> parent);
 
     void activate(VersionNumber v);
@@ -40,13 +40,14 @@ namespace ChimeraTK {
    protected:
     std::recursive_mutex _creationMutex;
     std::vector<uint32_t> _id;
-    DeviceBackend* _backend;
+    // We have to use a plain pointer here because the primary trigger distributors are already created in the
+    // constructor, where the shared_ptr is not available yet. It is just set there and only used later.
+    DeviceBackendImpl* _backend;
     InterruptControllerHandlerFactory* _interruptControllerHandlerFactory;
     boost::weak_ptr<InterruptControllerHandler> _interruptControllerHandler;
     boost::weak_ptr<TriggeredPollDistributor> _pollDistributor;
     boost::weak_ptr<VariableDistributor<ChimeraTK::Void>> _variableDistributor;
     boost::shared_ptr<InterruptControllerHandler> _parent;
-    bool _isActive{false};
   };
 
 } // namespace ChimeraTK

@@ -13,7 +13,7 @@ namespace ChimeraTK {
   }
 
   template<typename UserType>
-  AsyncNDRegisterAccessor<UserType>::AsyncNDRegisterAccessor(boost::shared_ptr<DeviceBackend> backend,
+  AsyncNDRegisterAccessor<UserType>::AsyncNDRegisterAccessor(boost::shared_ptr<DeviceBackendImpl> backend,
       boost::shared_ptr<AsyncAccessorManager> manager, std::string const& name, size_t nChannels, size_t nElements,
       AccessModeFlags accessModeFlags, std::string const& unit, std::string const& description)
 

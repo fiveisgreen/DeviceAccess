@@ -16,42 +16,10 @@ namespace ChimeraTK {
   //*********************************************************************************************************************/
   void AsyncAccessorManager::sendException(const std::exception_ptr& e) {
     std::lock_guard<std::recursive_mutex> variablesLock(_variablesMutex);
-    if(!_isActive) {
-      return;
-    }
-    _isActive = false;
     for(auto& var : _asyncVariables) {
       var.second->sendException(e);
     }
     postSendExceptionHook(e);
-  }
-
-  //*********************************************************************************************************************/
-  //  VersionNumber AsyncAccessorManager::activate() {
-  //    std::lock_guard<std::recursive_mutex> variablesLock(_variablesMutex);
-
-  //    VersionNumber ver; // a common VersionNumber for all variables
-  //    if(prepareActivate(ver)) {
-  //      for(auto& var : _asyncVariables) {
-  //        var.second->activateAndSend();
-  //      }
-  //      _isActive = true;
-  //    }
-
-  //    return ver;
-  //  }
-
-  //*********************************************************************************************************************/
-  void AsyncAccessorManager::deactivate() {
-    std::lock_guard<std::recursive_mutex> variablesLock(_variablesMutex);
-    if(!_isActive) {
-      return;
-    }
-    for(auto& var : _asyncVariables) {
-      var.second->deactivate();
-    }
-    _isActive = false;
-    postDeactivateHook();
   }
 
 } // namespace ChimeraTK

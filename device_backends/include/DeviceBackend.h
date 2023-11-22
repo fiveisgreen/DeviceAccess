@@ -89,6 +89,12 @@ namespace ChimeraTK {
      *  For more details, see \ref transferElement_B_8_5 "Technical specification: TransferElement B.8.5".
      */
     virtual void activateAsyncRead() noexcept {}
+
+    /**
+     *  Check whether activateAsyncRead() has been called and accessors with access mode wait_for_new_data might send
+     *  new data.
+     */
+    virtual bool isAsyncReadActive() noexcept = 0;
   };
 
   /********************************************************************************************************************/

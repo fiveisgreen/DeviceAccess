@@ -7,6 +7,8 @@
 #include "NumericAddressedRegisterCatalogue.h"
 #include "VersionNumber.h"
 
+#include <boost/pointer_cast.hpp>
+
 #include <mutex>
 #include <string>
 

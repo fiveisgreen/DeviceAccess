@@ -13,14 +13,13 @@ namespace ChimeraTK {
   template<typename SourceType>
   class VariableDistributor : public AsyncAccessorManager {
    public:
-    VariableDistributor(std::vector<uint32_t> interruptID, boost::shared_ptr<TriggerDistributor> parent);
+    VariableDistributor(boost::shared_ptr<DeviceBackendImpl> backend, std::vector<uint32_t> interruptID,
+        boost::shared_ptr<TriggerDistributor> parent);
 
     template<typename UserType>
-    std::unique_ptr<AsyncVariable> createAsyncVariable(
-        const boost::shared_ptr<DeviceBackend>& backend, AccessorInstanceDescriptor const& descriptor, bool isActive);
+    std::unique_ptr<AsyncVariable> createAsyncVariable(AccessorInstanceDescriptor const& descriptor);
 
     void activate(VersionNumber version) override;
-    void postDeactivateHook() override {}
     void postSendExceptionHook([[maybe_unused]] const std::exception_ptr& e) override {}
 
     void distribute(VersionNumber version);
@@ -34,9 +33,9 @@ namespace ChimeraTK {
   // Implementations
   //*********************************************************************************************************************/
   template<typename SourceType>
-  VariableDistributor<SourceType>::VariableDistributor(
+  VariableDistributor<SourceType>::VariableDistributor(boost::shared_ptr<DeviceBackendImpl> backend,
       std::vector<uint32_t> interruptID, boost::shared_ptr<TriggerDistributor> parent)
-  : _id(std::move(interruptID)), _parent(std::move(parent)) {
+  : AsyncAccessorManager(backend), _id(std::move(interruptID)), _parent(std::move(parent)) {
     FILL_VIRTUAL_FUNCTION_TEMPLATE_VTABLE(createAsyncVariable);
   }
 
@@ -49,17 +48,18 @@ namespace ChimeraTK {
       var.second->fillSendBuffer(version);
       var.second->activateAndSend(); // function from  the AsyncVariable base class
     }
-    _isActive = true;
   }
 
   //*********************************************************************************************************************/
   template<typename SourceType>
   void VariableDistributor<SourceType>::distribute(VersionNumber version) {
-    std::lock_guard<std::recursive_mutex> variablesLock(_variablesMutex);
-    if(!_isActive) {
+    // Returning here is an optimisation. The deactivation can happen any time after checking the flag, and the timing
+    // races are resolved by holding the lock when filling the queue
+    if(!_backend->isAsyncReadActive()) {
       return;
     }
 
+    std::lock_guard<std::recursive_mutex> variablesLock(_variablesMutex);
     for(auto& var : _asyncVariables) {
       var.second->fillSendBuffer(version);
       var.second->send(); // function from  the AsyncVariable base class
@@ -90,8 +90,7 @@ namespace ChimeraTK {
   template<>
   template<typename UserType>
   std::unique_ptr<AsyncVariable> VariableDistributor<ChimeraTK::Void>::createAsyncVariable(
-      [[maybe_unused]] const boost::shared_ptr<DeviceBackend>& backend,
-      [[maybe_unused]] AccessorInstanceDescriptor const& descriptor, [[maybe_unused]] bool isActive) {
+      [[maybe_unused]] AccessorInstanceDescriptor const& descriptor) {
     // for the full implementation
     // - extract size from catalogue and instance descriptor
     // - if active fill buffer from input buffer (might be tricky)

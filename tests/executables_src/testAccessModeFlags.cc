@@ -28,7 +28,7 @@ BOOST_AUTO_TEST_CASE(testDeSerialize) {
   BOOST_CHECK(flags.has(ctk::AccessMode::raw) == true);
   BOOST_CHECK(flags.has(ctk::AccessMode::wait_for_new_data) == true);
 
-  BOOST_CHECK_THROW(ctk::AccessModeFlags::deserialize("bogus_flag"), ctk::logic_error);
+  BOOST_CHECK_THROW(void(ctk::AccessModeFlags::deserialize("bogus_flag")), ctk::logic_error);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

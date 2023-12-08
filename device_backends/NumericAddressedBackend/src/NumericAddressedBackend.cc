@@ -227,6 +227,8 @@ namespace ChimeraTK {
   /********************************************************************************************************************/
 
   void NumericAddressedBackend::activateAsyncRead() noexcept {
+    setAsyncIsActive();
+
     VersionNumber v{};
     for(const auto& it : _primaryInterruptDistributors) {
       it.second->activate(v);
@@ -241,9 +243,11 @@ namespace ChimeraTK {
       throw ChimeraTK::runtime_error("NumericAddressedBackend is in exception state.");
     }
     catch(...) {
-      for(const auto& it : _primaryInterruptDistributors) {
-        it.second->sendException(std::current_exception());
-      }
+      executeAndDeactivateAsync([&] {
+        for(const auto& it : _primaryInterruptDistributors) {
+          it.second->sendException(std::current_exception());
+        }
+      });
     }
   }
 

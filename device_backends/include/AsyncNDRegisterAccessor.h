@@ -48,9 +48,7 @@ namespace ChimeraTK {
 
     /** FIXME: This seems redundant.
      */
-    void activate(typename NDRegisterAccessor<UserType>::Buffer& initialValue) {
-      sendDestructively(initialValue);
-    }
+    // void activate(typename NDRegisterAccessor<UserType>::Buffer& initialValue) { sendDestructively(initialValue); }
 
     ////////////////////////////////////////////////////
     // implementation of inherited, virtual functions //

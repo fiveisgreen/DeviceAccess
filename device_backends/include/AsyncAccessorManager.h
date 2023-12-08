@@ -15,14 +15,6 @@ namespace ChimeraTK {
   struct AsyncVariable {
     virtual ~AsyncVariable() = default;
 
-    /** Activate the AsyncNDRegisterAccessor and send an initial value from the _sendBuffer of the AsyncVariableImpl.
-     *  The buffer has to be prepared before calling this function (incl. version number and data validity flag).
-     *  The buffer is swapped out to avoid unnecessary copies. If you need a copy, you have to make one
-     *  before calling this function.
-
-     */
-    virtual void activateAndSend() = 0;
-
     /** Send the value from the _sendBuffer of the AsyncVariableImpl.
      *  The buffer has to be prepared before calling this function (incl. version number and data validity flag).
      *  The buffer is swapped out to avoid unnecessary copies. If you need a copy, you have to make one
@@ -132,10 +124,6 @@ namespace ChimeraTK {
     /// _variablesMutex locked during call
     virtual void asyncVariableMapChanged() {}
 
-    /** Called at the end of sendException() to hook implementation-depenent actions into sendException()
-     */
-    virtual void postSendExceptionHook([[maybe_unused]] const std::exception_ptr& e) {}
-
   };
 
   /** AsyncVariableImpl contains a weak pointer to an AsyncNDRegisterAccessor<UserType> and a send buffer
@@ -155,7 +143,6 @@ namespace ChimeraTK {
 
     void send() final;
     void sendException(std::exception_ptr e) final;
-    void activateAndSend() final;
 
     typename NDRegisterAccessor<UserType>::Buffer _sendBuffer;
 
@@ -168,16 +155,6 @@ namespace ChimeraTK {
   //*********************************************************************************************************************/
   // Implementations
   //*********************************************************************************************************************/
-
-  //*********************************************************************************************************************/
-  template<typename UserType>
-  void AsyncVariableImpl<UserType>::activateAndSend() {
-    // The initial value must have been set before calling this function. We can just send it.
-    auto subscriber = _asyncAccessor.lock();
-    if(subscriber.get() != nullptr) { // Possible race condition: The subscriber is being destructed.
-      subscriber->activate(_sendBuffer);
-    }
-  }
 
   //*********************************************************************************************************************/
   template<typename UserType>
@@ -206,8 +183,6 @@ namespace ChimeraTK {
   template<typename UserType>
   boost::shared_ptr<AsyncNDRegisterAccessor<UserType>> AsyncAccessorManager::subscribe(
       RegisterPath name, size_t numberOfWords, size_t wordOffsetInRegister, AccessModeFlags flags) {
-    std::lock_guard<std::recursive_mutex> variablesLock(_variablesMutex);
-
     AccessorInstanceDescriptor descriptor(name, typeid(UserType), numberOfWords, wordOffsetInRegister, flags);
     auto untypedAsyncVariable = CALL_VIRTUAL_FUNCTION_TEMPLATE(createAsyncVariable, UserType, descriptor);
 
@@ -232,9 +207,14 @@ namespace ChimeraTK {
     // Now that the AsyncVariable is complete we can finally activate it.
     if(_backend->isAsyncReadActive()) {
       asyncVariable->fillSendBuffer({});
-      asyncVariable->activateAndSend();
+      asyncVariable->send();
     }
-    _asyncVariables[newSubscriber->getId()] = std::move(untypedAsyncVariable);
+
+    { // scope for the lock guard
+      std::lock_guard<std::recursive_mutex> variablesLock(_variablesMutex);
+      _asyncVariables[newSubscriber->getId()] = std::move(untypedAsyncVariable);
+    }
+
     asyncVariableMapChanged();
     return newSubscriber;
   }

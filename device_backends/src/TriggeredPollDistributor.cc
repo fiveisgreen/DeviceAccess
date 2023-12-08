@@ -37,22 +37,7 @@ namespace ChimeraTK {
 
   //*********************************************************************************************************************/
   void TriggeredPollDistributor::activate(VersionNumber version) {
-    std::lock_guard<std::recursive_mutex> variablesLock(_variablesMutex);
-    try {
-      _transferGroup->read();
-
-      for(auto& var : _asyncVariables) {
-        var.second->fillSendBuffer(version);
-        var.second->activateAndSend(); // function from  the AsyncVariable base class
-      }
-    }
-    catch(ChimeraTK::runtime_error&) {
-      // Nothing to do. Backend's set exception has already been called by the accessor in the transfer group that
-      // raised it.
-    }
+    trigger(version);
   }
-
-  //*********************************************************************************************************************/
-  void TriggeredPollDistributor::postSendExceptionHook([[maybe_unused]] const std::exception_ptr& e) {}
 
 } // namespace ChimeraTK

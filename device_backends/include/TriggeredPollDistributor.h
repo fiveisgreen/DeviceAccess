@@ -32,7 +32,6 @@ namespace ChimeraTK {
     std::unique_ptr<AsyncVariable> createAsyncVariable(AccessorInstanceDescriptor const& descriptor);
 
     void activate(VersionNumber version) override;
-    void postSendExceptionHook(const std::exception_ptr& e) override;
 
    protected:
     void asyncVariableMapChanged() override {

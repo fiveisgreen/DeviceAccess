@@ -20,7 +20,6 @@ namespace ChimeraTK {
     std::unique_ptr<AsyncVariable> createAsyncVariable(AccessorInstanceDescriptor const& descriptor);
 
     void activate(VersionNumber version) override;
-    void postSendExceptionHook([[maybe_unused]] const std::exception_ptr& e) override {}
 
     void distribute(VersionNumber version);
 
@@ -42,12 +41,7 @@ namespace ChimeraTK {
   //*********************************************************************************************************************/
   template<typename SourceType>
   void VariableDistributor<SourceType>::activate(VersionNumber version) {
-    std::lock_guard<std::recursive_mutex> variablesLock(_variablesMutex);
-
-    for(auto& var : _asyncVariables) {
-      var.second->fillSendBuffer(version);
-      var.second->activateAndSend(); // function from  the AsyncVariable base class
-    }
+    distribute(version);
   }
 
   //*********************************************************************************************************************/

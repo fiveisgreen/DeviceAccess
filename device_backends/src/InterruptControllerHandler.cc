@@ -120,7 +120,8 @@ namespace ChimeraTK {
     for(auto& dispatcherIter : _distributors) {
       auto dispatcher = dispatcherIter.second.lock();
       if(dispatcher) {
-        dispatcher->activate(version);
+        // FIXME: this is not thread-safe
+        dispatcher->trigger(version);
       }
     }
   }

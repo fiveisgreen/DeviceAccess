@@ -22,7 +22,8 @@ namespace ChimeraTK {
 
     std::optional<CtrlIntf> _ctrlIntf;
     std::vector<DmaIntf> _dmaChannels;
-    std::vector<EventFile> _eventFiles;
+    std::array<std::unique_ptr<EventFile>, _maxInterrupts> _eventFiles;
+    std::array<bool, _maxInterrupts> _startInterruptHandlingCalled{};
 
     const std::string _devicePath;
 
@@ -35,8 +36,6 @@ namespace ChimeraTK {
     void open() override;
     void closeImpl() override;
     bool isOpen() override;
-
-    bool isFunctional() const override;
 
     void dump(const int32_t* data, size_t nbytes);
     void read(uint64_t bar, uint64_t address, int32_t* data, size_t sizeInBytes) override;

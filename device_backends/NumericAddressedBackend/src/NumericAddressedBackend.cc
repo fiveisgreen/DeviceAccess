@@ -237,10 +237,9 @@ namespace ChimeraTK {
 
   /********************************************************************************************************************/
 
-  void NumericAddressedBackend::setException() {
-    _hasActiveException = true;
+  void NumericAddressedBackend::setExceptionImpl() noexcept {
     try {
-      throw ChimeraTK::runtime_error("NumericAddressedBackend is in exception state.");
+      throw ChimeraTK::runtime_error(getActiveExceptionMessage());
     }
     catch(...) {
       executeAndDeactivateAsync([&] {

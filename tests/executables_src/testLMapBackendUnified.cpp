@@ -193,7 +193,8 @@ struct ScalarRegisterDescriptorBase : OneDRegisterDescriptorBase<Derived> {
 template<typename Derived>
 struct ConstantRegisterDescriptorBase : RegisterDescriptorBase<Derived> {
   using RegisterDescriptorBase<Derived>::derived;
-  static constexpr auto capabilities = RegisterDescriptorBase<Derived>::capabilities.disableTestRawTransfer();
+  static constexpr auto capabilities =
+      RegisterDescriptorBase<Derived>::capabilities.disableTestRawTransfer().disableSetRemoteValueIncrementsVersion();
 
   size_t nChannels() { return 1; }
   bool isWriteable() { return false; }
@@ -251,7 +252,7 @@ struct VariableRegisterDescriptorBase : OneDRegisterDescriptorBase<Derived> {
       lmapBackend->close();
     }
     else if(!backendWasFunctional) {
-      lmapBackend->setException();
+      lmapBackend->setException("Some message");
     }
     std::vector<UserType> v;
     for(size_t k = 0; k < derived->nElementsPerChannel(); ++k) {

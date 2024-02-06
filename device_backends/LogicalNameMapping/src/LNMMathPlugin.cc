@@ -169,11 +169,11 @@ namespace ChimeraTK::LNMBackend {
       auto writeVs = std::max<ChimeraTK::VersionNumber>(versionNumber, _target->getVersionNumber());
       _target->writeDestructively(writeVs);
     }
-    catch(runtime_error&) {
+    catch(runtime_error& ex) {
       // runtime_error from param.readLatest() or target->write()
       // we could actually even ignore it, since we don't expect exceptions on param.readLatest(), and target->write()
       // already puts backend into exception state.
-      _target->getExceptionBackend()->setException();
+      _target->getExceptionBackend()->setException(ex.what());
     }
   }
 
@@ -195,8 +195,8 @@ namespace ChimeraTK::LNMBackend {
     }
 
     for(const auto& acc : _accessorMap) {
-      // push-type accessors: version number check will notice whether valid data has been provided after open
-      // poll-type accessors: version number check always succeeds since readLatest returns new version numbers
+      // Version number check will notice whether valid data has been provided after open. This works for both push and
+      // poll, since the LNM variables always pass through the version number from the write operation to the read.
       if(acc.second->getVersionNumber() <= _backend->getVersionOnOpen()) {
         return false;
       }
@@ -304,9 +304,7 @@ namespace ChimeraTK::LNMBackend {
     if(!backend->isOpen()) {
       throw ChimeraTK::logic_error("LNM backend not opened!");
     }
-    if(!backend->isFunctional()) {
-      throw ChimeraTK::runtime_error("previous unrecovered error while trying to write: " + this->getName());
-    }
+    backend->checkActiveException();
 
     // The readLatest might throw an exception. In this case preWrite() is never delegated and we must not call the
     // target's postWrite().
@@ -449,36 +447,20 @@ namespace ChimeraTK::LNMBackend {
 
     _target = backend->getRegisterAccessor_impl<double>(info->getRegisterName(), 0, 0, {}, _mp->_pluginIndex + 1);
 
-    if(_mp->_hasPushParameter) {
-      for(const auto& parpair : _mp->_parameters) {
-        // push-type parameters need to be obtained with wait_for_new_data, others without
-        AccessModeFlags flags{};
-        auto paramFlags = backend->getRegisterCatalogue().getRegister(parpair.second).getSupportedAccessModes();
-        if(paramFlags.has(AccessMode::wait_for_new_data)) {
-          flags = {AccessMode::wait_for_new_data};
-          // We only allow push-type parameters for Variables defined via LogicalNameMapping.
-          // If we allowed other cases (e.g. redirected registers to a device supporting wait_for_new_data, it
-          // would be hard to define when pushParameterThread should be stopped
-          if(backend->_catalogue_mutable.getBackendRegister(parpair.second).targetType !=
-              LNMBackendRegisterInfo::VARIABLE) {
-            throw logic_error("only LNM defined variables allowed as push parameters!");
-          }
-        }
-        auto acc = backend->getRegisterAccessor<double>(parpair.second, 0, 0, flags);
-        if(acc->getNumberOfChannels() != 1) {
-          throw ChimeraTK::logic_error(
-              "The LogicalNameMapper MathPlugin supports only scalar or 1D array registers. Register name: '" +
-              info->name + "', parameter name: '" + parpair.first + "'");
-        }
-        _accessorMap[parpair.first] = acc;
+    for(const auto& parpair : _mp->_parameters) {
+      // Even push-type parameters should not be obtained with wait_for_new_data, since the variable accessor will
+      // trigger the math plugin update in its postWrite in that case. Using wait_for_new_data here would leave
+      // exceptions in the queues across recovery which would bring the backend into the exception state again.
+      auto acc = backend->getRegisterAccessor<double>(parpair.second, 0, 0, {});
+      if(acc->getNumberOfChannels() != 1) {
+        throw ChimeraTK::logic_error(
+            "The LogicalNameMapper MathPlugin supports only scalar or 1D array registers. Register name: '" +
+            info->name + "', parameter name: '" + parpair.first + "'");
       }
-      _mp->_lastMainValue.resize(length);
+      _accessorMap[parpair.first] = acc;
     }
-    else {
-      // obtain poll-type accessors for parameters
-      for(const auto& par : _mp->_parameters) {
-        _accessorMap[par.first] = backend->getRegisterAccessor<double>(par.second, 0, 0, {});
-      }
+    if(_mp->_hasPushParameter) {
+      _mp->_lastMainValue.resize(length);
     }
 
     // compile formula

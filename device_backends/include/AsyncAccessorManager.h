@@ -123,7 +123,6 @@ namespace ChimeraTK {
     /// this virtual function lets derived classes react on subscribe / unsubscribe
     /// _variablesMutex locked during call
     virtual void asyncVariableMapChanged() {}
-
   };
 
   /** AsyncVariableImpl contains a weak pointer to an AsyncNDRegisterAccessor<UserType> and a send buffer

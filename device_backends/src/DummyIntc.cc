@@ -30,9 +30,7 @@ namespace ChimeraTK {
             }
           }
           catch(std::out_of_range&) {
-            // FIXME: change singature of setException so we get a good exception message (is there already a ticket?)
-            std::cout << "ERROR: DummyIntc reports unknown active interrupt " + std::to_string(i) << std::endl;
-            _backend->setException();
+            _backend->setException("ERROR: DummyIntc reports unknown active interrupt " + std::to_string(i));
           }
         }
       }

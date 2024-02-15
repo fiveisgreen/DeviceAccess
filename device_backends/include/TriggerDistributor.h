@@ -30,7 +30,6 @@ namespace ChimeraTK {
         std::vector<uint32_t> interruptID, boost::shared_ptr<InterruptControllerHandler> parent);
 
     void activate(VersionNumber v);
-    void deactivate();
     void sendException(const std::exception_ptr& e);
 
     boost::shared_ptr<TriggeredPollDistributor> getPollDistributorRecursive(std::vector<uint32_t> const& interruptID);

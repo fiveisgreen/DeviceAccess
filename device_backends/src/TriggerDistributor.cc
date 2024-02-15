@@ -100,13 +100,6 @@ namespace ChimeraTK {
     }
   }
 
-  void TriggerDistributor::deactivate() {
-    auto controllerHandler = _interruptControllerHandler.lock();
-    if(controllerHandler) {
-      controllerHandler->deactivate();
-    }
-  }
-
   void TriggerDistributor::sendException(const std::exception_ptr& e) {
     auto pollDistributor = _pollDistributor.lock();
     if(pollDistributor) {

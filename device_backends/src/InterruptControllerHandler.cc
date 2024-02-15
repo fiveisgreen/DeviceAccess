@@ -136,14 +136,4 @@ namespace ChimeraTK {
     }
   }
 
-  //*********************************************************************************************************************/
-  void InterruptControllerHandler::deactivate() {
-    for(auto& dispatcherIter : _distributors) {
-      auto dispatcher = dispatcherIter.second.lock();
-      if(dispatcher) {
-        dispatcher->deactivate();
-      }
-    }
-  }
-
 } // namespace ChimeraTK

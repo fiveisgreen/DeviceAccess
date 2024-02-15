@@ -77,7 +77,6 @@ namespace ChimeraTK {
 
     void activate(VersionNumber version);
     void sendException(const std::exception_ptr& e);
-    void deactivate();
 
     /** The interrupt handling functions implements the handshake with the interrupt controller. It needs to
      * be implemented individually for each interrupt controller.

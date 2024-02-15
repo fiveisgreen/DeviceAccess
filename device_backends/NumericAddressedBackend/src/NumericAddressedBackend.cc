@@ -258,9 +258,7 @@ namespace ChimeraTK {
   /********************************************************************************************************************/
 
   void NumericAddressedBackend::close() {
-    for(const auto& it : _primaryInterruptDistributors) {
-      it.second->deactivate();
-    }
+    executeAndDeactivateAsync([] {});
     closeImpl();
   }
 

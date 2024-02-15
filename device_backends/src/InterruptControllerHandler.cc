@@ -121,7 +121,7 @@ namespace ChimeraTK {
       auto dispatcher = dispatcherIter.second.lock();
       if(dispatcher) {
         // FIXME: this is not thread-safe
-        dispatcher->trigger(version);
+        dispatcher->activate(version);
       }
     }
   }

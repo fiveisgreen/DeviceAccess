@@ -117,21 +117,21 @@ namespace ChimeraTK {
 
   //*********************************************************************************************************************/
   void InterruptControllerHandler::activate(VersionNumber version) {
-    for(auto& dispatcherIter : _distributors) {
-      auto dispatcher = dispatcherIter.second.lock();
-      if(dispatcher) {
+    for(auto& distributorIter : _distributors) {
+      auto distributor = distributorIter.second.lock();
+      if(distributor) {
         // FIXME: this is not thread-safe
-        dispatcher->activate(version);
+        distributor->activate(version);
       }
     }
   }
 
   //*********************************************************************************************************************/
   void InterruptControllerHandler::sendException(const std::exception_ptr& e) {
-    for(auto& dispatcherIter : _distributors) {
-      auto dispatcher = dispatcherIter.second.lock();
-      if(dispatcher) {
-        dispatcher->sendException(e);
+    for(auto& distributorIter : _distributors) {
+      auto distributor = distributorIter.second.lock();
+      if(distributor) {
+        distributor->sendException(e);
       }
     }
   }

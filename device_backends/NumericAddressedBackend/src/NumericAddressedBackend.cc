@@ -41,7 +41,7 @@ namespace ChimeraTK {
         }
       }
 
-      // Create all primary interrupt dispatchers that are described in the map file. The interrupt dispatcher thread
+      // Create all primary interrupt distributors that are described in the map file. The interrupt dispatcher thread
       // needs them so have something to access (even though nothing will happen as long as none is subscribed).
       // They don't have controller handlers (nested interrupts) yet because these can hold accessors, which
       // in turn have shared pointers to the backend, which cannot be created in the backend constructor.
@@ -149,7 +149,7 @@ namespace ChimeraTK {
       auto newSubscriber =
           distributor->template subscribe<UserType>(registerPathName, numberOfWords, wordOffsetInRegister, flags);
       // The new subscriber might already be activated. Hence the exception backend is already set by the interrupt
-      // dispatcher.
+      // distributor.
       startInterruptHandlingThread(registerInfo.interruptId.front());
       return newSubscriber;
     }
@@ -265,7 +265,7 @@ namespace ChimeraTK {
   /********************************************************************************************************************/
 
   VersionNumber NumericAddressedBackend::dispatchInterrupt(uint32_t interruptNumber) {
-    // This function just makes sure that at() is used to access the _interruptDispatchers map,
+    // This function just makes sure that at() is used to access the _primaryInterruptDistributors map,
     // which guarantees that the map is not altered.
     VersionNumber v{};
     _primaryInterruptDistributors.at(interruptNumber)->trigger(v);

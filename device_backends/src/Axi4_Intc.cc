@@ -8,13 +8,13 @@ namespace ChimeraTK {
 
   void Axi4_Intc::handle(VersionNumber version) {
     // Stupid testing implementation that always triggers all children
-    for(auto& dispatcherIter : _distributors) {
-      auto dispatcher = dispatcherIter.second.lock();
+    for(auto& distributorIter : _distributors) {
+      auto distributor = distributorIter.second.lock();
       // The weak pointer might have gone.
       // FIXME: We need a cleanup function which removes the map entry. Otherwise we might
       // be stuck with a bad weak pointer wich is tried in each handle() call.
-      if(dispatcher) {
-        dispatcher->trigger(version);
+      if(distributor) {
+        distributor->trigger(version);
       }
     }
   }

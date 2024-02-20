@@ -52,7 +52,7 @@ namespace ChimeraTK {
   };
 
   /** Interface base class for interrupt controller handlers. It implements the interface with the
-   * DeviceBackend and the InterruptDispatchers. Implementations must fill the pure virtual "handle()"
+   * DeviceBackend and the TriggerDistributors. Implementations must fill the pure virtual "handle()"
    * function with life and register the constructor to the factory.
    */
   class InterruptControllerHandler : public boost::enable_shared_from_this<InterruptControllerHandler> {
@@ -84,7 +84,7 @@ namespace ChimeraTK {
     virtual void handle(VersionNumber version) = 0;
 
    protected:
-    /** Each known interrupt has its own dispatcher
+    /** Each known interrupt has its own distributor
      */
     std::map<uint32_t, boost::weak_ptr<TriggerDistributor>> _distributors;
 

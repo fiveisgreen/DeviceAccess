@@ -22,7 +22,7 @@ namespace ChimeraTK {
      */
     virtual void send() = 0;
 
-    /** Send an exception to all subscribers. Must only be called while holding the exclusive isAsyncActive lock.
+    /** Send an exception to all subscribers. Must only be called from within deactivateAsyncAndExecute().
      */
     virtual void sendException(std::exception_ptr e) = 0;
 
@@ -62,7 +62,7 @@ namespace ChimeraTK {
    *  * It serves as a factory for the asynchronous accessors which are during
    *    the subscription to get consistent behaviour.
    *  * The manager provides functions for all asynchronous accessors subscribed
-   *    to this manager, like enabling, disabling or sending exceptions.
+   *    to this manager, like activation or sending exceptions.
    *
    *  This is done in a single class because the container with the fluctuating number of
    *  subscribed variables is not thread safe. This class implements a lock so data

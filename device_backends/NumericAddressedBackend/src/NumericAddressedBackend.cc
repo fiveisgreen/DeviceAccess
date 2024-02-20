@@ -242,7 +242,7 @@ namespace ChimeraTK {
       throw ChimeraTK::runtime_error(getActiveExceptionMessage());
     }
     catch(...) {
-      executeAndDeactivateAsync([&] {
+      deactivateAsyncAndExecute([&] {
         for(const auto& it : _primaryInterruptDistributors) {
           it.second->sendException(std::current_exception());
         }
@@ -258,7 +258,7 @@ namespace ChimeraTK {
   /********************************************************************************************************************/
 
   void NumericAddressedBackend::close() {
-    executeAndDeactivateAsync([] {});
+    deactivateAsyncAndExecute([] {});
     closeImpl();
   }
 

@@ -44,12 +44,12 @@ namespace ChimeraTK {
     template<typename MY_LAMBDA>
     void executeIfAsyncActive(MY_LAMBDA executeMe);
 
-    /** Execute under the exclusive lock and then deactivate the active flag.
-     *  The code is only executed if async read is active, and afterwards
-     *  the flag is deactivated.
+    /** Deactivate the async active flag and execute the lambda. The function
+     *  guarantees that activateAsyncRead() will wait until the lambda has finished.
+     *  The code is only executed if async read is active.
      */
     template<typename MY_LAMBDA>
-    void executeAndDeactivateAsync(MY_LAMBDA executeMe);
+    void deactivateAsyncAndExecute(MY_LAMBDA executeMe);
 
     /** Set the asyncIsActive flag to true under the exclusive lock.
      */
@@ -121,15 +121,15 @@ namespace ChimeraTK {
   /********************************************************************************************************************/
 
   template<typename MY_LAMBDA>
-  void DeviceBackendImpl::executeAndDeactivateAsync(MY_LAMBDA executeMe) {
+  void DeviceBackendImpl::deactivateAsyncAndExecute(MY_LAMBDA executeMe) {
     // We cannot hold the lock the whole time. This would be cause lock order inversion because
     // there are some container locks which must be held while checking the _asyncIsActive flag.
     // The same container log is acquired in the lambda function when distributing exceptions, so we cannot hold the
     // lock when doing so.
 
-    // On the other hand, we must prevent activation while the deactivation is still going on. Hence we introduce an
-    // additional variable that deactivation is going on, and make the activation wait, using a condition variable
-    // together with that flag.
+    // On the other hand, we must prevent activation while the deactivation (sending exceptions) is still going on.
+    // Hence we introduce an additional variable that deactivation is going on, and make the activation wait, using a
+    // condition variable together with that flag.
 
     // Whatever happens in here, make sure the _deavtivationInProgress is turned off at the end (by using cppext::finally)
     auto _ = cppext::finally([&] {
@@ -142,7 +142,6 @@ namespace ChimeraTK {
 
     {
       std::unique_lock lock(_asyncIsActiveMutex);
-      // FIXME: is this the correct behaviour?
       if(!_asyncIsActive) {
         return;
       }

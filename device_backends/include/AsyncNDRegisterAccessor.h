@@ -34,8 +34,8 @@ namespace ChimeraTK {
 
     ~AsyncNDRegisterAccessor() override;
 
-    /** Pushes the exception to the queue. Must only be called while holding an exclusive lock to
-     *  the backend's _isAsyncActiveMutex, i.e. withing executeAndDeactivateAsync().
+    /** Pushes the exception to the queue. Must only be called from within deactivateAsyncAndExecute()
+     *  to make sure it does not conflict with a re-enabling, which might violate the order guarantee in the spec.
      */
     void sendException(std::exception_ptr& e) { _dataTransportQueue.push_overwrite_exception(e); }
 

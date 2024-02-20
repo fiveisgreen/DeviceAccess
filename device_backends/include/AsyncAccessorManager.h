@@ -182,6 +182,8 @@ namespace ChimeraTK {
   template<typename UserType>
   boost::shared_ptr<AsyncNDRegisterAccessor<UserType>> AsyncAccessorManager::subscribe(
       RegisterPath name, size_t numberOfWords, size_t wordOffsetInRegister, AccessModeFlags flags) {
+    std::lock_guard<std::recursive_mutex> variablesLock(_variablesMutex);
+
     AccessorInstanceDescriptor descriptor(name, typeid(UserType), numberOfWords, wordOffsetInRegister, flags);
     auto untypedAsyncVariable = CALL_VIRTUAL_FUNCTION_TEMPLATE(createAsyncVariable, UserType, descriptor);
 
@@ -209,10 +211,7 @@ namespace ChimeraTK {
       asyncVariable->send();
     }
 
-    { // scope for the lock guard
-      std::lock_guard<std::recursive_mutex> variablesLock(_variablesMutex);
-      _asyncVariables[newSubscriber->getId()] = std::move(untypedAsyncVariable);
-    }
+    _asyncVariables[newSubscriber->getId()] = std::move(untypedAsyncVariable);
 
     asyncVariableMapChanged();
     return newSubscriber;

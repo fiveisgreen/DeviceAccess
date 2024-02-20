@@ -78,7 +78,6 @@ namespace ChimeraTK {
   template<typename UserType>
   std::unique_ptr<AsyncVariable> TriggeredPollDistributor::createAsyncVariable(
       AccessorInstanceDescriptor const& descriptor) {
-    // FIXME: This needs a creation lock
 
     auto synchronousFlags = descriptor.flags;
     synchronousFlags.remove(AccessMode::wait_for_new_data);

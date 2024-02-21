@@ -67,13 +67,10 @@ namespace ChimeraTK {
     virtual ~InterruptControllerHandler() = default;
 
     /** Needed to get a new accessor for a certain interrupt. The whole chain will be created recursively if it does not
-     * exist yet.
+     * exist yet. The only valid DistrubutorTypes are TriggeredPollDistributor and VariableDistributor<ChimeraTK::Void>.
      */
-    [[nodiscard]] boost::shared_ptr<TriggeredPollDistributor> getTriggerPollDistributorRecursive(
-        std::vector<uint32_t> const& interruptID);
-
-    [[nodiscard]] boost::shared_ptr<VariableDistributor<ChimeraTK::Void>> getVariableDistributorRecursive(
-        std::vector<uint32_t> const& interruptID);
+    template<typename DistributorType>
+    [[nodiscard]] boost::shared_ptr<DistributorType> getDistributorRecursive(std::vector<uint32_t> const& interruptID);
 
     void activate(VersionNumber version);
     void sendException(const std::exception_ptr& e);
@@ -96,6 +93,14 @@ namespace ChimeraTK {
     std::vector<uint32_t> _id;
 
     boost::shared_ptr<TriggerDistributor> _parent;
+
+    /* These functions are needed so the compiler generates the template code. We cannot put the implementation into
+     * this header because it needs full class descriptions, which would lead to circular header inclusions.
+     * They are not called, but the template code is.
+     */
+    boost::shared_ptr<TriggeredPollDistributor> getPollDistributorRecursive(std::vector<uint32_t> const& interruptID);
+    boost::shared_ptr<VariableDistributor<ChimeraTK::Void>> getVariableDistributorRecursive(
+        std::vector<uint32_t> const& interruptID);
   };
 
 } // namespace ChimeraTK

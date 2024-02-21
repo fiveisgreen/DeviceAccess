@@ -36,6 +36,16 @@ namespace ChimeraTK {
     boost::shared_ptr<VariableDistributor<ChimeraTK::Void>> getVariableDistributorRecursive(
         std::vector<uint32_t> const& interruptID);
 
+    /**
+     * Common implementation for getPollDistributorRecursive and getVariableDistributorRecursive to avoid code duplication.
+     */
+    /* Don't remove the non-templated functions when refactoring. They are needed to instantiate the template code. We
+     * cannot put the template code into the header because it needs full class descriptions, which would lead to
+     * circular header inclusion.
+     */
+    template<typename DistributorType>
+    boost::shared_ptr<DistributorType> getDistributorRecursive(std::vector<uint32_t> const& interruptID);
+
    protected:
     std::recursive_mutex _creationMutex;
     std::vector<uint32_t> _id;

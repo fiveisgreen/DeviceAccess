@@ -78,7 +78,6 @@ namespace ChimeraTK {
   template<typename UserType>
   std::unique_ptr<AsyncVariable> TriggeredPollDistributor::createAsyncVariable(
       AccessorInstanceDescriptor const& descriptor) {
-
     auto synchronousFlags = descriptor.flags;
     synchronousFlags.remove(AccessMode::wait_for_new_data);
     // Don't call backend->getSyncRegisterAccessor() here. It might skip the overriding of a backend.

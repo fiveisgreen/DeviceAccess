@@ -19,11 +19,12 @@ namespace ChimeraTK {
     }
   }
 
+  /*****************************************************************************************************************/
+
   std::unique_ptr<Axi4_Intc> Axi4_Intc::create(InterruptControllerHandlerFactory* controllerHandlerFactory,
-      std::vector<uint32_t> const& controllerID, std::string desrciption,
+      std::vector<uint32_t> const& controllerID, [[maybe_unused]] std::string const& desrciption,
       boost::shared_ptr<TriggerDistributor> parent) {
-    std::ignore = desrciption;
-    return std::make_unique<Axi4_Intc>(controllerHandlerFactory, controllerID, parent);
+    return std::make_unique<Axi4_Intc>(controllerHandlerFactory, controllerID, std::move(parent));
   }
 
 } // namespace ChimeraTK

@@ -18,6 +18,8 @@ namespace ChimeraTK {
     }
   }
 
+  /*****************************************************************************************************************/
+
   void DummyIntc::handle(VersionNumber version) {
     try {
       _activeInterrupts->read();
@@ -40,12 +42,14 @@ namespace ChimeraTK {
     }
   }
 
+  /*****************************************************************************************************************/
+
   std::unique_ptr<DummyIntc> DummyIntc::create(InterruptControllerHandlerFactory* controllerHandlerFactory,
       std::vector<uint32_t> const& controllerID, std::string const& desrciption,
       boost::shared_ptr<TriggerDistributor> parent) {
     auto jdescription = nlohmann::json::parse(desrciption);
     auto module = jdescription["module"].get<std::string>();
-    return std::make_unique<DummyIntc>(controllerHandlerFactory, controllerID, parent, module);
+    return std::make_unique<DummyIntc>(controllerHandlerFactory, controllerID, std::move(parent), module);
   }
 
 } // namespace ChimeraTK

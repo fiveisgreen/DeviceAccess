@@ -61,9 +61,9 @@ namespace ChimeraTK {
      * which is known to the handler via plain pointer (to avoid shared pointer loops)
      */
     InterruptControllerHandler(InterruptControllerHandlerFactory* controllerHandlerFactory,
-        std::vector<uint32_t> const& controllerID, boost::shared_ptr<TriggerDistributor> parent)
+        std::vector<uint32_t> controllerID, boost::shared_ptr<TriggerDistributor> parent)
     : _backend(controllerHandlerFactory->getBackend()), _controllerHandlerFactory(controllerHandlerFactory),
-      _id(controllerID), _parent(parent) {}
+      _id(std::move(controllerID)), _parent(std::move(parent)) {}
     virtual ~InterruptControllerHandler() = default;
 
     /** Needed to get a new accessor for a certain interrupt. The whole chain will be created recursively if it does not

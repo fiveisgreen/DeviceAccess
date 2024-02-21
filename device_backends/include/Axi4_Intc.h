@@ -15,7 +15,7 @@ namespace ChimeraTK {
     void handle(VersionNumber version) override;
 
     static std::unique_ptr<Axi4_Intc> create(InterruptControllerHandlerFactory*,
-        std::vector<uint32_t> const& controllerID, std::string desrciption,
+        std::vector<uint32_t> const& controllerID, std::string const& desrciption,
         boost::shared_ptr<TriggerDistributor> parent);
   };
 

@@ -9,7 +9,7 @@ namespace ChimeraTK {
 
   TriggeredPollDistributor::TriggeredPollDistributor(boost::shared_ptr<DeviceBackendImpl> backend,
       std::vector<uint32_t> interruptID, boost::shared_ptr<TriggerDistributor> parent)
-  : AsyncAccessorManager(backend), _id(std::move(interruptID)), _parent(parent) {
+  : AsyncAccessorManager(std::move(backend)), _id(std::move(interruptID)), _parent(std::move(parent)) {
     FILL_VIRTUAL_FUNCTION_TEMPLATE_VTABLE(createAsyncVariable);
   }
 

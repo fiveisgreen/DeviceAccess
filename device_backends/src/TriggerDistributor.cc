@@ -15,10 +15,12 @@ namespace ChimeraTK {
   : _id(std::move(interruptID)), _backend(backend), _interruptControllerHandlerFactory(controllerHandlerFactory),
     _parent(std::move(parent)) {}
 
+  //*********************************************************************************************************************/
+
   template<typename DistributorType>
   boost::shared_ptr<DistributorType> TriggerDistributor::getDistributorRecursive(
       std::vector<uint32_t> const& interruptID) {
-    std::lock_guard<std::recursive_mutex> crerationLock(_creationMutex);
+    std::lock_guard<std::recursive_mutex> creationLock(_creationMutex);
 
     if(interruptID.size() == 1) {
       // return the distributor from this instance, not a nested one
@@ -58,15 +60,21 @@ namespace ChimeraTK {
     return controllerHandler->getDistributorRecursive<DistributorType>({++interruptID.begin(), interruptID.end()});
   }
 
+  //*********************************************************************************************************************/
+
   boost::shared_ptr<TriggeredPollDistributor> TriggerDistributor::getPollDistributorRecursive(
       std::vector<uint32_t> const& interruptID) {
     return getDistributorRecursive<TriggeredPollDistributor>(interruptID);
   }
 
+  //*********************************************************************************************************************/
+
   boost::shared_ptr<VariableDistributor<ChimeraTK::Void>> TriggerDistributor::getVariableDistributorRecursive(
       std::vector<uint32_t> const& interruptID) {
     return getDistributorRecursive<VariableDistributor<ChimeraTK::Void>>(interruptID);
   }
+
+  //*********************************************************************************************************************/
 
   void TriggerDistributor::trigger(VersionNumber version) {
     if(!_backend->isAsyncReadActive()) {
@@ -86,6 +94,8 @@ namespace ChimeraTK {
     }
   }
 
+  //*********************************************************************************************************************/
+
   void TriggerDistributor::activate(VersionNumber version) {
     auto pollDistributor = _pollDistributor.lock();
     if(pollDistributor) {
@@ -100,6 +110,8 @@ namespace ChimeraTK {
       variableDistributor->activate(version);
     }
   }
+
+  //*********************************************************************************************************************/
 
   void TriggerDistributor::sendException(const std::exception_ptr& e) {
     auto pollDistributor = _pollDistributor.lock();

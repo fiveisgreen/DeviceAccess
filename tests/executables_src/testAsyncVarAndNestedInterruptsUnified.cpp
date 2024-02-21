@@ -18,7 +18,7 @@ using namespace boost::unit_test_framework;
 
 using namespace ChimeraTK;
 
-/********************************************************************************************************************/
+//*******************************************************************************************************************/
 struct DummyForCleanupCheck : public ExceptionDummy {
   using ExceptionDummy::ExceptionDummy;
 
@@ -56,7 +56,7 @@ static DummyForCleanupCheck::BackendRegisterer gDFCCRegisterer;
 // Create a test suite which holds all your tests.
 BOOST_AUTO_TEST_SUITE(AsyncVarAndNestedInterruptsUnifiedTestSuite)
 
-/**********************************************************************************************************************/
+//********************************************************************************************************************/
 
 static std::string cdd("(DummyForCleanupCheck:1?map=testNestedInterrupts.map)");
 static auto exceptionDummy =
@@ -118,6 +118,8 @@ struct TriggeredInt {
   }
 };
 
+//********************************************************************************************************************/
+
 struct datafrom6 : public TriggeredInt<datafrom6, 6> {
   static std::string path() { return "/datafrom6"; }
   static std::string activeInterruptsPath() { return ""; } // empty
@@ -151,6 +153,8 @@ struct datafrom4_8_3 : public TriggeredInt<datafrom4_8_3, 4> {
     activeParentInterrupts = 1U << 8U;
   }
 };
+
+//********************************************************************************************************************/
 
 // Use bool accessors instead of void
 template<class WITHPATH, uint32_t INTERRUPT>
@@ -203,6 +207,8 @@ struct BoolAsVoid {
     }
   }
 };
+
+//********************************************************************************************************************/
 
 struct interrupt6 : public BoolAsVoid<interrupt6, 6> {
   static std::string path() { return "/interrupt6"; }
@@ -291,7 +297,7 @@ struct canonicalInterrupt4_8_3 : public BoolAsVoid<canonicalInterrupt4_8_3, 4> {
   static uint32_t activeInterruptsValue() { return 1U << 3U; }
 };
 
-/**********************************************************************************************************************/
+//********************************************************************************************************************/
 
 BOOST_AUTO_TEST_CASE(testRegisterAccessor) {
   struct canonicalInterrupt4_8b : public BoolAsVoid<canonicalInterrupt4_8b, 4> {
@@ -326,6 +332,6 @@ BOOST_AUTO_TEST_CASE(testRegisterAccessor) {
   BOOST_CHECK(DummyForCleanupCheck::cleanupCalled);
 }
 
-/**********************************************************************************************************************/
+//*********************************************************************************************************************/
 
 BOOST_AUTO_TEST_SUITE_END()

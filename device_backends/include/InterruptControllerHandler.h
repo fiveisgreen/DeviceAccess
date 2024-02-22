@@ -11,6 +11,7 @@
 #include <functional>
 #include <map>
 #include <memory>
+#include <mutex>
 #include <vector>
 
 namespace ChimeraTK {
@@ -81,9 +82,11 @@ namespace ChimeraTK {
     virtual void handle(VersionNumber version) = 0;
 
    protected:
-    /** Each known interrupt has its own distributor
+    /** Each known interrupt has its own distributor. Must only be accessed while holding the _distributorsMutex to
+     * protect distribution from concurrent creation.
      */
     std::map<uint32_t, boost::weak_ptr<TriggerDistributor>> _distributors;
+    std::mutex _distributorsMutex;
 
     boost::shared_ptr<DeviceBackendImpl> _backend;
     InterruptControllerHandlerFactory* _controllerHandlerFactory;

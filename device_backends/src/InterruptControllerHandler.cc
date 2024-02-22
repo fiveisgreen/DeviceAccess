@@ -62,6 +62,7 @@ namespace ChimeraTK {
 
     // we can't use try_emplace because the map contains weak pointers
     boost::shared_ptr<TriggerDistributor> distributor;
+    std::lock_guard distrubutorsLock(_distributorsMutex);
     auto distributorIter = _distributors.find(interruptID.front());
     if(distributorIter == _distributors.end()) {
       distributor = boost::make_shared<TriggerDistributor>(
@@ -101,10 +102,10 @@ namespace ChimeraTK {
 
   //*********************************************************************************************************************/
   void InterruptControllerHandler::activate(VersionNumber version) {
+    std::lock_guard distrubutorsLock(_distributorsMutex);
     for(auto& distributorIter : _distributors) {
       auto distributor = distributorIter.second.lock();
       if(distributor) {
-        // FIXME: this is not thread-safe
         distributor->activate(version);
       }
     }
@@ -112,6 +113,7 @@ namespace ChimeraTK {
 
   //*********************************************************************************************************************/
   void InterruptControllerHandler::sendException(const std::exception_ptr& e) {
+    std::lock_guard distrubutorsLock(_distributorsMutex);
     for(auto& distributorIter : _distributors) {
       auto distributor = distributorIter.second.lock();
       if(distributor) {

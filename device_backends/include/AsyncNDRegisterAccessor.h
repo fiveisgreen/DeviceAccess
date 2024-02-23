@@ -71,7 +71,7 @@ namespace ChimeraTK {
 
     void doPreRead([[maybe_unused]] TransferType type) override {
       if(!_backend->isOpen()) throw ChimeraTK::logic_error("Device not opened.");
-      // Pre-read conceptually does nothing in synchronous reads
+      // Pre-read conceptually does nothing in asynchronous reads
     }
 
     // Don't ask my why in template code the [[maybe_unused]] must be here, but gives a warning when put to the

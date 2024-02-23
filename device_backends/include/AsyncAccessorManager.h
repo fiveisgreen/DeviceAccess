@@ -159,7 +159,7 @@ namespace ChimeraTK {
   template<typename UserType>
   void AsyncVariableImpl<UserType>::sendException(std::exception_ptr e) {
     auto subscriber = _asyncAccessor.lock();
-    if(subscriber.get() != nullptr) { // Possible race condition: The subscriber is being destructed.
+    if(subscriber.get() != nullptr) { // Solves possible race condition: The subscriber is being destructed.
       subscriber->sendException(e);
     }
   }
@@ -173,7 +173,7 @@ namespace ChimeraTK {
   template<typename UserType>
   void AsyncVariableImpl<UserType>::send() {
     auto subscriber = _asyncAccessor.lock();
-    if(subscriber.get() != nullptr) { // Possible race condition: The subscriber is being destructed.
+    if(subscriber.get() != nullptr) { // Solves possible race condition: The subscriber is being destructed.
       subscriber->sendDestructively(_sendBuffer);
     }
   }

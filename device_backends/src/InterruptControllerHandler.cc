@@ -52,6 +52,12 @@ namespace ChimeraTK {
   }
 
   //*********************************************************************************************************************/
+  InterruptControllerHandler::InterruptControllerHandler(InterruptControllerHandlerFactory* controllerHandlerFactory,
+      std::vector<uint32_t> controllerID, boost::shared_ptr<TriggerDistributor> parent)
+  : _backend(controllerHandlerFactory->getBackend()), _controllerHandlerFactory(controllerHandlerFactory),
+    _id(std::move(controllerID)), _parent(std::move(parent)), _asyncDomain(_parent->getAsyncDomain()) {}
+
+  //*********************************************************************************************************************/
   template<typename DistributorType>
   boost::shared_ptr<DistributorType> InterruptControllerHandler::getDistributorRecursive(
       std::vector<uint32_t> const& interruptID) {
@@ -66,22 +72,22 @@ namespace ChimeraTK {
     auto distributorIter = _distributors.find(interruptID.front());
     if(distributorIter == _distributors.end()) {
       distributor = boost::make_shared<TriggerDistributor>(
-          _backend.get(), _controllerHandlerFactory, qualifiedInterruptId, shared_from_this());
+          _backend.get(), _controllerHandlerFactory, qualifiedInterruptId, shared_from_this(), _asyncDomain);
       _distributors[interruptID.front()] = distributor;
-      if(_backend->isAsyncReadActive()) {
+      if(_asyncDomain->_isActive) {
         // FIXME: don't invent a version here, use last one
-        distributor->activate(ChimeraTK::Void(), {});
+        distributor->activate(nullptr, {});
       }
     }
     else {
       distributor = distributorIter->second.lock();
       if(!distributor) {
         distributor = boost::make_shared<TriggerDistributor>(
-            _backend.get(), _controllerHandlerFactory, qualifiedInterruptId, shared_from_this());
+            _backend.get(), _controllerHandlerFactory, qualifiedInterruptId, shared_from_this(), _asyncDomain);
         distributorIter->second = distributor;
-        if(_backend->isAsyncReadActive()) {
+        if(_asyncDomain->_isActive) {
           // FIXME: don't invent a version here, use last one
-          distributor->activate(ChimeraTK::Void(), {});
+          distributor->activate(nullptr, {});
         }
       }
     }
@@ -97,9 +103,9 @@ namespace ChimeraTK {
 
   //*********************************************************************************************************************/
 
-  boost::shared_ptr<VariableDistributor<ChimeraTK::Void>> InterruptControllerHandler::getVariableDistributorRecursive(
+  boost::shared_ptr<VariableDistributor<std::nullptr_t>> InterruptControllerHandler::getVariableDistributorRecursive(
       std::vector<uint32_t> const& interruptID) {
-    return getDistributorRecursive<VariableDistributor<ChimeraTK::Void>>(interruptID);
+    return getDistributorRecursive<VariableDistributor<std::nullptr_t>>(interruptID);
   }
 
   //*********************************************************************************************************************/
@@ -108,7 +114,7 @@ namespace ChimeraTK {
     for(auto& distributorIter : _distributors) {
       auto distributor = distributorIter.second.lock();
       if(distributor) {
-        distributor->activate(ChimeraTK::Void{}, version);
+        distributor->activate(nullptr, version);
       }
     }
   }

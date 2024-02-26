@@ -73,7 +73,9 @@ namespace ChimeraTK {
    */
   class AsyncAccessorManager : public boost::enable_shared_from_this<AsyncAccessorManager> {
    public:
-    explicit AsyncAccessorManager(boost::shared_ptr<DeviceBackendImpl> backend) : _backend(backend) {}
+    explicit AsyncAccessorManager(
+        boost::shared_ptr<DeviceBackendImpl> backend, boost::shared_ptr<AsyncDomain> asyncDomain)
+    : _backend(backend), _asyncDomain(std::move(asyncDomain)) {}
     virtual ~AsyncAccessorManager() = default;
 
     /** Request a new subscription. This function internally creates the correct asynchronous accessor and a matching
@@ -119,6 +121,7 @@ namespace ChimeraTK {
     std::map<TransferElementID, std::unique_ptr<AsyncVariable>> _asyncVariables; ///< protected by _variablesMutex
 
     boost::shared_ptr<DeviceBackendImpl> _backend;
+    boost::shared_ptr<AsyncDomain> _asyncDomain;
 
     /// this virtual function lets derived classes react on subscribe / unsubscribe
     /// _variablesMutex locked during call
@@ -190,9 +193,9 @@ namespace ChimeraTK {
     auto asyncVariable = dynamic_cast<AsyncVariableImpl<UserType>*>(untypedAsyncVariable.get());
     // we take all the information we need for the async accessor from AsyncVariable because we cannot use the catalogue
     // here
-    auto newSubscriber = boost::make_shared<AsyncNDRegisterAccessor<UserType>>(_backend, shared_from_this(), name,
-        asyncVariable->getNumberOfChannels(), asyncVariable->getNumberOfSamples(), flags, asyncVariable->getUnit(),
-        asyncVariable->getDescription());
+    auto newSubscriber = boost::make_shared<AsyncNDRegisterAccessor<UserType>>(_backend, shared_from_this(),
+        _asyncDomain, name, asyncVariable->getNumberOfChannels(), asyncVariable->getNumberOfSamples(), flags,
+        asyncVariable->getUnit(), asyncVariable->getDescription());
     // Set the exception backend here. It might be that the accessor is already activated during subscription, and the
     // backend should be set at that point
     newSubscriber->setExceptionBackend(_backend);
@@ -206,7 +209,7 @@ namespace ChimeraTK {
 
     asyncVariable->_asyncAccessor = newSubscriber;
     // Now that the AsyncVariable is complete we can finally activate it.
-    if(_backend->isAsyncReadActive()) {
+    if(_asyncDomain->_isActive) {
       asyncVariable->fillSendBuffer({});
       asyncVariable->send();
     }

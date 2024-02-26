@@ -33,28 +33,6 @@ namespace ChimeraTK {
 
     MetadataCatalogue getMetadataCatalogue() const override { return {}; }
 
-    bool isAsyncReadActive() noexcept final {
-      std::shared_lock lock(_asyncIsActiveMutex);
-      return _asyncIsActive;
-    }
-
-    /**
-     * Execute the lambda function under the shared lock if asynchronous read is active.
-     */
-    template<typename MY_LAMBDA>
-    void executeIfAsyncActive(MY_LAMBDA executeMe);
-
-    /** Deactivate the async active flag and execute the lambda. The function
-     *  guarantees that activateAsyncRead() will wait until the lambda has finished.
-     *  The code is only executed if async read is active.
-     */
-    template<typename MY_LAMBDA>
-    void deactivateAsyncAndExecute(MY_LAMBDA executeMe);
-
-    /** Set the asyncIsActive flag to true under the exclusive lock.
-     */
-    void setAsyncIsActive();
-
     /**
      * Function to be (optionally) implemented by backends if additional actions are needed when switching to the
      * exception state.
@@ -101,67 +79,11 @@ namespace ChimeraTK {
 
   /********************************************************************************************************************/
 
-  template<typename MY_LAMBDA>
-  void DeviceBackendImpl::executeIfAsyncActive(MY_LAMBDA executeMe) {
-    std::shared_lock lock(_asyncIsActiveMutex);
-    if(_asyncIsActive) {
-      executeMe();
-    }
-  }
-
-  /********************************************************************************************************************/
-
   // This function is rather often called and hence implemented as inline in the header for performance reasons.
   inline bool DeviceBackendImpl::isFunctional() const noexcept {
     if(!_opened) return false;
     if(_hasActiveException) return false;
     return true;
-  }
-
-  /********************************************************************************************************************/
-
-  template<typename MY_LAMBDA>
-  void DeviceBackendImpl::deactivateAsyncAndExecute(MY_LAMBDA executeMe) {
-    // We cannot hold the lock the whole time. This would be cause lock order inversion because
-    // there are some container locks which must be held while checking the _asyncIsActive flag.
-    // The same container log is acquired in the lambda function when distributing exceptions, so we cannot hold the
-    // lock when doing so.
-
-    // On the other hand, we must prevent activation while the deactivation (sending exceptions) is still going on.
-    // Hence we introduce an additional variable that deactivation is going on, and make the activation wait, using a
-    // condition variable together with that flag.
-
-    // Whatever happens in here, make sure the _deavtivationInProgress is turned off at the end (by using cppext::finally)
-    auto _ = cppext::finally([&] {
-      { // lock scope
-        std::unique_lock lock(_asyncIsActiveMutex);
-        _deactivationInProgress = false;
-      }
-      _deactivationDoneConditionVar.notify_all();
-    });
-
-    {
-      std::unique_lock lock(_asyncIsActiveMutex);
-      if(!_asyncIsActive) {
-        return;
-      }
-      _asyncIsActive = false;
-      _deactivationInProgress = true;
-    }
-
-    executeMe();
-    // the cppext::finally is executed here, setting back the _deactivationInProgess flags
-  }
-
-  /********************************************************************************************************************/
-
-  inline void DeviceBackendImpl::setAsyncIsActive() {
-    std::unique_lock lock(_asyncIsActiveMutex);
-
-    // wait for an ongoing deactivation to finish
-    _deactivationDoneConditionVar.wait(lock, [&] { return !_deactivationInProgress; });
-
-    _asyncIsActive = true;
   }
 
   /********************************************************************************************************************/

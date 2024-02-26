@@ -21,6 +21,7 @@ namespace ChimeraTK {
   template<typename UserType>
   class VariableDistributor;
   class DeviceBackendImpl;
+  class AsyncDomain;
 
   /** Knows which type of InterruptControllerHandler to create for which interrupt.
    *  It is filled from the meta information from the map file.
@@ -62,13 +63,11 @@ namespace ChimeraTK {
      * which is known to the handler via plain pointer (to avoid shared pointer loops)
      */
     InterruptControllerHandler(InterruptControllerHandlerFactory* controllerHandlerFactory,
-        std::vector<uint32_t> controllerID, boost::shared_ptr<TriggerDistributor> parent)
-    : _backend(controllerHandlerFactory->getBackend()), _controllerHandlerFactory(controllerHandlerFactory),
-      _id(std::move(controllerID)), _parent(std::move(parent)) {}
+        std::vector<uint32_t> controllerID, boost::shared_ptr<TriggerDistributor> parent);
     virtual ~InterruptControllerHandler() = default;
 
     /** Needed to get a new accessor for a certain interrupt. The whole chain will be created recursively if it does not
-     * exist yet. The only valid DistrubutorTypes are TriggeredPollDistributor and VariableDistributor<ChimeraTK::Void>.
+     * exist yet. The only valid DistrubutorTypes are TriggeredPollDistributor and VariableDistributor<std::nullptr_t>.
      */
     template<typename DistributorType>
     [[nodiscard]] boost::shared_ptr<DistributorType> getDistributorRecursive(std::vector<uint32_t> const& interruptID);
@@ -96,13 +95,14 @@ namespace ChimeraTK {
     std::vector<uint32_t> _id;
 
     boost::shared_ptr<TriggerDistributor> _parent;
+    boost::shared_ptr<AsyncDomain> _asyncDomain;
 
     /* These functions are needed so the compiler generates the template code. We cannot put the implementation into
      * this header because it needs full class descriptions, which would lead to circular header inclusions.
      * They are not called, but the template code is.
      */
     boost::shared_ptr<TriggeredPollDistributor> getPollDistributorRecursive(std::vector<uint32_t> const& interruptID);
-    boost::shared_ptr<VariableDistributor<ChimeraTK::Void>> getVariableDistributorRecursive(
+    boost::shared_ptr<VariableDistributor<std::nullptr_t>> getVariableDistributorRecursive(
         std::vector<uint32_t> const& interruptID);
   };
 

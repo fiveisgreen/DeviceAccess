@@ -11,9 +11,9 @@ namespace ChimeraTK {
 
   TriggerDistributor::TriggerDistributor(DeviceBackendImpl* backend,
       InterruptControllerHandlerFactory* controllerHandlerFactory, std::vector<uint32_t> interruptID,
-      boost::shared_ptr<InterruptControllerHandler> parent)
+      boost::shared_ptr<InterruptControllerHandler> parent, boost::shared_ptr<AsyncDomain> asyncDomain)
   : _id(std::move(interruptID)), _backend(backend), _interruptControllerHandlerFactory(controllerHandlerFactory),
-    _parent(std::move(parent)) {}
+    _parent(std::move(parent)), _asyncDomain(std::move(asyncDomain)) {}
 
   //*********************************************************************************************************************/
 
@@ -42,9 +42,10 @@ namespace ChimeraTK {
       auto distributor = weakDistributor->lock();
       if(!distributor) {
         distributor = boost::make_shared<DistributorType>(
-            boost::dynamic_pointer_cast<DeviceBackendImpl>(_backend->shared_from_this()), _id, shared_from_this());
+            boost::dynamic_pointer_cast<DeviceBackendImpl>(_backend->shared_from_this()), _id, shared_from_this(),
+            _asyncDomain);
         *weakDistributor = distributor;
-        if(_backend->isAsyncReadActive()) {
+        if(_asyncDomain->_isActive) {
           distributor->activate({});
         }
       }
@@ -69,15 +70,15 @@ namespace ChimeraTK {
 
   //*********************************************************************************************************************/
 
-  boost::shared_ptr<VariableDistributor<ChimeraTK::Void>> TriggerDistributor::getVariableDistributorRecursive(
+  boost::shared_ptr<VariableDistributor<std::nullptr_t>> TriggerDistributor::getVariableDistributorRecursive(
       std::vector<uint32_t> const& interruptID) {
-    return getDistributorRecursive<VariableDistributor<ChimeraTK::Void>>(interruptID);
+    return getDistributorRecursive<VariableDistributor<std::nullptr_t>>(interruptID);
   }
 
   //*********************************************************************************************************************/
 
-  void TriggerDistributor::distribute([[maybe_unused]] ChimeraTK::Void, VersionNumber version) {
-    if(!_backend->isAsyncReadActive()) {
+  void TriggerDistributor::distribute([[maybe_unused]] std::nullptr_t, VersionNumber version) {
+    if(!_asyncDomain->_isActive) {
       return;
     }
     auto pollDistributor = _pollDistributor.lock();
@@ -96,7 +97,7 @@ namespace ChimeraTK {
 
   //*********************************************************************************************************************/
 
-  void TriggerDistributor::activate([[maybe_unused]] ChimeraTK::Void, VersionNumber version) {
+  void TriggerDistributor::activate([[maybe_unused]] std::nullptr_t, VersionNumber version) {
     auto pollDistributor = _pollDistributor.lock();
     if(pollDistributor) {
       pollDistributor->activate(version);

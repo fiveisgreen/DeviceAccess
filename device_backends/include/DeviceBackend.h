@@ -92,12 +92,6 @@ namespace ChimeraTK {
     virtual void activateAsyncRead() noexcept {}
 
     /**
-     *  Check whether activateAsyncRead() has been called and accessors with access mode wait_for_new_data might send
-     *  new data.
-     */
-    virtual bool isAsyncReadActive() noexcept = 0;
-
-    /**
      * Function to be called by backends when needing to check for an active exception. If an active exception is found,
      * the appropriate ChimeraTK::runtime_error is thrown by this function.
      */

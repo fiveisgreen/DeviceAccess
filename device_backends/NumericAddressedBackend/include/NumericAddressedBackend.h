@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: LGPL-3.0-or-later
 #pragma once
 
-#include "AsyncDomain.h"
+#include "AsyncDomainImpl.h"
 #include "DeviceBackendImpl.h"
 #include "InterruptControllerHandler.h"
 #include "NumericAddressedRegisterCatalogue.h"
@@ -176,12 +176,12 @@ namespace ChimeraTK {
      *  modified. This map is filled in the constructor. The rest of the code is accessing it through the const
      *  _primaryInterruptDistributors reference, which is thread safe.
      */
-    std::map<uint32_t, std::unique_ptr<AsyncDomain<TriggerDistributor, ChimeraTK::Void>>>
+    std::map<uint32_t, std::unique_ptr<AsyncDomainImpl<TriggerDistributor, std::nullptr_t>>>
         _primaryInterruptDistributorsNonConst;
 
     /** Access to const members of std::containers is thread safe. So we use a const reference throughout the code.
      */
-    std::map<uint32_t, std::unique_ptr<AsyncDomain<TriggerDistributor, ChimeraTK::Void>>> const&
+    std::map<uint32_t, std::unique_ptr<AsyncDomainImpl<TriggerDistributor, std::nullptr_t>>> const&
         _primaryInterruptDistributors{_primaryInterruptDistributorsNonConst};
 
     InterruptControllerHandlerFactory _interruptControllerHandlerFactory{this};

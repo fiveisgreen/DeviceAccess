@@ -45,10 +45,12 @@ namespace ChimeraTK {
       // in turn have shared pointers to the backend, which cannot be created in the backend constructor.
       // They will be added when accessors are subscribing.
       for(const auto& interruptID : _registerMap.getListOfInterrupts()) {
-        auto distributor = boost::make_shared<TriggerDistributor>(
-            this, &_interruptControllerHandlerFactory, std::vector<uint32_t>({interruptID.front()}), nullptr);
-        _primaryInterruptDistributorsNonConst.try_emplace(
-            interruptID.front(), std::make_unique<AsyncDomain<TriggerDistributor, ChimeraTK::Void>>(distributor, this));
+        auto creatorFct = [&](boost::shared_ptr<AsyncDomain> asyncDomain) {
+          return boost::make_shared<TriggerDistributor>(this, &_interruptControllerHandlerFactory,
+              std::vector<uint32_t>({interruptID.front()}), nullptr, asyncDomain);
+        };
+        _primaryInterruptDistributorsNonConst.try_emplace(interruptID.front(),
+            std::make_unique<AsyncDomainImpl<TriggerDistributor, std::nullptr_t>>(creatorFct, this));
       }
     }
   }
@@ -219,11 +221,10 @@ namespace ChimeraTK {
   /********************************************************************************************************************/
 
   void NumericAddressedBackend::activateAsyncRead() noexcept {
-    setAsyncIsActive();
 
     VersionNumber v{};
     for(const auto& it : _primaryInterruptDistributors) {
-      it.second->activate(ChimeraTK::Void(), v);
+      it.second->activate(nullptr, v);
     }
   }
 
@@ -234,11 +235,9 @@ namespace ChimeraTK {
       throw ChimeraTK::runtime_error(getActiveExceptionMessage());
     }
     catch(...) {
-      deactivateAsyncAndExecute([&] {
         for(const auto& it : _primaryInterruptDistributors) {
           it.second->sendException(std::current_exception());
         }
-      });
     }
   }
 
@@ -250,7 +249,9 @@ namespace ChimeraTK {
   /********************************************************************************************************************/
 
   void NumericAddressedBackend::close() {
-    deactivateAsyncAndExecute([] {});
+    for(const auto& it : _primaryInterruptDistributors) {
+        it.second->deactivate();
+    }
     closeImpl();
   }
 
@@ -260,7 +261,7 @@ namespace ChimeraTK {
     // This function just makes sure that at() is used to access the _primaryInterruptDistributors map,
     // which guarantees that the map is not altered.
     VersionNumber v{};
-    _primaryInterruptDistributors.at(interruptNumber)->distribute(ChimeraTK::Void(), v);
+    _primaryInterruptDistributors.at(interruptNumber)->distribute(nullptr, v);
     return v;
   }
 

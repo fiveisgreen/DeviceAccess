@@ -21,7 +21,7 @@ namespace ChimeraTK {
   class TriggeredPollDistributor : public AsyncAccessorManager {
    public:
     TriggeredPollDistributor(boost::shared_ptr<DeviceBackendImpl> backend, std::vector<uint32_t> interruptID,
-        boost::shared_ptr<TriggerDistributor> parent);
+        boost::shared_ptr<TriggerDistributor> parent, boost::shared_ptr<AsyncDomain> asyncDomain);
 
     /** Poll all sync variables and push the data via their async counterparts. Creates a new VersionNumber and
      * sends all data with this version.
@@ -84,7 +84,7 @@ namespace ChimeraTK {
     auto syncAccessor = _backend->getRegisterAccessor<UserType>(
         descriptor.name, descriptor.numberOfWords, descriptor.wordOffsetInRegister, synchronousFlags);
     // read the initial value before adding it to the transfer group
-    if(_backend->isAsyncReadActive()) {
+    if(_asyncDomain->_isActive) {
       try {
         syncAccessor->read();
       }

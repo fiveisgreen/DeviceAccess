@@ -14,7 +14,7 @@ namespace ChimeraTK {
   class VariableDistributor : public AsyncAccessorManager {
    public:
     VariableDistributor(boost::shared_ptr<DeviceBackendImpl> backend, std::vector<uint32_t> interruptID,
-        boost::shared_ptr<TriggerDistributor> parent);
+        boost::shared_ptr<TriggerDistributor> parent, boost::shared_ptr<AsyncDomain> asyncDomain);
 
     template<typename UserType>
     std::unique_ptr<AsyncVariable> createAsyncVariable(AccessorInstanceDescriptor const& descriptor);
@@ -33,8 +33,9 @@ namespace ChimeraTK {
   //*********************************************************************************************************************/
   template<typename SourceType>
   VariableDistributor<SourceType>::VariableDistributor(boost::shared_ptr<DeviceBackendImpl> backend,
-      std::vector<uint32_t> interruptID, boost::shared_ptr<TriggerDistributor> parent)
-  : AsyncAccessorManager(backend), _id(std::move(interruptID)), _parent(std::move(parent)) {
+      std::vector<uint32_t> interruptID, boost::shared_ptr<TriggerDistributor> parent,
+      boost::shared_ptr<AsyncDomain> asyncDomain)
+  : AsyncAccessorManager(backend, asyncDomain), _id(std::move(interruptID)), _parent(std::move(parent)) {
     FILL_VIRTUAL_FUNCTION_TEMPLATE_VTABLE(createAsyncVariable);
   }
 
@@ -49,7 +50,7 @@ namespace ChimeraTK {
   void VariableDistributor<SourceType>::distribute(VersionNumber version) {
     // Returning here is an optimisation. The deactivation can happen any time after checking the flag, and the timing
     // races are resolved by holding the lock when filling the queue
-    if(!_backend->isAsyncReadActive()) {
+    if(!_asyncDomain->_isActive) {
       return;
     }
 
@@ -83,7 +84,7 @@ namespace ChimeraTK {
   // currently only for void
   template<>
   template<typename UserType>
-  std::unique_ptr<AsyncVariable> VariableDistributor<ChimeraTK::Void>::createAsyncVariable(
+  std::unique_ptr<AsyncVariable> VariableDistributor<std::nullptr_t>::createAsyncVariable(
       [[maybe_unused]] AccessorInstanceDescriptor const& descriptor) {
     // for the full implementation
     // - extract size from catalogue and instance descriptor

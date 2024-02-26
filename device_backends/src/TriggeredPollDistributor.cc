@@ -8,14 +8,16 @@
 namespace ChimeraTK {
 
   TriggeredPollDistributor::TriggeredPollDistributor(boost::shared_ptr<DeviceBackendImpl> backend,
-      std::vector<uint32_t> interruptID, boost::shared_ptr<TriggerDistributor> parent)
-  : AsyncAccessorManager(std::move(backend)), _id(std::move(interruptID)), _parent(std::move(parent)) {
+      std::vector<uint32_t> interruptID, boost::shared_ptr<TriggerDistributor> parent,
+      boost::shared_ptr<AsyncDomain> asyncDomain)
+  : AsyncAccessorManager(std::move(backend), std::move(asyncDomain)), _id(std::move(interruptID)),
+    _parent(std::move(parent)) {
     FILL_VIRTUAL_FUNCTION_TEMPLATE_VTABLE(createAsyncVariable);
   }
 
   //*********************************************************************************************************************/
   void TriggeredPollDistributor::trigger(VersionNumber version) {
-    if(!_backend->isAsyncReadActive()) {
+    if(!_asyncDomain->_isActive) {
       return;
     }
 

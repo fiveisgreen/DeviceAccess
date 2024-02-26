@@ -69,7 +69,8 @@ namespace ChimeraTK {
           _backend.get(), _controllerHandlerFactory, qualifiedInterruptId, shared_from_this());
       _distributors[interruptID.front()] = distributor;
       if(_backend->isAsyncReadActive()) {
-        distributor->activate({});
+        // FIXME: don't invent a version here, use last one
+        distributor->activate(ChimeraTK::Void(), {});
       }
     }
     else {
@@ -79,7 +80,8 @@ namespace ChimeraTK {
             _backend.get(), _controllerHandlerFactory, qualifiedInterruptId, shared_from_this());
         distributorIter->second = distributor;
         if(_backend->isAsyncReadActive()) {
-          distributor->activate({});
+          // FIXME: don't invent a version here, use last one
+          distributor->activate(ChimeraTK::Void(), {});
         }
       }
     }
@@ -106,7 +108,7 @@ namespace ChimeraTK {
     for(auto& distributorIter : _distributors) {
       auto distributor = distributorIter.second.lock();
       if(distributor) {
-        distributor->activate(version);
+        distributor->activate(ChimeraTK::Void{}, version);
       }
     }
   }

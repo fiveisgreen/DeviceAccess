@@ -29,7 +29,7 @@ namespace ChimeraTK {
             std::lock_guard distrubutorsLock(_distributorsMutex);
             auto distributor = _distributors.at(i).lock();
             if(distributor) {
-              distributor->trigger(version);
+              distributor->distribute(ChimeraTK::Void(), version);
             }
           }
           catch(std::out_of_range&) {

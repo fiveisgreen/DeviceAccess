@@ -5,6 +5,8 @@
 #include "AsyncNDRegisterAccessor.h"
 #include "DeviceBackend.h"
 #include "NumericAddressedRegisterCatalogue.h"
+#include "TriggerDistributor.h"
+#include "TriggeredPollDistributor.h"
 #include "VariableDistributor.h"
 #include "VersionNumber.h"
 
@@ -17,7 +19,8 @@ namespace ChimeraTK {
   template<typename TargetType, typename BackendDataType>
   class AsyncDomain {
    public:
-    explicit AsyncDomain(boost::shared_ptr<TargetType> target) : _target(target) {}
+    explicit AsyncDomain(boost::shared_ptr<TargetType> target, DeviceBackend* backend)
+    : _backend(backend), _target(target) {}
 
     void distribute(BackendDataType data, VersionNumber version);
     void activate(BackendDataType data, VersionNumber version);
@@ -28,7 +31,9 @@ namespace ChimeraTK {
     boost::shared_ptr<AsyncNDRegisterAccessor<UserDataType>> subscribe(
         RegisterPath name, size_t numberOfWords, size_t wordOffsetInRegister, AccessModeFlags flags);
 
-    boost::weak_ptr<DeviceBackend> _backend;
+    // FIXME: Make a weak pointer out of this
+    DeviceBackend* _backend;
+    // boost::weak_ptr<DeviceBackend> _backend;
 
    private:
     // The mutex has to be recursive because an exception can occur within distribute, which is automatically triggering
@@ -102,17 +107,18 @@ namespace ChimeraTK {
       RegisterPath name, size_t numberOfWords, size_t wordOffsetInRegister, AccessModeFlags flags) {
     std::lock_guard l(_mutex);
 
-    _isActive = false;
-
     if constexpr(std::is_same<TargetType, VariableDistributor<UserDataType>>::value) {
       return _target->subscribe(name, numberOfWords, wordOffsetInRegister, flags);
     }
-    else if constexpr(std::is_same<TargetType, TriggeredPollDistributor>::value) {
+    else if constexpr(std::is_same<TargetType, TriggerDistributor>::value) {
       // FIXME: Move this code to the TriggeredPollDistributor!
-      const auto& backendCatalogue = _backend.lock()->getRegisterCatalogue().getImpl();
+      // const auto& backendCatalogue = _backend.lock()->getRegisterCatalogue().getImpl();
+      auto catalogue = _backend->getRegisterCatalogue(); // need to store the clone you get
+      const auto& backendCatalogue = catalogue.getImpl();
       // This code only works for backends which use the NumericAddressedRegisterCatalogue because we need the
       // interrupt description which is specific for those backends and not in the general catalogue.
       // If the cast fails, it will throw an exception.
+      auto removeMe = backendCatalogue.getRegister(name);
       const auto& numericCatalogue = dynamic_cast<const NumericAddressedRegisterCatalogue&>(backendCatalogue);
       auto registerInfo = numericCatalogue.getBackendRegister(name);
 
@@ -128,6 +134,9 @@ namespace ChimeraTK {
 
       return distributor->template subscribe<UserDataType>(name, numberOfWords, wordOffsetInRegister, flags);
     }
+
+    assert(false); // The code should never end up here.
+    return {nullptr};
   }
 
 } // namespace ChimeraTK

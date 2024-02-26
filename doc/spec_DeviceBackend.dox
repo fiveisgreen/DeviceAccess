@@ -1,5 +1,5 @@
 namespace ChimeraTK {
-/**
+/*
 \page spec_DeviceBackend Technical specification DeviceBackend
 
 > **This is a stub to collect snipptes which are not to be forgotten when writing the spec.**

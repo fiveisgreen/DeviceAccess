@@ -24,12 +24,12 @@ namespace ChimeraTK {
    */
   class TriggerDistributor : public boost::enable_shared_from_this<TriggerDistributor> {
    public:
-    void trigger(VersionNumber v);
+    void distribute(ChimeraTK::Void, VersionNumber v);
 
     TriggerDistributor(DeviceBackendImpl* backend, InterruptControllerHandlerFactory* controllerHandlerFactory,
         std::vector<uint32_t> interruptID, boost::shared_ptr<InterruptControllerHandler> parent);
 
-    void activate(VersionNumber v);
+    void activate(ChimeraTK::Void, VersionNumber v);
     void sendException(const std::exception_ptr& e);
 
     boost::shared_ptr<TriggeredPollDistributor> getPollDistributorRecursive(std::vector<uint32_t> const& interruptID);

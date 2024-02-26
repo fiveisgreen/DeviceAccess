@@ -76,7 +76,7 @@ namespace ChimeraTK {
 
   //*********************************************************************************************************************/
 
-  void TriggerDistributor::trigger(VersionNumber version) {
+  void TriggerDistributor::distribute([[maybe_unused]] ChimeraTK::Void, VersionNumber version) {
     if(!_backend->isAsyncReadActive()) {
       return;
     }
@@ -96,7 +96,7 @@ namespace ChimeraTK {
 
   //*********************************************************************************************************************/
 
-  void TriggerDistributor::activate(VersionNumber version) {
+  void TriggerDistributor::activate([[maybe_unused]] ChimeraTK::Void, VersionNumber version) {
     auto pollDistributor = _pollDistributor.lock();
     if(pollDistributor) {
       pollDistributor->activate(version);

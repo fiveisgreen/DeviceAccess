@@ -10,8 +10,6 @@
 #include "NumericAddressedBackendMuxedRegisterAccessor.h"
 #include "NumericAddressedBackendRegisterAccessor.h"
 #include "TriggerDistributor.h"
-#include "TriggeredPollDistributor.h"
-#include "VariableDistributor.h"
 #include <nlohmann/json.hpp>
 
 namespace ChimeraTK {
@@ -47,9 +45,10 @@ namespace ChimeraTK {
       // in turn have shared pointers to the backend, which cannot be created in the backend constructor.
       // They will be added when accessors are subscribing.
       for(const auto& interruptID : _registerMap.getListOfInterrupts()) {
-        _primaryInterruptDistributorsNonConst.try_emplace(interruptID.front(),
-            boost::make_shared<TriggerDistributor>(
-                this, &_interruptControllerHandlerFactory, std::vector<uint32_t>({interruptID.front()}), nullptr));
+        auto distributor = boost::make_shared<TriggerDistributor>(
+            this, &_interruptControllerHandlerFactory, std::vector<uint32_t>({interruptID.front()}), nullptr);
+        _primaryInterruptDistributorsNonConst.try_emplace(
+            interruptID.front(), std::make_unique<AsyncDomain<TriggerDistributor, ChimeraTK::Void>>(distributor, this));
       }
     }
   }
@@ -138,16 +137,9 @@ namespace ChimeraTK {
       }
 
       const auto& primaryDistributor = _primaryInterruptDistributors.at(registerInfo.interruptId.front());
-      boost::shared_ptr<AsyncAccessorManager> distributor;
-      if(registerInfo.getDataDescriptor().fundamentalType() == DataDescriptor::FundamentalType::nodata) {
-        distributor = primaryDistributor->getVariableDistributorRecursive(registerInfo.interruptId);
-      }
-      else {
-        distributor = primaryDistributor->getPollDistributorRecursive(registerInfo.interruptId);
-      }
 
       auto newSubscriber =
-          distributor->template subscribe<UserType>(registerPathName, numberOfWords, wordOffsetInRegister, flags);
+          primaryDistributor->subscribe<UserType>(registerPathName, numberOfWords, wordOffsetInRegister, flags);
       // The new subscriber might already be activated. Hence the exception backend is already set by the interrupt
       // distributor.
       startInterruptHandlingThread(registerInfo.interruptId.front());
@@ -231,7 +223,7 @@ namespace ChimeraTK {
 
     VersionNumber v{};
     for(const auto& it : _primaryInterruptDistributors) {
-      it.second->activate(v);
+      it.second->activate(ChimeraTK::Void(), v);
     }
   }
 
@@ -268,7 +260,7 @@ namespace ChimeraTK {
     // This function just makes sure that at() is used to access the _primaryInterruptDistributors map,
     // which guarantees that the map is not altered.
     VersionNumber v{};
-    _primaryInterruptDistributors.at(interruptNumber)->trigger(v);
+    _primaryInterruptDistributors.at(interruptNumber)->distribute(ChimeraTK::Void(), v);
     return v;
   }
 

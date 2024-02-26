@@ -14,7 +14,7 @@ namespace ChimeraTK {
       // FIXME: We need a cleanup function which removes the map entry. Otherwise we might
       // be stuck with a bad weak pointer wich is tried in each handle() call.
       if(distributor) {
-        distributor->trigger(version);
+        distributor->distribute(ChimeraTK::Void(), version);
       }
     }
   }

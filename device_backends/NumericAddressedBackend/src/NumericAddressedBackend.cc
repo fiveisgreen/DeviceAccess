@@ -50,7 +50,7 @@ namespace ChimeraTK {
               std::vector<uint32_t>({interruptID.front()}), nullptr, asyncDomain);
         };
         _primaryInterruptDistributorsNonConst.try_emplace(interruptID.front(),
-            std::make_unique<AsyncDomainImpl<TriggerDistributor, std::nullptr_t>>(creatorFct, this));
+            boost::make_shared<AsyncDomainImpl<TriggerDistributor, std::nullptr_t>>(creatorFct, this));
       }
     }
   }

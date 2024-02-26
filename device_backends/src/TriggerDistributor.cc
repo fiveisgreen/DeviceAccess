@@ -32,7 +32,7 @@ namespace ChimeraTK {
       if constexpr(std::is_same<DistributorType, TriggeredPollDistributor>::value) {
         weakDistributor = &_pollDistributor;
       }
-      else if constexpr(std::is_same<DistributorType, VariableDistributor<ChimeraTK::Void>>::value) {
+      else if constexpr(std::is_same<DistributorType, VariableDistributor<std::nullptr_t>>::value) {
         weakDistributor = &_variableDistributor;
       }
       else {

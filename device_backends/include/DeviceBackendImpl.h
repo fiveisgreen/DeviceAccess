@@ -59,11 +59,6 @@ namespace ChimeraTK {
     std::atomic<bool> _opened{false};
 
    private:
-    std::shared_mutex _asyncIsActiveMutex;
-    bool _asyncIsActive{false};
-    bool _deactivationInProgress{false}; // also protected by the _asyncIsActiveMutex
-    std::condition_variable_any _deactivationDoneConditionVar;
-
     /** flag if backend is in an exception state */
     std::atomic<bool> _hasActiveException{false};
 

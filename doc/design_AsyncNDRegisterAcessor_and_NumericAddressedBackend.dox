@@ -76,7 +76,7 @@ digraph reverse_ownership_scheme {
   Backend -> thirdPrimaryDistributor[color=blue, fontcolor=blue]
 
   subgraph cluster_distributor1{
-   label="VariableDistributor" URL="\ref VariableDistributor<Void>";
+   label="VariableDistributor<Void>" URL="\ref VariableDistributor";
    distrVars1 [ label="<distrVar1>VoidAsyncVariable|<distrVar2>VoidAsyncVariable|..."];
   }
 
@@ -150,7 +150,7 @@ digraph reverse_ownership_scheme {
   TransferGroup2->TriggerDistributor2 [ ltail=cluster_PollDistributor2, label=" " ];
 
   subgraph cluster_distributor2{
-   label="VariableDistributor" URL="\ref VariableDistributor<Void>";
+   label="VariableDistributor<Void>" URL="\ref VariableDistributor";
    distrVars2 [ label="<distrVar3>VoidAsyncVariable|<distrVar4>VoidAsyncVariable|..."];
   }
 

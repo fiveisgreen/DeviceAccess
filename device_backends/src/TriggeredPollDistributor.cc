@@ -21,8 +21,6 @@ namespace ChimeraTK {
       return;
     }
 
-    std::lock_guard<std::recursive_mutex> variablesLock(_variablesMutex);
-
     try {
       _transferGroup->read();
 

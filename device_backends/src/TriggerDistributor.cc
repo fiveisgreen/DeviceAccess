@@ -20,8 +20,6 @@ namespace ChimeraTK {
   template<typename DistributorType>
   boost::shared_ptr<DistributorType> TriggerDistributor::getDistributorRecursive(
       std::vector<uint32_t> const& interruptID) {
-    std::lock_guard<std::recursive_mutex> creationLock(_creationMutex);
-
     if(interruptID.size() == 1) {
       // return the distributor from this instance, not a nested one
 

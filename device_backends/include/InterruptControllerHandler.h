@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: LGPL-3.0-or-later
 #pragma once
 
-#include "SupportedUserTypes.h"
 #include "VersionNumber.h"
 
 #include <boost/enable_shared_from_this.hpp>
@@ -11,7 +10,6 @@
 #include <functional>
 #include <map>
 #include <memory>
-#include <mutex>
 #include <vector>
 
 namespace ChimeraTK {
@@ -81,11 +79,7 @@ namespace ChimeraTK {
     virtual void handle(VersionNumber version) = 0;
 
    protected:
-    /** Each known interrupt has its own distributor. Must only be accessed while holding the _distributorsMutex to
-     * protect distribution from concurrent creation.
-     */
     std::map<uint32_t, boost::weak_ptr<TriggerDistributor>> _distributors;
-    std::mutex _distributorsMutex;
 
     boost::shared_ptr<DeviceBackendImpl> _backend;
     InterruptControllerHandlerFactory* _controllerHandlerFactory;

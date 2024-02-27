@@ -26,7 +26,6 @@ namespace ChimeraTK {
       for(uint32_t i = 0; i < 32; ++i) {
         if(_activeInterrupts->accessData(0) & 0x1U << i) {
           try {
-            std::lock_guard distrubutorsLock(_distributorsMutex);
             auto distributor = _distributors.at(i).lock();
             if(distributor) {
               distributor->distribute(nullptr, version);

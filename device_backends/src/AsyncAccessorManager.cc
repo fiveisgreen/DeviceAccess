@@ -7,8 +7,6 @@ namespace ChimeraTK {
 
   //*********************************************************************************************************************/
   void AsyncAccessorManager::unsubscribe(TransferElementID id) {
-    std::lock_guard<std::recursive_mutex> variablesLock(_variablesMutex);
-
     // The destructor of the AsyncVariable implementation must do all necessary clean-up
     _asyncVariables.erase(id);
 
@@ -17,7 +15,6 @@ namespace ChimeraTK {
 
   //*********************************************************************************************************************/
   void AsyncAccessorManager::sendException(const std::exception_ptr& e) {
-    std::lock_guard<std::recursive_mutex> variablesLock(_variablesMutex);
     for(auto& var : _asyncVariables) {
       var.second->sendException(e);
     }

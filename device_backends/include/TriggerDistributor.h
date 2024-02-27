@@ -7,8 +7,6 @@
 
 #include <boost/make_shared.hpp>
 
-#include <mutex>
-
 namespace ChimeraTK {
   class InterruptControllerHandlerFactory;
   class InterruptControllerHandler;
@@ -51,7 +49,6 @@ namespace ChimeraTK {
     boost::shared_ptr<AsyncDomain> getAsyncDomain() { return _asyncDomain; }
 
    protected:
-    std::recursive_mutex _creationMutex;
     std::vector<uint32_t> _id;
     // We have to use a plain pointer here because the primary trigger distributors are already created in the
     // constructor, where the shared_ptr is not available yet. It is just set there and only used later.

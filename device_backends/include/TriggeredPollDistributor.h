@@ -7,7 +7,6 @@
 #include "TransferGroup.h"
 
 #include <memory>
-#include <mutex>
 
 namespace ChimeraTK {
   /** The TriggerPollDistributor has two main functionalities:

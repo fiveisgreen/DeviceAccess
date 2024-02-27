@@ -4,7 +4,6 @@
 
 #include "AsyncNDRegisterAccessor.h"
 
-#include <mutex>
 #include <utility>
 
 namespace ChimeraTK {
@@ -75,7 +74,7 @@ namespace ChimeraTK {
    public:
     explicit AsyncAccessorManager(
         boost::shared_ptr<DeviceBackendImpl> backend, boost::shared_ptr<AsyncDomain> asyncDomain)
-    : _backend(backend), _asyncDomain(std::move(asyncDomain)) {}
+    : _backend(std::move(backend)), _asyncDomain(std::move(asyncDomain)) {}
     virtual ~AsyncAccessorManager() = default;
 
     /** Request a new subscription. This function internally creates the correct asynchronous accessor and a matching
@@ -112,19 +111,12 @@ namespace ChimeraTK {
     DEFINE_VIRTUAL_FUNCTION_TEMPLATE_VTABLE(
         createAsyncVariable, std::unique_ptr<AsyncVariable>(AccessorInstanceDescriptor const&));
 
-    // This mutex protects the _asyncVariables container and all its contents. You must not
-    // touch those variables without holding the mutex. It serves two purposes:
-    // 1. Variables can be added or removed from the container at any time. It is not safe to handle an element without
-    // holding the lock.
-    // 2. The elements in the container are not thread-safe as well. We use the same lock as it is needed for 1. anyway.
-    std::recursive_mutex _variablesMutex;
-    std::map<TransferElementID, std::unique_ptr<AsyncVariable>> _asyncVariables; ///< protected by _variablesMutex
+    std::map<TransferElementID, std::unique_ptr<AsyncVariable>> _asyncVariables;
 
     boost::shared_ptr<DeviceBackendImpl> _backend;
     boost::shared_ptr<AsyncDomain> _asyncDomain;
 
     /// this virtual function lets derived classes react on subscribe / unsubscribe
-    /// _variablesMutex locked during call
     virtual void asyncVariableMapChanged() {}
   };
 
@@ -185,8 +177,6 @@ namespace ChimeraTK {
   template<typename UserType>
   boost::shared_ptr<AsyncNDRegisterAccessor<UserType>> AsyncAccessorManager::subscribe(
       RegisterPath name, size_t numberOfWords, size_t wordOffsetInRegister, AccessModeFlags flags) {
-    std::lock_guard<std::recursive_mutex> variablesLock(_variablesMutex);
-
     AccessorInstanceDescriptor descriptor(name, typeid(UserType), numberOfWords, wordOffsetInRegister, flags);
     auto untypedAsyncVariable = CALL_VIRTUAL_FUNCTION_TEMPLATE(createAsyncVariable, UserType, descriptor);
 

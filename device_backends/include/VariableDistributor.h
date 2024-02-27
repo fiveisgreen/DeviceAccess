@@ -6,7 +6,6 @@
 #include "InterruptControllerHandler.h"
 
 #include <memory>
-#include <mutex>
 
 namespace ChimeraTK {
 
@@ -54,7 +53,6 @@ namespace ChimeraTK {
       return;
     }
 
-    std::lock_guard<std::recursive_mutex> variablesLock(_variablesMutex);
     for(auto& var : _asyncVariables) {
       var.second->fillSendBuffer(version);
       var.second->send(); // function from  the AsyncVariable base class

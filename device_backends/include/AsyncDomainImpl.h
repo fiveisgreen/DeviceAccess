@@ -105,6 +105,11 @@ namespace ChimeraTK {
   void AsyncDomainImpl<TargetType, BackendDataType>::sendException(const std::exception_ptr& e) {
     std::lock_guard l(_mutex);
 
+    if(!_isActive) {
+      // don't send exceptions if async read is off
+      return;
+    }
+
     _isActive = false;
     auto target = _target.lock();
     if(!target) {

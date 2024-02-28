@@ -3,6 +3,7 @@
 
 #include "NumericAddressedBackend.h"
 
+#include "AsyncDomainsContainer.h"
 #include "Exception.h"
 #include "MapFileParser.h"
 #include "NumericAddress.h"
@@ -44,14 +45,17 @@ namespace ChimeraTK {
       // They don't have controller handlers (nested interrupts) yet because these can hold accessors, which
       // in turn have shared pointers to the backend, which cannot be created in the backend constructor.
       // They will be added when accessors are subscribing.
+      auto domainsContainer = std::make_unique<AsyncDomainsContainer<uint32_t>>(this);
       for(const auto& interruptID : _registerMap.getListOfInterrupts()) {
         auto creatorFct = [&](boost::shared_ptr<AsyncDomain> asyncDomain) {
           return boost::make_shared<TriggerDistributor>(this, &_interruptControllerHandlerFactory,
               std::vector<uint32_t>({interruptID.front()}), nullptr, asyncDomain);
         };
-        _primaryInterruptDistributorsNonConst.try_emplace(interruptID.front(),
-            boost::make_shared<AsyncDomainImpl<TriggerDistributor, std::nullptr_t>>(creatorFct, this));
+        auto asyncDomain = boost::make_shared<AsyncDomainImpl<TriggerDistributor, std::nullptr_t>>(creatorFct, this);
+        _primaryInterruptDistributorsNonConst.try_emplace(interruptID.front(), asyncDomain);
+        domainsContainer->asyncDomains.try_emplace(interruptID.front(), asyncDomain);
       }
+      _asyncDomainsContainer = std::move(domainsContainer);
     }
   }
 
@@ -230,14 +234,7 @@ namespace ChimeraTK {
   /********************************************************************************************************************/
 
   void NumericAddressedBackend::setExceptionImpl() noexcept {
-    try {
-      throw ChimeraTK::runtime_error(getActiveExceptionMessage());
-    }
-    catch(...) {
-      for(const auto& it : _primaryInterruptDistributors) {
-        it.second->sendException(std::current_exception());
-      }
-    }
+    _asyncDomainsContainer->sendExceptions();
   }
 
   /********************************************************************************************************************/

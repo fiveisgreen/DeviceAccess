@@ -22,6 +22,7 @@ namespace ChimeraTK {
         std::function<boost::shared_ptr<TargetType>(boost::shared_ptr<AsyncDomain>)> creatorFunction,
         DeviceBackend* backend)
     : _creatorFunction(creatorFunction), _backend(backend) {}
+    virtual ~AsyncDomainImpl() = default;
 
     void distribute(BackendDataType data, VersionNumber version);
     void activate(BackendDataType data, VersionNumber version);

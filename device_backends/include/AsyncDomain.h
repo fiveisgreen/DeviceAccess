@@ -12,6 +12,7 @@ namespace ChimeraTK {
   class AsyncDomain : public boost::enable_shared_from_this<AsyncDomain> {
    public:
     virtual void sendException(const std::exception_ptr& e) noexcept = 0;
+    virtual ~AsyncDomain() = default;
 
    protected:
     // The mutex has to be recursive because an exception can occur within distribute, which is automatically triggering

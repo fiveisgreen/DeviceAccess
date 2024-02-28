@@ -16,54 +16,72 @@ namespace ChimeraTK {
   template<typename KeyType>
   class AsyncDomainsContainer : public AsyncDomainsContainerBase {
    public:
-    explicit AsyncDomainsContainer(DeviceBackendImpl* backend) : _backend(backend) {}
+    explicit AsyncDomainsContainer(DeviceBackendImpl* backend);
     ~AsyncDomainsContainer();
 
     std::map<KeyType, boost::shared_ptr<AsyncDomain>> asyncDomains;
 
-    bool isSendingExceptions() { return _isSendingExceptions; }
-    void sendExceptions();
-
    protected:
-    std::atomic_bool _isSendingExceptions{false};
     DeviceBackendImpl* _backend;
-    cppext::semaphore _startExceptionDistribution;
     void distributeExceptions();
     std::thread _distributorThread;
+    class StopThread {};
   };
 
   /*******************************************************************************************************************/
 
   template<typename KeyType>
-  void AsyncDomainsContainer<KeyType>::sendExceptions() {
-    if(_isSendingExceptions) {
-      // this check also ensures that the semaphore is reset because it is done before clearing the flag
-      throw ChimeraTK::logic_error(
-          "AsyncDomainsContainer::sendExceptions() called before previous distribution was ready.");
+  void AsyncDomainsContainer<KeyType>::distributeExceptions() {
+    std::string exceptionMessage;
+    while(true) {
+      // block to wait until setException has been called
+      try {
+        _startExceptionDistribution.pop_wait(exceptionMessage);
+      }
+      catch(StopThread&) {
+        return;
+      }
+
+      try {
+        throw ChimeraTK::runtime_error(exceptionMessage);
+      }
+      catch(...) {
+        for(auto& keyAndDomain : asyncDomains) {
+          keyAndDomain.second->sendException(std::current_exception());
+        }
+      }
+
+      _isSendingExceptions = false;
     }
-    _isSendingExceptions = true;
-
-    assert(!_startExceptionDistribution.is_ready());
-    _startExceptionDistribution.unlock();
   }
-
-  /*******************************************************************************************************************/
 
   template<typename KeyType>
-  void AsyncDomainsContainer<KeyType>::distributeExceptions() {
-    // block to wait until setException has been called
-    _startExceptionDistribution.wait_and_reset();
-
-    try {
-      throw ChimeraTK::runtime_error(_backend->getActiveExceptionMessage());
-    }
-    catch(ChimeraTK::runtime_error& e) {
-      for(auto& keyAndDomain : asyncDomains) {
-        keyAndDomain.second->sendException(e);
-      }
-    }
-
-    _isSendingExceptions = false;
+  AsyncDomainsContainer<KeyType>::AsyncDomainsContainer(DeviceBackendImpl* backend)
+  : AsyncDomainsContainerBase(backend) {
+    _distributorThread = std::thread([&] { distributeExceptions(); });
   }
 
+  template<typename KeyType>
+  AsyncDomainsContainer<KeyType>::~AsyncDomainsContainer() {
+    try {
+      try {
+        throw StopThread();
+      }
+      catch(...) {
+        _startExceptionDistribution.push_overwrite_exception(std::current_exception());
+      }
+      // Now we can join the thread.
+      _distributorThread.join();
+    }
+    catch(std::system_error& e) {
+      // Destructors must not throw. All exceptions that can occur here are system errors, which only show up if there
+      // is no hope anyway. All we can do it terminate.
+      std::cerr << "Unrecovarable system error in ~AsyncDomainsContainer(): " << e.what() << " !!! TERMINATING !!!"
+                << std::endl;
+      std::terminate();
+    }
+
+    // Unblock a potentially waiting open call
+    _isSendingExceptions = false;
+  }
 } // namespace ChimeraTK

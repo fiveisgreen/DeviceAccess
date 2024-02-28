@@ -3,11 +3,18 @@
 
 #include "DeviceBackendImpl.h"
 
+#include <unistd.h>
+
 namespace ChimeraTK {
 
   /********************************************************************************************************************/
 
   void DeviceBackendImpl::setOpenedAndClearException() noexcept {
+    // busy-wait until all exceptions have been distributed to the AsyncAccessors
+    while(_asyncDomainsContainer->isSendingExceptions()) {
+      usleep(10000);
+    }
+
     _opened = true;
     _hasActiveException = false;
     std::lock_guard<std::mutex> lk(_mx_activeExceptionMessage);

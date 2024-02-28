@@ -26,7 +26,7 @@ namespace ChimeraTK {
     void distribute(BackendDataType data, VersionNumber version);
     void activate(BackendDataType data, VersionNumber version);
     void deactivate();
-    void sendException(const std::exception_ptr& e);
+    void sendException(const std::exception_ptr& e) noexcept override;
 
     template<typename UserDataType>
     boost::shared_ptr<AsyncNDRegisterAccessor<UserDataType>> subscribe(
@@ -102,7 +102,7 @@ namespace ChimeraTK {
   //******************************************************************************************************************/
 
   template<typename TargetType, typename BackendDataType>
-  void AsyncDomainImpl<TargetType, BackendDataType>::sendException(const std::exception_ptr& e) {
+  void AsyncDomainImpl<TargetType, BackendDataType>::sendException(const std::exception_ptr& e) noexcept {
     std::lock_guard l(_mutex);
 
     if(!_isActive) {

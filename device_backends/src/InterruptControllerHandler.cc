@@ -74,7 +74,8 @@ namespace ChimeraTK {
           _backend.get(), _controllerHandlerFactory, qualifiedInterruptId, shared_from_this(), _asyncDomain);
       _distributors[interruptID.front()] = distributor;
       if(_asyncDomain->_isActive) {
-        // FIXME: don't invent a version here, use last one
+        // Creating a new version here is correct. Nothing has been distributed to any accessor connected to this
+        // sub-interrupt yet because we just created this distributor.
         distributor->activate(nullptr, {});
       }
     }
@@ -85,7 +86,6 @@ namespace ChimeraTK {
             _backend.get(), _controllerHandlerFactory, qualifiedInterruptId, shared_from_this(), _asyncDomain);
         distributorIter->second = distributor;
         if(_asyncDomain->_isActive) {
-          // FIXME: don't invent a version here, use last one
           distributor->activate(nullptr, {});
         }
       }

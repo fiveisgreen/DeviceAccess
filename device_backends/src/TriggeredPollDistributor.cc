@@ -21,11 +21,12 @@ namespace ChimeraTK {
       return;
     }
 
+    _version = version;
     try {
       _transferGroup->read();
 
       for(auto& var : _asyncVariables) {
-        var.second->fillSendBuffer(version);
+        var.second->fillSendBuffer();
         var.second->send(); // send function from  the AsyncVariable base class
       }
     }

@@ -32,11 +32,11 @@ namespace ChimeraTK {
     virtual unsigned int getNumberOfSamples() = 0;
     virtual const std::string& getUnit() = 0;
     virtual const std::string& getDescription() = 0;
-    virtual bool isWriteable() = 0;
 
-    /** Fill the user buffer from the sync accessor, and replace the version number with the given version.
+    /** Fill the send buffer with data and version number. It is implementation specific where this information is
+     * coming from.
      */
-    virtual void fillSendBuffer(VersionNumber const& version) = 0;
+    virtual void fillSendBuffer() = 0;
   };
 
   /** Helper class to have a complete descriton to create an Accessor.
@@ -93,12 +93,6 @@ namespace ChimeraTK {
      */
     void sendException(const std::exception_ptr& e);
 
-    /** Activate all accessors and send the initial value. Generates a new version number which is used for
-     *  all initial values and  which can be read out with getLastVersion().
-     *  This function has to be provided by each AsyncAccessorManager implementation.
-     */
-    virtual void activate(VersionNumber version) = 0;
-
    protected:
     /*** Each implementation must provide a function to create specific AsyncVariables.
      *   When the variable is returned, async accessor is not set yet. This would leave the whole creation
@@ -136,6 +130,8 @@ namespace ChimeraTK {
 
     void send() final;
     void sendException(std::exception_ptr e) final;
+    virtual unsigned int getNumberOfChannels();
+    virtual unsigned int getNumberOfSamples();
 
     typename NDRegisterAccessor<UserType>::Buffer _sendBuffer;
 
@@ -156,6 +152,21 @@ namespace ChimeraTK {
     if(subscriber.get() != nullptr) { // Solves possible race condition: The subscriber is being destructed.
       subscriber->sendException(e);
     }
+  }
+
+  //*********************************************************************************************************************/
+  template<typename UserType>
+  unsigned int AsyncVariableImpl<UserType>::getNumberOfChannels() {
+    return _sendBuffer.value.size();
+  }
+
+  //*********************************************************************************************************************/
+  template<typename UserType>
+  unsigned int AsyncVariableImpl<UserType>::getNumberOfSamples() {
+    if(_sendBuffer.value.size() > 0) {
+      return _sendBuffer.value[0].size();
+    }
+    return 0;
   }
 
   //*********************************************************************************************************************/
@@ -189,17 +200,10 @@ namespace ChimeraTK {
     // backend should be set at that point
     newSubscriber->setExceptionBackend(_backend);
 
-    if(asyncVariable->isWriteable()) {
-      // for writeable variables we add another synchronous accessors (which knows how to access the data) to the
-      // asyncAccessor (which is generic)
-      auto synchronousFlags = flags;
-      synchronousFlags.remove(AccessMode::wait_for_new_data);
-    }
-
     asyncVariable->_asyncAccessor = newSubscriber;
     // Now that the AsyncVariable is complete we can finally activate it.
     if(_asyncDomain->_isActive) {
-      asyncVariable->fillSendBuffer({});
+      asyncVariable->fillSendBuffer();
       asyncVariable->send();
     }
 

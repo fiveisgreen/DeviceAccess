@@ -30,7 +30,7 @@ namespace ChimeraTK {
     template<typename UserType>
     std::unique_ptr<AsyncVariable> createAsyncVariable(AccessorInstanceDescriptor const& descriptor);
 
-    void activate(VersionNumber version) override;
+    void activate(VersionNumber version);
 
    protected:
     void asyncVariableMapChanged() override {
@@ -45,6 +45,7 @@ namespace ChimeraTK {
     std::unique_ptr<TransferGroup> _transferGroup{new TransferGroup};
     std::vector<uint32_t> _id;
     boost::shared_ptr<TriggerDistributor> _parent;
+    VersionNumber _version{nullptr};
   };
 
   /*******************************************************************************************************************/
@@ -52,22 +53,20 @@ namespace ChimeraTK {
   /** Implementation of the PolledAsyncVariable for the concrete UserType.
    */
   template<typename UserType>
-  struct PolledAsyncVariableImpl : public AsyncVariableImpl<UserType> {
-    void fillSendBuffer(VersionNumber const& version) final;
+  struct PolledAsyncVariable : public AsyncVariableImpl<UserType> {
+    void fillSendBuffer() final;
 
-    /** The constructor takes an already created synchronous accessor and a flag
-     *  whether the variable is active. If the variable is active all new subscribers will automatically
-     *  be activated and immediately get their initial value.
+    /** The constructor takes an already created synchronous accessor and a reference to the version variable.
      */
-    explicit PolledAsyncVariableImpl(boost::shared_ptr<NDRegisterAccessor<UserType>> syncAccessor_);
+    explicit PolledAsyncVariable(boost::shared_ptr<NDRegisterAccessor<UserType>> syncAccessor_, VersionNumber& v);
 
     boost::shared_ptr<NDRegisterAccessor<UserType>> syncAccessor;
+    VersionNumber& _version;
 
     unsigned int getNumberOfChannels() override { return syncAccessor->getNumberOfChannels(); }
     unsigned int getNumberOfSamples() override { return syncAccessor->getNumberOfSamples(); }
     const std::string& getUnit() override { return syncAccessor->getUnit(); }
     const std::string& getDescription() override { return syncAccessor->getDescription(); }
-    bool isWriteable() override { return syncAccessor->isWriteable(); }
   };
 
   //*********************************************************************************************************************/
@@ -93,22 +92,22 @@ namespace ChimeraTK {
     }
 
     _transferGroup->addAccessor(syncAccessor);
-    return std::make_unique<PolledAsyncVariableImpl<UserType>>(syncAccessor);
+    return std::make_unique<PolledAsyncVariable<UserType>>(syncAccessor, _version);
   }
 
   //*********************************************************************************************************************/
   template<typename UserType>
-  void PolledAsyncVariableImpl<UserType>::fillSendBuffer(VersionNumber const& version) {
-    this->_sendBuffer.versionNumber = version;
+  void PolledAsyncVariable<UserType>::fillSendBuffer() {
+    this->_sendBuffer.versionNumber = _version;
     this->_sendBuffer.dataValidity = syncAccessor->dataValidity();
     this->_sendBuffer.value.swap(syncAccessor->accessChannels());
   }
 
   //*********************************************************************************************************************/
   template<typename UserType>
-  PolledAsyncVariableImpl<UserType>::PolledAsyncVariableImpl(
-      boost::shared_ptr<NDRegisterAccessor<UserType>> syncAccessor_)
+  PolledAsyncVariable<UserType>::PolledAsyncVariable(
+      boost::shared_ptr<NDRegisterAccessor<UserType>> syncAccessor_, VersionNumber& v)
   : AsyncVariableImpl<UserType>(syncAccessor_->getNumberOfChannels(), syncAccessor_->getNumberOfSamples()),
-    syncAccessor(syncAccessor_) {}
+    syncAccessor(syncAccessor_), _version(v) {}
 
 } // namespace ChimeraTK

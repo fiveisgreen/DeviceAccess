@@ -6,7 +6,7 @@
 #include "AsyncDomainsContainerBase.h"
 #include "DeviceBackendImpl.h"
 
-#include <ChimeraTK/cppext/semaphore.hpp>
+#include <ChimeraTK/cppext/future_queue.hpp>
 
 #include <map>
 #include <thread>
@@ -17,13 +17,15 @@ namespace ChimeraTK {
   class AsyncDomainsContainer : public AsyncDomainsContainerBase {
    public:
     explicit AsyncDomainsContainer(DeviceBackendImpl* backend);
-    ~AsyncDomainsContainer();
+    ~AsyncDomainsContainer() override;
 
     std::map<KeyType, boost::shared_ptr<AsyncDomain>> asyncDomains;
+    void sendExceptions() override;
 
    protected:
     DeviceBackendImpl* _backend;
     void distributeExceptions();
+    cppext::future_queue<std::string> _startExceptionDistribution{2};
     std::thread _distributorThread;
     class StopThread {};
   };
@@ -55,11 +57,14 @@ namespace ChimeraTK {
     }
   }
 
+  /*******************************************************************************************************************/
+
   template<typename KeyType>
-  AsyncDomainsContainer<KeyType>::AsyncDomainsContainer(DeviceBackendImpl* backend)
-  : AsyncDomainsContainerBase(backend) {
+  AsyncDomainsContainer<KeyType>::AsyncDomainsContainer(DeviceBackendImpl* backend) : _backend(backend) {
     _distributorThread = std::thread([&] { distributeExceptions(); });
   }
+
+  /*******************************************************************************************************************/
 
   template<typename KeyType>
   AsyncDomainsContainer<KeyType>::~AsyncDomainsContainer() {
@@ -76,12 +81,25 @@ namespace ChimeraTK {
     catch(std::system_error& e) {
       // Destructors must not throw. All exceptions that can occur here are system errors, which only show up if there
       // is no hope anyway. All we can do it terminate.
-      std::cerr << "Unrecovarable system error in ~AsyncDomainsContainer(): " << e.what() << " !!! TERMINATING !!!"
+      std::cerr << "Unrecoverable system error in ~AsyncDomainsContainer(): " << e.what() << " !!! TERMINATING !!!"
                 << std::endl;
       std::terminate();
     }
 
     // Unblock a potentially waiting open call
     _isSendingExceptions = false;
+  }
+
+  /*******************************************************************************************************************/
+
+  template<typename KeyType>
+  void AsyncDomainsContainer<KeyType>::sendExceptions() {
+    if(_isSendingExceptions) {
+      throw ChimeraTK::logic_error(
+          "AsyncDomainsContainer::sendExceptions() called before previous distribution was ready.");
+    }
+    _isSendingExceptions = true;
+
+    _startExceptionDistribution.push(_backend->getActiveExceptionMessage());
   }
 } // namespace ChimeraTK

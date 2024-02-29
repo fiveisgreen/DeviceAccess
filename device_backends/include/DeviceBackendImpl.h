@@ -63,8 +63,7 @@ namespace ChimeraTK {
      *  The variable is initialised with an empty base implementation here. Backends which support push type accessors
      *  will replace it with a proper implementation.
      */
-    std::unique_ptr<AsyncDomainsContainerBase> _asyncDomainsContainer{
-        std::make_unique<AsyncDomainsContainerBase>(this)};
+    std::unique_ptr<AsyncDomainsContainerBase> _asyncDomainsContainer{std::make_unique<AsyncDomainsContainerBase>()};
 
    private:
     /** flag if backend is in an exception state */

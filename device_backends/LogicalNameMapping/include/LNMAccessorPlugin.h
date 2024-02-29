@@ -258,6 +258,9 @@ namespace ChimeraTK::LNMBackend {
     uint32_t _shift{0};
     uint32_t _numberOfBits{0};
     bool _writeable{true};
+    uint32_t dataInterpretationBits{0};
+    uint32_t dataInterpretationFractionalBits{0};
+    bool dataInterpretationIsSigned{false};
   };
 
   /********************************************************************************************************************/

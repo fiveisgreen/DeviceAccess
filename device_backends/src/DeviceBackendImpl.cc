@@ -42,7 +42,7 @@ namespace ChimeraTK {
     setExceptionImpl();
 
     // finally turn off all async accessors and distribute the exception to them
-    _asyncDomainsContainer->sendExceptions();
+    _asyncDomainsContainer->sendExceptions(message);
   }
 
   /********************************************************************************************************************/

@@ -45,13 +45,13 @@ namespace ChimeraTK {
       // They don't have controller handlers (nested interrupts) yet because these can hold accessors, which
       // in turn have shared pointers to the backend, which cannot be created in the backend constructor.
       // They will be added when accessors are subscribing.
-      auto domainsContainer = std::make_unique<AsyncDomainsContainer<uint32_t>>(this);
+      auto domainsContainer = std::make_unique<AsyncDomainsContainer<uint32_t>>();
       for(const auto& interruptID : _registerMap.getListOfInterrupts()) {
         auto creatorFct = [&](boost::shared_ptr<AsyncDomain> asyncDomain) {
           return boost::make_shared<TriggerDistributor>(this, &_interruptControllerHandlerFactory,
               std::vector<uint32_t>({interruptID.front()}), nullptr, asyncDomain);
         };
-        auto asyncDomain = boost::make_shared<AsyncDomainImpl<TriggerDistributor, std::nullptr_t>>(creatorFct, this);
+        auto asyncDomain = boost::make_shared<AsyncDomainImpl<TriggerDistributor, std::nullptr_t>>(creatorFct);
         _primaryInterruptDistributorsNonConst.try_emplace(interruptID.front(), asyncDomain);
         domainsContainer->asyncDomains.try_emplace(interruptID.front(), asyncDomain);
       }

@@ -3,15 +3,16 @@
 #pragma once
 
 #include <atomic>
+#include <string>
+#include <tuple>
 
 namespace ChimeraTK {
-  class DeviceBackendImpl;
 
   class AsyncDomainsContainerBase {
    public:
     virtual ~AsyncDomainsContainerBase() = default;
     bool isSendingExceptions() { return _isSendingExceptions; }
-    virtual void sendExceptions() {}
+    virtual void sendExceptions(const std::string& exceptionMessage) { std::ignore = exceptionMessage; }
 
    protected:
     std::atomic_bool _isSendingExceptions{false};

@@ -4,7 +4,7 @@
 
 #include "AsyncDomain.h"
 #include "AsyncDomainsContainerBase.h"
-#include "DeviceBackendImpl.h"
+#include "Exception.h"
 
 #include <ChimeraTK/cppext/future_queue.hpp>
 
@@ -16,14 +16,13 @@ namespace ChimeraTK {
   template<typename KeyType>
   class AsyncDomainsContainer : public AsyncDomainsContainerBase {
    public:
-    explicit AsyncDomainsContainer(DeviceBackendImpl* backend);
+    explicit AsyncDomainsContainer();
     ~AsyncDomainsContainer() override;
 
-    std::map<KeyType, boost::shared_ptr<AsyncDomain>> asyncDomains;
-    void sendExceptions() override;
+    std::map<KeyType, boost::weak_ptr<AsyncDomain>> asyncDomains;
+    void sendExceptions(const std::string& exceptionMessage) override;
 
    protected:
-    DeviceBackendImpl* _backend;
     void distributeExceptions();
     cppext::future_queue<std::string> _startExceptionDistribution{2};
     std::thread _distributorThread;
@@ -49,7 +48,10 @@ namespace ChimeraTK {
       }
       catch(...) {
         for(auto& keyAndDomain : asyncDomains) {
-          keyAndDomain.second->sendException(std::current_exception());
+          auto domain = keyAndDomain.second.lock();
+          if(domain) {
+            domain->sendException(std::current_exception());
+          }
         }
       }
 
@@ -60,7 +62,7 @@ namespace ChimeraTK {
   /*******************************************************************************************************************/
 
   template<typename KeyType>
-  AsyncDomainsContainer<KeyType>::AsyncDomainsContainer(DeviceBackendImpl* backend) : _backend(backend) {
+  AsyncDomainsContainer<KeyType>::AsyncDomainsContainer() {
     _distributorThread = std::thread([&] { distributeExceptions(); });
   }
 
@@ -93,13 +95,13 @@ namespace ChimeraTK {
   /*******************************************************************************************************************/
 
   template<typename KeyType>
-  void AsyncDomainsContainer<KeyType>::sendExceptions() {
+  void AsyncDomainsContainer<KeyType>::sendExceptions(const std::string& exceptionMessage) {
     if(_isSendingExceptions) {
       throw ChimeraTK::logic_error(
           "AsyncDomainsContainer::sendExceptions() called before previous distribution was ready.");
     }
     _isSendingExceptions = true;
 
-    _startExceptionDistribution.push(_backend->getActiveExceptionMessage());
+    _startExceptionDistribution.push(exceptionMessage);
   }
 } // namespace ChimeraTK

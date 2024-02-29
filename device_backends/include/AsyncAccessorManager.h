@@ -72,8 +72,7 @@ namespace ChimeraTK {
    */
   class AsyncAccessorManager : public boost::enable_shared_from_this<AsyncAccessorManager> {
    public:
-    explicit AsyncAccessorManager(
-        boost::shared_ptr<DeviceBackendImpl> backend, boost::shared_ptr<AsyncDomain> asyncDomain)
+    explicit AsyncAccessorManager(boost::shared_ptr<DeviceBackend> backend, boost::shared_ptr<AsyncDomain> asyncDomain)
     : _backend(std::move(backend)), _asyncDomain(std::move(asyncDomain)) {}
     virtual ~AsyncAccessorManager() = default;
 
@@ -113,7 +112,7 @@ namespace ChimeraTK {
 
     std::map<TransferElementID, std::unique_ptr<AsyncVariable>> _asyncVariables;
 
-    boost::shared_ptr<DeviceBackendImpl> _backend;
+    boost::shared_ptr<DeviceBackend> _backend;
     boost::shared_ptr<AsyncDomain> _asyncDomain;
 
     /// this virtual function lets derived classes react on subscribe / unsubscribe

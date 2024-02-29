@@ -12,7 +12,7 @@ namespace ChimeraTK {
   template<typename SourceType>
   class VariableDistributor : public AsyncAccessorManager {
    public:
-    VariableDistributor(boost::shared_ptr<DeviceBackendImpl> backend, std::vector<uint32_t> interruptID,
+    VariableDistributor(boost::shared_ptr<DeviceBackend> backend, std::vector<uint32_t> interruptID,
         boost::shared_ptr<TriggerDistributor> parent, boost::shared_ptr<AsyncDomain> asyncDomain);
 
     template<typename UserType>
@@ -31,7 +31,7 @@ namespace ChimeraTK {
   // Implementations
   //*********************************************************************************************************************/
   template<typename SourceType>
-  VariableDistributor<SourceType>::VariableDistributor(boost::shared_ptr<DeviceBackendImpl> backend,
+  VariableDistributor<SourceType>::VariableDistributor(boost::shared_ptr<DeviceBackend> backend,
       std::vector<uint32_t> interruptID, boost::shared_ptr<TriggerDistributor> parent,
       boost::shared_ptr<AsyncDomain> asyncDomain)
   : AsyncAccessorManager(backend, asyncDomain), _id(std::move(interruptID)), _parent(std::move(parent)) {

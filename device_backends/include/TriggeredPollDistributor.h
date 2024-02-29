@@ -19,7 +19,7 @@ namespace ChimeraTK {
    */
   class TriggeredPollDistributor : public AsyncAccessorManager {
    public:
-    TriggeredPollDistributor(boost::shared_ptr<DeviceBackendImpl> backend, std::vector<uint32_t> interruptID,
+    TriggeredPollDistributor(boost::shared_ptr<DeviceBackend> backend, std::vector<uint32_t> interruptID,
         boost::shared_ptr<TriggerDistributor> parent, boost::shared_ptr<AsyncDomain> asyncDomain);
 
     /** Poll all sync variables and push the data via their async counterparts. Creates a new VersionNumber and

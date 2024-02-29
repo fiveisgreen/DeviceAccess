@@ -48,7 +48,7 @@ namespace ChimeraTK {
       auto domainsContainer = std::make_unique<AsyncDomainsContainer<uint32_t>>();
       for(const auto& interruptID : _registerMap.getListOfInterrupts()) {
         auto creatorFct = [&](boost::shared_ptr<AsyncDomain> asyncDomain) {
-          return boost::make_shared<TriggerDistributor>(this, &_interruptControllerHandlerFactory,
+          return boost::make_shared<TriggerDistributor>(shared_from_this(), &_interruptControllerHandlerFactory,
               std::vector<uint32_t>({interruptID.front()}), nullptr, asyncDomain);
         };
         auto asyncDomain = boost::make_shared<AsyncDomainImpl<TriggerDistributor, std::nullptr_t>>(creatorFct);

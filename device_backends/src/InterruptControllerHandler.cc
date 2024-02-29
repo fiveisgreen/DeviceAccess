@@ -11,7 +11,7 @@
 
 namespace ChimeraTK {
   //*********************************************************************************************************************/
-  InterruptControllerHandlerFactory::InterruptControllerHandlerFactory(DeviceBackendImpl* backend) : _backend(backend) {
+  InterruptControllerHandlerFactory::InterruptControllerHandlerFactory(DeviceBackend* backend) : _backend(backend) {
     // we already know about the build-in handlers
     _creatorFunctions["AXI4_INTC"] = Axi4_Intc::create;
     _creatorFunctions["dummy"] = DummyIntc::create;
@@ -47,8 +47,8 @@ namespace ChimeraTK {
   }
 
   //*********************************************************************************************************************/
-  boost::shared_ptr<DeviceBackendImpl> InterruptControllerHandlerFactory::getBackend() {
-    return boost::dynamic_pointer_cast<DeviceBackendImpl>(_backend->shared_from_this());
+  boost::shared_ptr<DeviceBackend> InterruptControllerHandlerFactory::getBackend() {
+    return boost::dynamic_pointer_cast<DeviceBackend>(_backend->shared_from_this());
   }
 
   //*********************************************************************************************************************/
@@ -71,7 +71,7 @@ namespace ChimeraTK {
     auto distributorIter = _distributors.find(interruptID.front());
     if(distributorIter == _distributors.end()) {
       distributor = boost::make_shared<TriggerDistributor>(
-          _backend.get(), _controllerHandlerFactory, qualifiedInterruptId, shared_from_this(), _asyncDomain);
+          _backend, _controllerHandlerFactory, qualifiedInterruptId, shared_from_this(), _asyncDomain);
       _distributors[interruptID.front()] = distributor;
       if(_asyncDomain->_isActive) {
         // Creating a new version here is correct. Nothing has been distributed to any accessor connected to this
@@ -83,7 +83,7 @@ namespace ChimeraTK {
       distributor = distributorIter->second.lock();
       if(!distributor) {
         distributor = boost::make_shared<TriggerDistributor>(
-            _backend.get(), _controllerHandlerFactory, qualifiedInterruptId, shared_from_this(), _asyncDomain);
+            _backend, _controllerHandlerFactory, qualifiedInterruptId, shared_from_this(), _asyncDomain);
         distributorIter->second = distributor;
         if(_asyncDomain->_isActive) {
           distributor->activate(nullptr, {});

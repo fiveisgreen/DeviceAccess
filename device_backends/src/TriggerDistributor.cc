@@ -10,7 +10,7 @@
 
 namespace ChimeraTK {
 
-  TriggerDistributor::TriggerDistributor(DeviceBackendImpl* backend,
+  TriggerDistributor::TriggerDistributor(boost::shared_ptr<DeviceBackend> backend,
       InterruptControllerHandlerFactory* controllerHandlerFactory, std::vector<uint32_t> interruptID,
       boost::shared_ptr<InterruptControllerHandler> parent, boost::shared_ptr<AsyncDomain> asyncDomain)
   : _id(std::move(interruptID)), _backend(backend), _interruptControllerHandlerFactory(controllerHandlerFactory),
@@ -40,9 +40,7 @@ namespace ChimeraTK {
 
       auto distributor = weakDistributor->lock();
       if(!distributor) {
-        distributor = boost::make_shared<DistributorType>(
-            boost::dynamic_pointer_cast<DeviceBackendImpl>(_backend->shared_from_this()), _id, shared_from_this(),
-            _asyncDomain);
+        distributor = boost::make_shared<DistributorType>(_backend, _id, shared_from_this(), _asyncDomain);
         *weakDistributor = distributor;
         if(_asyncDomain->_isActive) {
           distributor->activate({});

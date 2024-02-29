@@ -3,7 +3,7 @@
 #pragma once
 
 #include "AsyncDomain.h"
-#include "DeviceBackendImpl.h"
+#include "DeviceBackend.h"
 #include "NDRegisterAccessor.h"
 
 #include <ChimeraTK/cppext/finally.hpp>
@@ -28,10 +28,9 @@ namespace ChimeraTK {
      *  an AsyncAccessorManager where you can unsubscribe. As the AsyncAccessorManager is
      *  the factory for AsyncNDRegisterAccessor, this is only an implementation detail.
      */
-    AsyncNDRegisterAccessor(boost::shared_ptr<DeviceBackendImpl> backend,
-        boost::shared_ptr<AsyncAccessorManager> manager, boost::shared_ptr<AsyncDomain> asyncDomain,
-        std::string const& name, size_t nChannels, size_t nElements, AccessModeFlags accessModeFlags,
-        std::string const& unit = std::string(TransferElement::unitNotSet),
+    AsyncNDRegisterAccessor(boost::shared_ptr<DeviceBackend> backend, boost::shared_ptr<AsyncAccessorManager> manager,
+        boost::shared_ptr<AsyncDomain> asyncDomain, std::string const& name, size_t nChannels, size_t nElements,
+        AccessModeFlags accessModeFlags, std::string const& unit = std::string(TransferElement::unitNotSet),
         std::string const& description = std::string());
 
     ~AsyncNDRegisterAccessor() override;
@@ -98,7 +97,7 @@ namespace ChimeraTK {
     void interrupt() override { this->interrupt_impl(this->_dataTransportQueue); }
 
    protected:
-    boost::shared_ptr<DeviceBackendImpl> _backend;
+    boost::shared_ptr<DeviceBackend> _backend;
     boost::shared_ptr<AsyncAccessorManager> _accessorManager;
     boost::shared_ptr<AsyncDomain> _asyncDomain;
     using typename NDRegisterAccessor<UserType>::Buffer;

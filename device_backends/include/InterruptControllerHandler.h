@@ -18,7 +18,7 @@ namespace ChimeraTK {
   class TriggerDistributor;
   template<typename UserType>
   class VariableDistributor;
-  class DeviceBackendImpl;
+  class DeviceBackend;
   class AsyncDomain;
 
   /** Knows which type of InterruptControllerHandler to create for which interrupt.
@@ -26,17 +26,17 @@ namespace ChimeraTK {
    */
   class InterruptControllerHandlerFactory {
    public:
-    explicit InterruptControllerHandlerFactory(DeviceBackendImpl* backend);
+    explicit InterruptControllerHandlerFactory(DeviceBackend* backend);
 
     boost::shared_ptr<InterruptControllerHandler> createInterruptControllerHandler(
         std::vector<uint32_t> const& controllerID, boost::shared_ptr<TriggerDistributor> parent);
     void addControllerDescription(
         std::vector<uint32_t> const& controllerID, std::string const& name, std::string const& description);
 
-    boost::shared_ptr<DeviceBackendImpl> getBackend();
+    boost::shared_ptr<DeviceBackend> getBackend();
 
    protected:
-    DeviceBackendImpl* _backend;
+    DeviceBackend* _backend;
 
     /** The key of this map is the controllerID.
      *  The value is a string pair of controller name and the description string from the map file.
@@ -81,7 +81,7 @@ namespace ChimeraTK {
    protected:
     std::map<uint32_t, boost::weak_ptr<TriggerDistributor>> _distributors;
 
-    boost::shared_ptr<DeviceBackendImpl> _backend;
+    boost::shared_ptr<DeviceBackend> _backend;
     InterruptControllerHandlerFactory* _controllerHandlerFactory;
 
     /** The ID of this controller handler.

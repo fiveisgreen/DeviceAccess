@@ -4,11 +4,6 @@
 
 #include "AsyncDomain.h"
 #include "AsyncNDRegisterAccessor.h"
-#include "DeviceBackend.h"
-#include "NumericAddressedRegisterCatalogue.h"
-#include "TriggerDistributor.h"
-#include "TriggeredPollDistributor.h"
-#include "VariableDistributor.h"
 #include "VersionNumber.h"
 
 #include <functional>
@@ -19,10 +14,8 @@ namespace ChimeraTK {
   class AsyncDomainImpl : public AsyncDomain {
    public:
     explicit AsyncDomainImpl(
-        std::function<boost::shared_ptr<TargetType>(boost::shared_ptr<AsyncDomain>)> creatorFunction,
-        DeviceBackend* backend)
-    : _creatorFunction(creatorFunction), _backend(backend) {}
-    virtual ~AsyncDomainImpl() = default;
+        std::function<boost::shared_ptr<TargetType>(boost::shared_ptr<AsyncDomain>)> creatorFunction)
+    : _creatorFunction(creatorFunction) {}
 
     void distribute(BackendDataType data, VersionNumber version);
     void activate(BackendDataType data, VersionNumber version);
@@ -38,10 +31,6 @@ namespace ChimeraTK {
     boost::weak_ptr<TargetType> _target;
 
     std::function<boost::shared_ptr<TargetType>(boost::shared_ptr<AsyncDomain>)> _creatorFunction;
-
-    // FIXME: Make a weak pointer out of this -> No, this will go away. Info is in creator function
-    DeviceBackend* _backend;
-    // boost::weak_ptr<DeviceBackend> _backend;
 
     // Data to resolve a race condition (see distribute and activate)
     BackendDataType _notDistributedData;
@@ -134,36 +123,7 @@ namespace ChimeraTK {
       _target = target;
     }
 
-    if constexpr(std::is_same<TargetType, VariableDistributor<UserDataType>>::value) {
-      return target->subscribe(name, numberOfWords, wordOffsetInRegister, flags);
-    }
-    else if constexpr(std::is_same<TargetType, TriggerDistributor>::value) {
-      // FIXME: Move this code to the TriggeredPollDistributor!
-      // const auto& backendCatalogue = _backend.lock()->getRegisterCatalogue().getImpl();
-      auto catalogue = _backend->getRegisterCatalogue(); // need to store the clone you get
-      const auto& backendCatalogue = catalogue.getImpl();
-      // This code only works for backends which use the NumericAddressedRegisterCatalogue because we need the
-      // interrupt description which is specific for those backends and not in the general catalogue.
-      // If the cast fails, it will throw an exception.
-      auto removeMe = backendCatalogue.getRegister(name);
-      const auto& numericCatalogue = dynamic_cast<const NumericAddressedRegisterCatalogue&>(backendCatalogue);
-      auto registerInfo = numericCatalogue.getBackendRegister(name);
-
-      // Find the right place in the distribution tree to subscribe
-      const auto& primaryDistributor = target;
-      boost::shared_ptr<AsyncAccessorManager> distributor;
-      if(registerInfo.getDataDescriptor().fundamentalType() == DataDescriptor::FundamentalType::nodata) {
-        distributor = primaryDistributor->getVariableDistributorRecursive(registerInfo.interruptId);
-      }
-      else {
-        distributor = primaryDistributor->getPollDistributorRecursive(registerInfo.interruptId);
-      }
-
-      return distributor->template subscribe<UserDataType>(name, numberOfWords, wordOffsetInRegister, flags);
-    }
-
-    assert(false); // The code should never end up here.
-    return {nullptr};
+    return target->template subscribe<UserDataType>(name, numberOfWords, wordOffsetInRegister, flags);
   }
 
 } // namespace ChimeraTK

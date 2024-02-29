@@ -4,6 +4,7 @@
 #include "TriggerDistributor.h"
 
 #include "InterruptControllerHandler.h"
+#include "NumericAddressedRegisterCatalogue.h"
 #include "TriggeredPollDistributor.h"
 #include "VariableDistributor.h"
 
@@ -126,5 +127,34 @@ namespace ChimeraTK {
       variableDistributor->sendException(e);
     }
   }
+
+  //*********************************************************************************************************************/
+
+  template<typename UserType>
+  boost::shared_ptr<AsyncNDRegisterAccessor<UserType>> TriggerDistributor::SubscriptionImplementor<
+      UserType>::subscribeTo(TriggerDistributor& triggerDistributor, RegisterPath name, size_t numberOfWords,
+      size_t wordOffsetInRegister, AccessModeFlags flags) {
+    auto catalogue = triggerDistributor._backend->getRegisterCatalogue(); // need to store the clone you get
+    const auto& backendCatalogue = catalogue.getImpl();
+    // This code only works for backends which use the NumericAddressedRegisterCatalogue because we need the
+    // interrupt description which is specific for those backends and not in the general catalogue.
+    // If the cast fails, it will throw an exception.
+    auto removeMe = backendCatalogue.getRegister(name);
+    const auto& numericCatalogue = dynamic_cast<const NumericAddressedRegisterCatalogue&>(backendCatalogue);
+    auto registerInfo = numericCatalogue.getBackendRegister(name);
+
+    // Find the right place in the distribution tree to subscribe
+    boost::shared_ptr<AsyncAccessorManager> distributor;
+    if(registerInfo.getDataDescriptor().fundamentalType() == DataDescriptor::FundamentalType::nodata) {
+      distributor = triggerDistributor.getVariableDistributorRecursive(registerInfo.interruptId);
+    }
+    else {
+      distributor = triggerDistributor.getPollDistributorRecursive(registerInfo.interruptId);
+    }
+
+    return distributor->template subscribe<UserType>(name, numberOfWords, wordOffsetInRegister, flags);
+  };
+
+  INSTANTIATE_TEMPLATE_FOR_CHIMERATK_USER_TYPES(TriggerDistributor::SubscriptionImplementor);
 
 } // namespace ChimeraTK

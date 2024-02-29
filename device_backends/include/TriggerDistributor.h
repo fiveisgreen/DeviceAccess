@@ -16,6 +16,9 @@ namespace ChimeraTK {
   template<typename UserType>
   class VariableDistributor;
 
+  template<typename UserType>
+  class AsyncNDRegisterAccessor;
+
   /** Distribute a void type interrupt signal (trigger) to three possible consumers:
    *  \li InterruptControllerHandler
    *  \li TriggeredPollDistributor
@@ -48,6 +51,10 @@ namespace ChimeraTK {
 
     boost::shared_ptr<AsyncDomain> getAsyncDomain() { return _asyncDomain; }
 
+    template<typename UserType>
+    boost::shared_ptr<AsyncNDRegisterAccessor<UserType>> subscribe(
+        RegisterPath name, size_t numberOfWords, size_t wordOffsetInRegister, AccessModeFlags flags);
+
    protected:
     std::vector<uint32_t> _id;
     // We have to use a plain pointer here because the primary trigger distributors are already created in the
@@ -59,6 +66,29 @@ namespace ChimeraTK {
     boost::weak_ptr<VariableDistributor<std::nullptr_t>> _variableDistributor;
     boost::shared_ptr<InterruptControllerHandler> _parent;
     boost::shared_ptr<AsyncDomain> _asyncDomain;
+
+    // Helper class to get instances for all user types. We cannot put the implementation into the header because of
+    // circular header inclusion, and we cannot write a "for all user types" macro for functions because of the return
+    // value and the function signature.
+    template<typename UserType>
+    class SubscriptionImplementor {
+     public:
+      static boost::shared_ptr<AsyncNDRegisterAccessor<UserType>> subscribeTo(TriggerDistributor& triggerDistributor,
+          RegisterPath name, size_t numberOfWords, size_t wordOffsetInRegister, AccessModeFlags flags);
+    };
+
+    template<typename UserType>
+    friend class SubscriptionImplementor;
   };
+
+  DECLARE_TEMPLATE_FOR_CHIMERATK_USER_TYPES(TriggerDistributor::SubscriptionImplementor);
+
+  //*****************************************************************************************************************/
+
+  template<typename UserType>
+  boost::shared_ptr<AsyncNDRegisterAccessor<UserType>> TriggerDistributor::subscribe(
+      RegisterPath name, size_t numberOfWords, size_t wordOffsetInRegister, AccessModeFlags flags) {
+    return SubscriptionImplementor<UserType>::subscribeTo(*this, name, numberOfWords, wordOffsetInRegister, flags);
+  }
 
 } // namespace ChimeraTK

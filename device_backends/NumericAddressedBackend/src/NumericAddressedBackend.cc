@@ -233,12 +233,6 @@ namespace ChimeraTK {
 
   /********************************************************************************************************************/
 
-  void NumericAddressedBackend::setExceptionImpl() noexcept {
-    _asyncDomainsContainer->sendExceptions();
-  }
-
-  /********************************************************************************************************************/
-
   // empty default implementation
   void NumericAddressedBackend::startInterruptHandlingThread([[maybe_unused]] unsigned int interruptNumber) {}
 

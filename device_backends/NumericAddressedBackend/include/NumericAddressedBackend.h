@@ -106,7 +106,6 @@ namespace ChimeraTK {
     NumericAddressedRegisterInfo getRegisterInfo(const RegisterPath& registerPathName);
 
     void activateAsyncRead() noexcept override;
-    void setExceptionImpl() noexcept override;
 
     /**
      *  Deactivates all asynchronous accessors and calls closeImpl().

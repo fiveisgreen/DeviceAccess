@@ -221,6 +221,7 @@
       <plugin name="bitRange">
         <parameter name="shift">8</parameter>
         <parameter name="numberOfBits">8</parameter>
+        <parameter name="dataInterpretationSigned">true</parameter>
       </plugin>
     </redirectedRegister>
     <redirectedRegister name="BitRangeUpper">
@@ -229,6 +230,7 @@
       <plugin name="bitRange">
         <parameter name="shift">16</parameter>
         <parameter name="numberOfBits">16</parameter>
+        <parameter name="dataInterpretationSigned">true</parameter>
       </plugin>
     </redirectedRegister>
     <redirectedRegister name="BitRangeMiddle">
@@ -237,6 +239,8 @@
       <plugin name ="bitRange">
       <parameter name="shift">4</parameter>
       <parameter name="numberOfBits">9</parameter>
+        <parameter name="dataInterpretationSigned">true</parameter>
+        <parameter name="dataInterpretationBits">8</parameter>
       </plugin>
     </redirectedRegister>
 </logicalNameMap>
